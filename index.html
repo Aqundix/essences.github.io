@@ -1,708 +1,83 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aqundix - Full Tech SaaS Landing Page</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :root {
-            --bg-black: #050505;
-            --accent-pink: #d946ef;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-gray: #888888;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-black);
-            color: #ffffff;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* --- Global Layout --- */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* --- Header --- */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 25px 0;
-        }
-
-        .logo { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
-        nav { display: none; } /* ซ่อนบนมือถือ */
-        
-        .btn-white {
-            background: #fff;
-            color: #000;
-            padding: 8px 20px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        /* --- Hero Section --- */
-        .hero {
-            text-align: center;
-            padding: 80px 0;
-            position: relative;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 16px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: var(--text-gray);
-            margin-bottom: 25px;
-        }
-
-        h1 {
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            line-height: 1.1;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .hero p {
-            color: var(--text-gray);
-            max-width: 650px;
-            margin: 0 auto 40px;
-            font-size: 1.1rem;
-        }
-
-        /* --- Graphic Arches & Dashboard --- */
-        .visual-area {
-            position: relative;
-            height: 450px;
-            margin-top: 50px;
-            display: flex;
-            justify-content: center;
-        }
-
-        /* แสงฟุ้งวงกลมในรูป */
-        .arch-glow {
-            position: absolute;
-            bottom: -50px;
-            width: 80%;
-            height: 300px;
-            background: radial-gradient(50% 50% at 50% 50%, rgba(217, 70, 239, 0.2) 0%, transparent 100%);
-            border-top: 2px solid var(--accent-pink);
-            border-radius: 50% 50% 0 0;
-            filter: blur(20px);
-        }
-
-        .card-main {
-            position: relative;
-            z-index: 10;
-            background: rgba(15, 15, 15, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 30px;
-            width: 380px;
-            text-align: left;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-        }
-
-        /* --- Workflow Section --- */
-        .workflow {
-            padding: 100px 0;
-            text-align: center;
-        }
-
-        .workflow-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 60px;
-        }
-
-        .wf-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 40px;
-            text-align: left;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .wf-card h3 { font-size: 1.5rem; }
-        .wf-card p { color: var(--text-gray); font-size: 0.95rem; }
-
-        .dashboard-img {
-            width: 100%;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border);
-        }
-
-        /* --- Responsive Queries --- */
-        @media (min-width: 992px) {
-            nav { display: flex; gap: 30px; }
-            nav a { color: var(--text-gray); text-decoration: none; font-size: 0.9rem; }
-            nav a:hover { color: #fff; }
-        }
-
-        @media (max-width: 768px) {
-            .workflow-grid { grid-template-columns: 1fr; }
-            .visual-area { height: 350px; }
-            .card-main { width: 90%; }
-            h1 { font-size: 2.5rem; }
-        }
-        /* --- Marquee (ข้อความเลื่อน) --- */
-        .marquee {
-            padding: 40px 0;
-            background: rgba(255, 255, 255, 0.01);
-            border-y: 1px solid var(--glass-border);
-            overflow: hidden;
-            white-space: nowrap;
-            display: flex;
-        }
-        .marquee-content {
-            display: inline-flex;
-            animation: scroll 20s linear infinite;
-            gap: 50px;
-        }
-        .marquee-item {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.2);
-            text-transform: uppercase;
-        }
-        @keyframes scroll {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
-        
-        .btn-white {
-            background: #ffffff;
-            color: #000000;
-            padding: 10px 24px;
-            border-radius: 100px; /* ทรงมนสวยแบบ modern */
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* แอนิเมชันที่นุ่มนวล */
-            border: 1px solid #ffffff;
-            cursor: pointer;
-        }
-        
-        /* เมื่อเอาเมาส์ไปชี้ (Hover) */
-        .btn-white:hover {
-            background: transparent;
-            color: #ffffff;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px); /* ปุ่มลอยขึ้นเล็กน้อย */
-        }
-        
-        /* เมื่อกดปุ่ม (Click/Active) */
-        .btn-white:active {
-            transform: translateY(0); /* ปุ่มยุบลงเมื่อกด */
-            opacity: 0.8;
-        }
-
-    </style>
+    <title>Firebase Auth on GitHub Pages</title>
 </head>
 <body>
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button id="btnLogin">Sign In</button>
+    <button id="btnRegister">Register</button>
 
-<div class="container">
-    <header>
-        <div class="logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7L12 12L22 7L12 2Z"></path><path d="M2 17L12 22L22 17"></path><path d="M2 12L12 17L22 12"></path></svg>
-            Aqundix
-        </div>
-        <a href="#" class="btn-white">Free Trial</a>
-    </header>
+    <hr>
+    <h2>Save Data</h2>
+    <input type="text" id="userData" placeholder="พิมพ์ข้อความที่ต้องการบันทึก">
+    <button id="btnSave">Save to Firestore</button>
 
-    <section class="hero">
-        <div class="badge">
-            <span style="color: var(--accent-pink);">✦</span> Simplify your workflow
-        </div>
-        <h1>Enhance your financial<br>control with Aqundix</h1>
-        <p>Streamline your business's financial management with our intuitive, scalable SaaS platform. Designed for U.S. enterprises.</p>
-        <a href="#" class="btn-white" style="padding: 12px 30px;">Get started</a>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        <div class="visual-area">
-            <div class="arch-glow"></div>
-            <div class="card-main">
-                <div style="color: var(--text-gray); font-size: 0.8rem;">Total balance</div>
-                <div style="font-size: 2rem; font-weight: 700; margin: 5px 0;">$0</div>
-                <div style="color: #4ade80; font-size: 0.8rem; background: rgba(74, 222, 128, 0.1); display: inline-block; padding: 2px 8px; border-radius: 4px;">+14%</div>
-                
-                <div style="margin-top: 40px; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="font-size: 0.9rem;">Mastercard</div>
-                    <div style="color: var(--text-gray);">**** 8832</div>
-                </div>
-            </div>
-        </div>
-    </section>
+        // คัดลอกค่าจาก Firebase Console มาวางตรงนี้
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
+        };
 
-    <div class="marquee">
-        <div class="marquee-content">
-            <span class="marquee-item">✦ Automated Tracking</span>
-            <span class="marquee-item">✦ AI Summaries</span>
-            <span class="marquee-item">✦ Real-time Insights</span>
-            <span class="marquee-item">✦ Bank-level Security</span>
-            <span class="marquee-item">✦ Automated Tracking</span>
-            <span class="marquee-item">✦ AI Summaries</span>
-        </div>
-    </div>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-    <section class="workflow">
-        <div class="badge">Our workflow</div>
-        <h2>How our platform<br>makes your workflow easier</h2>
-
-    <div class="workflow-grid">
-            <div class="wf-card">
-                <h3>Welcome back, Anan!</h3>
-                <p>Manage your transactions and track your daily spending with ease.</p>
-                <div style="
-                    height: 150px; 
-                    border-radius: 12px; 
-                    border: 1px solid var(--glass-border);
-                    background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1642790106117-e829e14a795f?q=80&w=1000&auto=format&fit=crop');
-                    background-size: cover;
-                    background-position: center;
-                    transition: transform 0.3s ease;
-                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                </div>
-            </div>
-            
-            <div class="wf-card">
-                <h3>Welcome back, Anan!</h3>
-                <p>Manage your transactions and track your daily spending with ease.</p>
-                <div style="
-                    height: 150px; 
-                    border-radius: 12px; 
-                    border: 1px solid var(--glass-border);
-                    background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1642790106117-e829e14a795f?q=80&w=1000&auto=format&fit=crop');
-                    background-size: cover;
-                    background-position: center;
-                    transition: transform 0.3s ease;
-                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                </div>
-            </div>
-        </div>
-            <div class="wf-card" style="margin-top: 20px;">
-                <h3>Link Your Accounts</h3>
-                <p>Create your account in minutes and tailor the platform to meet your company's unique financial needs.</p>
-                
-                <div style="display: flex; gap: 12px;">
-                    <div style="
-                        width: 45px; 
-                        height: 45px; 
-                        background-image: url('https://cdn-icons-png.flaticon.com/512/25/25231.png'); 
-                        background-size: 60%; 
-                        background-position: center; 
-                        background-repeat: no-repeat;
-                        background-color: #fff; 
-                        border-radius: 10px;
-                        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-                    "></div>
-            
-                    <div style="
-                        width: 45px; 
-                        height: 45px; 
-                        background-image: url('https://cdn-icons-png.flaticon.com/512/5968/5968762.png'); 
-                        background-size: 60%; 
-                        background-position: center; 
-                        background-repeat: no-repeat;
-                        background-color: #fff; 
-                        border-radius: 10px;
-                        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-                    "></div>
-            
-                    <div style="
-                        width: 45px; 
-                        height: 45px; 
-                        background-image: url('https://cdn-icons-png.flaticon.com/512/732/732221.png'); 
-                        background-size: 60%; 
-                        background-position: center; 
-                        background-repeat: no-repeat;
-                        background-color: #fff; 
-                        border-radius: 10px;
-                        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-                    "></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    </div>
-        </section><section class="features-grid-section">
-        <div class="container">
-            <div class="features-layout">
-                <div class="feature-card-large" style="
-                    background-image: rgba(5,5,5,0.7) 50%, rgba(217, 70, 239, 0.1) 100%),
-                    background-size: cover;
-                    background-position: center;
-                    position: relative;
-                ">
-                    <div style="position: relative; z-index: 2;">
-                        <div class="badge">Note-to-Task AI</div>
-                        <h3>Everything You Need To Stay Organized Without Lifting a Finger</h3>
-                        <p>Built for the fast-paced life of startup founders, these AI-powered features eliminate busywork and help you focus on building.</p>
-                    </div>
-                </div>
-    
-                <div class="feature-card-small" style="
-                    background-image: url('pexels-image1.jpg');
-                    background-size: cover;
-                    background-position: center;
-                ">
-                    <div class="badge">Daily Smart Summaries</div>
-                    <div class="mock-ui">
-                    </div>
-                </div>
-    
-                <div class="feature-card-small" style="
-                    background-image: url('pexels-image2.jpg');
-                    background-size: cover;
-                    background-position: center;
-                ">
-                    <div class="badge">Context-Aware Linking</div>
-                    
-                </div>
-            </div>
-        </div>
-    </section>
-
-        
-    <div class="container">
-        <section class="workflow">
-            <div class="badge">Work Smarter</div>
-            <h2>Powerful tools for your business</h2>
-            <div class="workflow-grid">
-                <div class="wf-card">
-                    <h3>Smart Transactions</h3>
-                    <p>Categorize expenses automatically using advanced AI learning.</p>
-                </div>
-                <div class="wf-card">
-                    <h3>Global Payments</h3>
-                    <p>Send and receive money in 50+ currencies with the lowest fees.</p>
-                </div>
-            </div>
-        </section>
-    
-    <section class="contact-section">
-        <div class="contact-wrapper">
-            <div class="badge">✦ Join Our Community</div>
-            <h2>Ready to transform your finance?</h2>
-            <p>เชื่อมต่อกับเราผ่านโซเชียลมีเดีย หรือสมัครรับจดหมายข่าวเพื่อรับอัปเดตฟีเจอร์ใหม่และเทคนิคการใช้งาน AI ก่อนใคร</p>
-            
-            <div class="social-grid">
-                <a href="##" class="social-btn">
-                    <div class="icon-circle"><i data-lucide="twitter"></i></div>
-                    <span>Twitter (X)</span>
-                </a>
-                <a href="##" class="social-btn">
-                    <div class="icon-circle"><i data-lucide="linkedin"></i></div>
-                    <span>LinkedIn</span>
-                </a>
-                <a href="##" class="social-btn">
-                    <div class="icon-circle"><i data-lucide="instagram"></i></div>
-                    <span>Instagram</span>
-                </a>
-                <a href="##" class="social-btn newsletter-special">
-                    <div class="icon-circle"><i data-lucide="mail"></i></div>
-                    <span>Join Newsletter</span>
-                </a>
-            </div>
-        </div>
-    </section>
-        </div>
-        </footer><footer>
-            <div class="container footer-content">
-                <div class="footer-logo" style="font-weight: 700; font-size: 1.5rem; margin-bottom: 20px;">Nexio</div>
-                
-                <div class="footer-links">
-                    <a href="##">Privacy</a>
-                    <a href="##">Terms</a>
-                    <a href="##">Contact</a>
-                </div>
-                
-                <div class="copyright">
-                    © 2025 Nexio Inc. All rights reserved.
-                </div>
-            </div>
-        </footer>
-        
-    <style>
-        footer {
-            border-top: 1px solid var(--glass-border);
-            padding: 60px 0; /* เพิ่มพื้นที่ด้านบนและล่าง */
-            margin-top: 50px;
-            width: 100%;
-        }
-        
-        .footer-content {
-            display: flex;
-            flex-direction: column; /* จัดวางแบบแนวตั้ง */
-            align-items: center;    /* จัดให้อยู่กึ่งกลางแนวนอน */
-            justify-content: center;
-            text-align: center;
-        }
-        
-        .footer-links {
-            display: flex;
-            gap: 30px;              /* ระยะห่างระหว่างลิงก์ */
-            margin-bottom: 10px;    /* ระยะห่างจาก copyright */
-        }
-        
-        .footer-links a {
-            color: var(--text-gray);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-        }
-        
-        .footer-links a:hover {
-            color: var(--accent-pink); /* เปลี่ยนสีเมื่อ Hover ตามธีมหลัก */
-        }
-        
-        .copyright {
-            color: var(--text-gray);
-            font-size: 0.8rem;
-            opacity: 0.6;
-        }
-        
-        /* ปรับปรุง Responsive สำหรับ Footer */
-        @media (max-width: 480px) {
-            .footer-links {
-                gap: 15px;
-                flex-wrap: wrap;    /* ให้ลิงก์ลงมาบรรทัดใหม่ได้ถ้าจอยาวไม่พอ */
-                justify-content: center;
+        // --- ระบบสมัครสมาชิก ---
+        document.getElementById('btnRegister').onclick = async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                alert("สมัครสมาชิกสำเร็จ!");
+            } catch (error) {
+                alert(error.message);
             }
-        }
+        };
 
-        .glass-container {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 20px;
-            display: flex;
-            gap: 20px;
-            min-height: 400px;
-        }
-
-        .sidebar-mock { width: 60px; border-right: 1px solid var(--glass-border); }
-        .main-mock { flex: 1; }
-        .grid-mock { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .chart-box { background: rgba(255,255,255,0.03); height: 150px; border-radius: 12px; }
-
-        .features-layout {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            padding: 100px 0;
-        }
-
-        .feature-card-large {
-            grid-column: span 2;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 32px;
-            padding: 60px;
-            text-align: center;
-        }
-
-        .feature-card-small {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 40px;
-            height: 300px;
-        }
-
-        footer {
-            border-top: 1px solid var(--glass-border);
-            padding: 60px 0;
-            margin-top: 100px;
-            color: var(--text-gray);
-            font-size: 0.85rem;
-        }
-
-
-        .footer-links { display: flex; gap: 20px; }
-        .footer-links a { color: var(--text-gray); text-decoration: none; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .features-layout { grid-template-columns: 1fr; }
-            .feature-card-large { grid-column: span 1; padding: 30px; }
-        }
-        //* ปรับแต่งปุ่ม Social ให้มีไอคอน */
-        .social-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
-            color: white;
-            text-decoration: none;
-            padding: 12px 24px;
-            border: 1px solid var(--glass-border);
-            border-radius: 50px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.02);
-        }
-        
-        .social-btn i {
-            width: 18px; /* ขนาดไอคอน */
-            height: 18px;
-            color: var(--accent-pink); /* ให้สีไอคอนเป็นสีชมพูตามธีม */
-        }
-        
-        .social-btn:hover {
-            background: white;
-            color: black;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        
-        .social-btn:hover i {
-            color: black; /* เมื่อ Hover ให้ไอคอนเปลี่ยนเป็นสีดำ */
-        }
-        
-        .social-btn.newsletter {
-            background: linear-gradient(135deg, rgba(217, 70, 239, 0.1), transparent);
-            border-color: rgba(217, 70, 239, 0.3);
-        }
-        
-        /* --- New Contact Section Styles --- */
-        .contact-section {
-            padding: 120px 0;
-            text-align: center;
-            position: relative;
-            background: radial-gradient(circle at center, rgba(217, 70, 239, 0.05) 0%, transparent 70%);
-        }
-        
-        .contact-wrapper h2 {
-            font-size: 2.8rem;
-            margin: 20px 0;
-            letter-spacing: -1px;
-        }
-        
-        .contact-wrapper p {
-            color: var(--text-gray);
-            max-width: 550px;
-            margin: 0 auto 40px;
-        }
-        
-        .social-grid {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .social-btn {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            padding: 10px 24px 10px 10px; /* ลด padding ซ้ายเพราะมีวงกลมไอคอน */
-            border-radius: 100px;
-            color: white;
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(10px);
-        }
-        
-        /* วงกลมรอบไอคอนภายในปุ่ม */
-        .icon-circle {
-            width: 38px;
-            height: 38px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s;
-        }
-        
-        .social-btn i {
-            width: 18px;
-            height: 18px;
-            color: var(--accent-pink);
-        }
-        
-        /* เอฟเฟกต์เมื่อ Hover */
-        .social-btn:hover {
-            background: #fff;
-            color: #000;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(217, 70, 239, 0.2);
-            border-color: #fff;
-        }
-        
-        .social-btn:hover .icon-circle {
-            background: rgba(0, 0, 0, 0.05);
-        }
-        
-        .social-btn:hover i {
-            color: #000;
-            transform: rotate(12deg);
-        }
-        
-        /* ปุ่ม Newsletter แบบพิเศษ */
-        .newsletter-special {
-            border-color: var(--accent-pink);
-            background: linear-gradient(to right, rgba(217, 70, 239, 0.1), transparent);
-        }
-        
-        .newsletter-special:hover {
-            background: var(--accent-pink);
-            color: #fff;
-        }
-        
-        .newsletter-special:hover i {
-            color: #fff;
-        }
-        
-        @media (max-width: 600px) {
-            .social-grid {
-                flex-direction: column;
-                align-items: center;
+        // --- ระบบ Login ---
+        document.getElementById('btnLogin').onclick = async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                alert("เข้าสู่ระบบแล้ว!");
+            } catch (error) {
+                alert(error.message);
             }
-            .social-btn {
-                width: 100%;
-                max-width: 280px;
-                justify-content: center;
+        };
+
+        // --- ระบบเก็บข้อมูล (Firestore) ---
+        document.getElementById('btnSave').onclick = async () => {
+            const user = auth.currentUser;
+            if (user) {
+                const text = document.getElementById('userData').value;
+                try {
+                    // เก็บข้อมูลโดยใช้ UID ของผู้ใช้เป็นชื่อ Document
+                    await setDoc(doc(db, "users_info", user.uid), {
+                        content: text,
+                        email: user.email,
+                        timestamp: new Date()
+                    });
+                    alert("บันทึกข้อมูลสำเร็จ!");
+                } catch (e) {
+                    alert("เกิดข้อผิดพลาด: " + e.message);
+                }
+            } else {
+                alert("กรุณา Login ก่อนบันทึกข้อมูล");
             }
-        }
-    </style>
-    </section>
-    <script>
-        lucide.createIcons();
+        };
     </script>
-</div>
-
 </body>
 </html>
