@@ -1,4 +1,3 @@
-/* --- 1. Base Setup & Variables --- */
 :root {
     --gold: #FFD700;
     --gold-glow: rgba(255, 215, 0, 0.3);
@@ -8,10 +7,6 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
-html {
-    scroll-behavior: smooth;
-}
 
 body {
     background-color: var(--dark);
@@ -26,31 +21,6 @@ body {
     /* เขียนใน style.css background-image: url('../images/bg.jpg');*/
 }
 
-/* --- 2. Background (ปรับเพื่อลดภาระ GPU) --- */
-.bg-glow-container {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: -1;
-    overflow: hidden;
-    /* ป้องกันการคำนวณใหม่ขณะเลื่อน */
-    pointer-events: none;
-    backface-visibility: hidden;
-}
-
-.glow-sphere {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(150px);
-    /* บังคับใช้ GPU ในการประมวลผล */
-    will-change: transform;
-    transform: translateZ(0); 
-}
-
-.glow-sphere.gold { width: 40vw; height: 40vw; background: var(--gold-glow); top: -10%; left: -10%; }
-.glow-sphere.purple { width: 50vw; height: 50vw; background: var(--purple-glow); bottom: -10%; right: -10%; opacity: 0.6; }
-
-/* --- 3. Navbar --- */
 .navbar {
     display: flex; justify-content: space-between; align-items: center;
     padding: 1rem 5%;
@@ -63,29 +33,52 @@ body {
     transform: translateZ(0);
 }
 
-
 .logo { font-size: 1.5rem; font-weight: 900; }
 .logo span { color: var(--gold); }
 
-.nav-menu a {
-    color: #888; text-decoration: none; margin: 0 1.5rem;
-    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
-    transition: 0.3s;
-}
-.nav-menu a:hover { color: var(--gold); }
-
-/* --- 4. Hero Section --- */
 .hero {
-    flex: 1; /* ดัน Footer ลงไปข้างล่าง */
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 10%;
+    min-height: 100vh;      /* บังคับความสูงเท่าหน้าจอเสมอ */
+    width: 100%;
+    display: flex;          /* ใช้ Flexbox */
+    align-items: center;     /* จัดกลางแนวตั้ง */
+    justify-content: center;  /* จัดกลางแนวนอน */
+    padding: 100px 5%;       /* เว้นระยะบน-ล่าง เผื่อ Navbar */
+    position: relative;
+    overflow: hidden;
+    text-align: center;      /* ให้ Text ทั้งหมดเริ่มจากกึ่งกลาง */
+}
+
+.hero-content {
+    max-width: 850px;       /* จำกัดความกว้างเพื่อให้อ่านง่าย */
+    width: 100%;
+    display: flex;
+    flex-direction: column;  /* เรียงเนื้อหาเป็นแนวตั้ง */
+    align-items: center;    /* จัด Badge, Title, Button ให้อยู่กลางแนวตั้งของตัวเอง */
+    justify-content: center;
+    z-index: 10;
     position: relative;
 }
 
-.hero-title { font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -2px; }
+/* ปรับระยะห่างให้สมดุล */
+.hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    letter-spacing: -2px;
+}
+
+.hero-subtitle {
+    color: #aaa;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    max-width: 600px;        /* ปรับให้ subtitle ไม่ยาวเกินไปจนอ่านยาก */
+    margin-left: auto;       /* เทคนิคจัดกึ่งกลาง p tag */
+    margin-right: auto;
+}
+
 .mixed-gradient { background: linear-gradient(90deg, var(--gold) 0%, #fff 50%, var(--purple) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.hero-subtitle { color: #aaa; font-size: 1.1rem; line-height: 1.8; margin-bottom: 2.5rem; max-width: 500px; }
 
 /* --- 5. Footer (แก้ไขบั๊กการเด้ง) --- */
 .footer {
@@ -104,21 +97,11 @@ body {
 .social-icon {
     width: 42px; height: 42px; border: 1px solid rgba(255, 215, 0, 0.2);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: bold; transition: 0.4s;
+    color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: bold;
 }
-.social-icon:hover { background: var(--gold); color: black; box-shadow: 0 0 20px var(--gold); transform: translateY(-5px); }
+.social-icon:hover { background: var(--gold); color: black; box-shadow: 0 0 20px var(--gold); }
 
 .copyright { color: #444; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; }
-
-/* Hero Section */
-.hero {
-    height: 100vh;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 10%;
-    position: relative;
-}
-
-.hero-content { max-width: 650px; }
 
 .badge {
     display: inline-flex; align-items: center;
@@ -152,46 +135,46 @@ body {
     margin-bottom: 2.5rem; max-width: 500px;
 }
 
-/* Buttons */
-.cta-container { display: flex; gap: 1.5rem; }
+.cta-container {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center; /* จัดกลุ่มปุ่มให้อยู่กึ่งกลาง */
+    width: 100%;
+}
 
 .btn-gold-main {
-    background: var(--gold);
-    color: #000; border: none; padding: 1.2rem 2.5rem;
-    border-radius: 12px; font-weight: 700; cursor: pointer;
-    box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem 2.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #ffffff; /* สีตัวอักษรขาวตามรูป */
+    background: #0d1117; /* สีพื้นหลังปุ่ม (ปรับให้เข้ากับเว็บของคุณ) */
+    border: 2px solid transparent; /* จองพื้นที่ไว้สำหรับขอบ */
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    background-clip: padding-box; /* สำคัญ: ทำให้พื้นหลังไม่ทับขอบ */
+    text-decoration: none;
 }
 
-.btn-glass-purple {
-    background: rgba(138, 43, 226, 0.05);
-    color: #fff; border: 1px solid rgba(138, 43, 226, 0.3);
-    padding: 1.2rem 2.5rem; border-radius: 12px;
-    backdrop-filter: blur(10px); cursor: pointer;
-    transition: 0.3s;
-}
-
-.btn-glass-purple:hover { background: rgba(138, 43, 226, 0.15); border-color: var(--purple); }
-
-.btn-purple-gradient {
-    background: linear-gradient(135deg, var(--purple), #501092);
-    border: none; color: white; padding: 0.7rem 1.5rem;
-    border-radius: 8px; font-weight: 600; cursor: pointer;
-}
-
-/* Hero Visual (Decoration) */
-.hero-visual {
-    width: 400px; height: 400px;
-    position: relative; display: flex; align-items: center; justify-content: center;
-}
-
-.abstract-shape {
-    width: 100%; height: 100%;
-    background: linear-gradient(45deg, rgba(212, 175, 55, 0.1), rgba(138, 43, 226, 0.1));
-    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid rgba(255,255,255,0.1);
-    animation: morph 10s ease-in-out infinite;
-    will-change: border-radius;
+/* สร้างขอบไล่เฉดสีด้วย Pseudo-element */
+.btn-gold-main::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px; /* ขยายให้เท่าขอบ 2px */
+    z-index: -1;
+    border-radius: 12px; /* ต้องเท่ากับตัวปุ่ม */
+    background: linear-gradient(
+        to right, 
+        #d4af37, /* สีทอง/ส้ม */
+        #d946ef, /* ชมพู */
+        #3b82f6, /* ฟ้า */
+        #10b981  /* เขียว */
+    );
+    transition: opacity 0.3s ease;
 }
 
 .reveal {
@@ -199,72 +182,11 @@ body {
     backface-visibility: hidden;
 }
 
-@keyframes morph {
-    0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
-    50% { border-radius: 50% 50% 33% 67% / 55% 27% 73% 45%; }
-    100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
-}
-
-.glass-inner-card {
-    width: 200px; padding: 1.5rem;
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-}
-
-.status-row { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 1rem; }
-.gold-text { color: var(--gold); font-weight: bold; }
-
-.mini-graph { display: flex; align-items: flex-end; gap: 5px; height: 40px; }
-.bar { background: var(--purple); width: 100%; border-radius: 3px; }
-.bar.p1 { height: 60%; }
-.bar.p2 { height: 100%; background: var(--gold); }
-.bar.p3 { height: 40%; }
-
 /* Responsive */
 @media (max-width: 1024px) {
     .hero { flex-direction: column; text-align: center; justify-content: center; gap: 4rem; }
     .hero-content { display: flex; flex-direction: column; align-items: center; }
     .hero-title { font-size: 3.5rem; }
-}
-
-/* --- ส่วนเพิ่มเติมสำหรับ Mobile Menu --- */
-
-.hamburger {
-    display: none;
-    flex-direction: column;
-    gap: 6px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    z-index: 2000;
-    padding: 10px;
-}
-
-.hamburger span {
-    display: block;
-    width: 25px;
-    height: 2px;
-    background-color: var(--gold);
-    transition: 0.3s cubic-bezier(0.5, 0, 0, 1);
-}
-
-.mobile-only { display: none; }
-
-
-/* Mobile Menu Logic */
-@media (max-width: 1024px) {
-    .hamburger { display: flex; }
-    .desktop-only { display: none; }
-    
-
-    .nav-menu a:hover { color: var(--gold); text-shadow: 0 0 15px var(--gold); }
-
-    .hamburger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-    .hamburger.active span:nth-child(2) { opacity: 0; }
-    .hamburger.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 }
 
 /* Footer Styles */
@@ -290,27 +212,44 @@ body {
     margin-bottom: 3rem;
 }
 
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
 .social-icon {
-    width: 45px;
-    height: 45px;
+    width: 48px; /* ขยายขนาดเล็กน้อยให้กดง่ายขึ้น */
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    
+    /* สไตล์ปุ่มแบบโปร่งแสงขอบทองจางๆ */
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 215, 0, 0.15);
     border-radius: 50%;
+    
     color: var(--gold);
     text-decoration: none;
-    font-size: 0.7rem;
-    font-weight: bold;
-    transition: 0.4s;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
 }
 
+/* เอฟเฟกต์เมื่อเอาเมาส์ไปวาง (Hover) */
 .social-icon:hover {
     background: var(--gold);
-    color: black;
-    box-shadow: 0 0 20px var(--gold);
-    transform: translateY(-5px);
+    color: #000; /* เปลี่ยนตัวอักษรเป็นสีดำเพื่อให้ตัดกับพื้นสีทอง */
+    border-color: var(--gold);
+    box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3); /* แสงฟุ้งสีทอง */
 }
+
 
 .copyright {
     color: #444;
@@ -326,3 +265,175 @@ body {
     transform: scale(1.02);
 }
 
+/* คอนเทนเนอร์สำหรับจัดวางลูกบอล */
+.chrome-sphere-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* อยู่หลังเนื้อหา */
+    pointer-events: none;
+}
+
+.chrome-sphere {
+    position: absolute;
+    border-radius: 50%;
+    /* เทคนิคสร้าง Chrome Silver 3D */
+    background: radial-gradient(circle at 30% 30%, 
+        #ffffff 0%,     /* จุดกระทบแสงขาว (Highlight) */
+        #e0e0e0 20%,    /* เงินอ่อน */
+        #a0a0a0 50%,    /* เงินกลาง */
+        #404040 85%,    /* เงาเข้มด้านข้าง */
+        #b0b0b0 100%    /* แสงสะท้อนจากพื้น (Rim Light) */
+    );
+    box-shadow: 
+        inset -10px -10px 30px rgba(0,0,0,0.5), /* เงาด้านใน */
+        20px 30px 50px rgba(0,0,0,0.3);         /* เงานอกลูกบอล */
+    animation: float 8s ease-in-out infinite;
+    will-change: transform;
+}
+
+/* --- ขนาดสำหรับหน้าจอมือถือ (Default) --- */
+.sphere-1 {
+    width: 180px; height: 180px; /* เล็กลงหน่อยเพื่อให้ไม่บังเนื้อหาบนมือถือ */
+    top: 15%; left: 38%;
+    animation: float-v1 10s ease-in-out infinite;
+}
+
+.sphere-2 {
+    width: 120px; height: 120px;
+    bottom: 15%; right: 5%;
+    animation: float-v2 12s ease-in-out infinite;
+    animation-delay: -3s;
+}
+
+.sphere-3 {
+    width: 80px; height: 80px;
+    top: 50%; left: 28%;
+    filter: blur(2px);
+    opacity: 0.5;
+    animation: float-v3 15s ease-in-out infinite;
+    animation-delay: -5s;
+}
+
+/* --- ขนาดสำหรับหน้าจอคอมพิวเตอร์ (Desktop - ตั้งแต่ 1024px ขึ้นไป) --- */
+@media (min-width: 1024px) {
+    .sphere-1 {
+        width: 350px; height: 350px; /* ขยายใหญ่ขึ้นมาก */
+        top: 10%; left: 10%;
+    }
+
+    .sphere-2 {
+        width: 250px; height: 250px; /* ขยายใหญ่ขึ้น */
+        bottom: 10%; right: 15%;
+    }
+
+    .sphere-3 {
+        width: 150px; height: 150px; /* ขยายใหญ่ขึ้น */
+        top: 60%; left: 45%;
+        filter: blur(4px); /* เพิ่ม Blur ให้ดูมีระยะลึกขึ้นเมื่อลูกบอลใหญ่ */
+    }
+}
+
+
+/* แอนิเมชันลอยไปมา */
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-30px) rotate(5deg); }
+}
+
+.chrome-sphere {
+    position: absolute;
+    border-radius: 50%;
+    /* เทคนิค Silver Chrome: เพิ่ม Contrast และจุด Highlight */
+    background: radial-gradient(
+        circle at 35% 35%, 
+        #ffffff 0%,       /* จุดตกกระทบแสงขาวจ้า (Highlight) */
+        #f0f0f0 10%,      /* สีเงินสว่าง */
+        #dcdcdc 25%,      /* สีเงินผิวเรียบ */
+        #7a7a7a 55%,      /* ส่วนมืด (Mid-tone) */
+        #1a1a1a 80%,      /* เงาเข้มขอบลูกบอล (Shadow) */
+        #ffffff 100%      /* แสงสะท้อนจากพื้นกลับขึ้นมาที่ขอบ (Rim Light) */
+    );
+    
+    /* เพิ่มความเงาด้วย Box Shadow ทั้งในและนอก */
+    box-shadow: 
+        inset -5px -5px 15px rgba(255, 255, 255, 0.4), /* แสงสะท้อนด้านใน */
+        inset 10px 10px 20px rgba(0, 0, 0, 0.6),       /* เงามืดลึกด้านใน */
+        0 20px 40px rgba(0, 0, 0, 0.5);                /* เงานอกลูกบอล */
+}
+
+/* เอฟเฟกต์แสงเงาวาวแวบ (Shine Effect) */
+.chrome-sphere::before {
+    content: '';
+    position: absolute;
+    top: 15%;
+    left: 15%;
+    width: 30%;
+    height: 30%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+    filter: blur(5px);
+    border-radius: 50%;
+}
+
+/* Animation แบบที่ 1: ลอยขึ้นลงและเอียงเล็กน้อย */
+@keyframes float-v1 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(10px, -40px) rotate(5deg); }
+}
+
+/* Animation แบบที่ 2: เคลื่อนที่ไปทางซ้ายขวาแบบวงรี */
+@keyframes float-v2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-30px, 20px) scale(1.05); }
+}
+
+/* Animation แบบที่ 3: ลอยนิ่งๆ แต่ขยับรอบทิศทางช้าๆ */
+@keyframes float-v3 {
+    0%, 100% { transform: translate(0, 0); }
+    33% { transform: translate(20px, -15px); }
+    66% { transform: translate(-15px, 25px); }
+}
+
+.chrome-sphere {
+    position: absolute;
+    border-radius: 50%;
+    /* ใช้สีเงินโครเมี่ยมแบบ High-Contrast ตามที่ต้องการ */
+    background: radial-gradient(
+        circle at 35% 35%, 
+        #ffffff 0%, 
+        #f0f0f0 10%, 
+        #dcdcdc 25%, 
+        #7a7a7a 55%, 
+        #1a1a1a 80%, 
+        #ffffff 100%
+    );
+    box-shadow: 
+        inset -5px -5px 15px rgba(255, 255, 255, 0.4),
+        inset 10px 10px 20px rgba(0, 0, 0, 0.6),
+        0 20px 40px rgba(0, 0, 0, 0.5);
+    will-change: transform;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: clamp(2.5rem, 10vw, 3.5rem); /* ปรับขนาดฟอนต์ให้เล็กลงอัตโนมัติ */
+        letter-spacing: -1px;
+    }
+    
+    .hero-subtitle {
+        font-size: 0.95rem;
+        padding: 0 10px;
+    }
+
+    .cta-container {
+        flex-direction: column; /* เปลี่ยนปุ่มเป็นแนวตั้งถ้าหน้าจอแคบมาก */
+        align-items: center;
+    }
+    
+    .btn-gold-main {
+        width: 100%; /* ให้ปุ่มกว้างเต็มในมือถือ (เลือกตามความชอบ) */
+        max-width: 200px;
+    }
+}
