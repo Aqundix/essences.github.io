@@ -6,22 +6,26 @@
     <title>Aqundix | Elite Luxury Tech</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/scrollreveal"></script>
 </head>
 <body>
-    <img src="images/logo.png" alt="โลโก้เว็บไซต์">
-    
-    <div class="bg-glow-container">
-        <div class="glow-sphere gold"></div>
-        <div class="glow-sphere purple"></div>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader-content">
+            <div class="loader-circle"></div>
+            <p class="loader-text">ACCESSING AQUNDIX SECURE LINK...</p>
+        </div>
     </div>
 
-    <div class="menu-overlay" id="menuOverlay"></div>
+    <div class="chrome-sphere-container">
+        <div class="chrome-sphere sphere-1"></div>
+        <div class="chrome-sphere sphere-2"></div>
+        <div class="chrome-sphere sphere-3"></div>
+    </div>
 
     <nav class="navbar">
         <div class="logo">AQUNDIX<span>.</span></div>
-
     </nav>
 
     <header class="hero">
@@ -29,33 +33,19 @@
             <div class="badge reveal">
                 <span class="badge-dot"></span> New Evolution in AI
             </div>
+            
             <h1 class="hero-title reveal">
                 AQUNDIX <br>
                 <span class="mixed-gradient">FUTURE ELITE</span>
             </h1>
+
             <p class="hero-subtitle reveal">
-                นิยามใหม่ของความหรูหราที่ผสานเข้ากับเทคโนโลยีอัจฉริยะ 
-                สร้างสรรค์ประสบการณ์ที่ดุดัน ทรงพลัง และพรีเมียมที่สุดในยุคดิจิทัล
+                A new definition of luxury seamlessly integrated with smart technology.
+                Creating the most aggressive, powerful, and premium experience in the digital age.
             </p>
+
             <div class="cta-container reveal">
                 <a href="pages/about.html" class="btn-gold-main">Get Started</a>
-                <a class="btn-glass-purple">View Technology</a>
-            </div>
-        </div>
-
-        <div class="hero-visual reveal desktop-only">
-            <div class="abstract-shape">
-                <div class="glass-inner-card">
-                    <div class="status-row">
-                        <span class="status-label">System Active</span>
-                        <span class="status-value gold-text">99.9%</span>
-                    </div>
-                    <div class="mini-graph">
-                        <div class="bar p1"></div>
-                        <div class="bar p2"></div>
-                        <div class="bar p3"></div>
-                    </div>
-                </div>
             </div>
         </div>
     </header>
@@ -63,32 +53,57 @@
     <footer class="footer reveal">
         <div class="footer-content">
             <div class="footer-logo">AQUNDIX<span>.</span></div>
+        
             <div class="social-links">
-                <a href="##" class="social-icon">FB</a>
-                <a href="##" class="social-icon">IG</a>
-                <a href="##" class="social-icon">X</a>
-                <a href="##" class="social-icon">LN</a>
+                <a href="https://facebook.com/yourpage" target="_blank" class="social-icon">FB</a>
+                <a href="https://www.instagram.com/aqunbix?igsh=MTlqd291eGp4amZxMw==" target="_blank" class="social-icon">IG</a>
+                <a href="https://twitter.com/youraccount" target="_blank" class="social-icon">X</a>
+                <a href="https://linkedin.com/in/yourprofile" target="_blank" class="social-icon">LN</a>
             </div>
             <p class="copyright">© 2026 AQUNDIX LUXURY TECH. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
 
     <script>
-        // 1. Navigation Logic
+        // --- ระบบ Loading ก่อนไปหน้า Social ---
+        document.querySelectorAll('.social-icon').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                const targetUrl = this.getAttribute('href');
+                const overlay = document.getElementById('loading-overlay');
+
+                // แสดงหน้าจอโหลด (ตรวจสอบว่ามี Class 'active' หรือใช้ Style โดยตรงใน CSS)
+                overlay.style.display = 'flex';
+                
+                // หน่วงเวลา 1.5 วินาทีเพื่อให้ดูสมจริง
+                setTimeout(() => {
+                    window.open(targetUrl, '_blank');
+                    
+                    // ปิดหน้าจอโหลด
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 500);
+                }, 1500);
+            });
+        });
+
+        // --- ระบบ ScrollReveal Animation ---
+        ScrollReveal().reveal('.reveal', {
+            distance: '60px',
+            duration: 1200,
+            easing: 'cubic-bezier(0.5, 0, 0, 1)',
+            interval: 200,
+            origin: 'bottom'
+        });
+
+        // --- Navigation Logic (ป้องกัน Error ถ้าไม่มี Element) ---
         const hamburger = document.getElementById('hamburger');
-        const navMenu = document.getElementById('navMenu');
-        const menuOverlay = document.getElementById('menuOverlay');
-        const closeBtn = document.getElementById('closeBtn');
-
-        const toggleMenu = (isActive) => {
-            navMenu.classList.toggle('active', isActive);
-            menuOverlay.classList.toggle('active', isActive);
-            document.body.style.overflow = isActive ? 'hidden' : 'auto';
-        };
-
-        hamburger.addEventListener('click', () => toggleMenu(true));
-        closeBtn.addEventListener('click', () => toggleMenu(false));
-        menuOverlay.addEventListener('click', () => toggleMenu(false));
+        if (hamburger) {
+            hamburger.addEventListener('click', () => {
+                // ใส่ Logic เปิดเมนูของคุณตรงนี้
+                console.log("Menu Toggled");
+            });
+        }
     </script>
 </body>
 </html>
