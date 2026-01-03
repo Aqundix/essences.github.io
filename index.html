@@ -6,22 +6,22 @@
     <title>Aqundix | Elite Luxury Tech</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/scrollreveal"></script>
 </head>
 <body>
-
+   <div class="video-container">
+        <video autoplay muted loop playsinline id="bg-video">
+            <source src="video/snaptik_7580370433661209878_v2.mp4" type="video/mp4">
+            Your browser does not support HTML5 video.
+        </video>
+    </div>
+    
     <div id="loading-overlay" class="loading-overlay">
         <div class="loader-content">
             <div class="loader-circle"></div>
             <p class="loader-text">ACCESSING AQUNDIX SECURE LINK...</p>
         </div>
-    </div>
-
-    <div class="chrome-sphere-container">
-        <div class="chrome-sphere sphere-1"></div>
-        <div class="chrome-sphere sphere-2"></div>
-        <div class="chrome-sphere sphere-3"></div>
     </div>
 
     <nav class="navbar">
@@ -31,7 +31,7 @@
     <header class="hero">
         <div class="hero-content">
             <div class="badge reveal">
-                <span class="badge-dot"></span> New Evolution in AI
+                <span class="badge-dot"></span> New Evolution
             </div>
             
             <h1 class="hero-title reveal">
@@ -49,7 +49,19 @@
             </div>
         </div>
     </header>
-
+    
+    <section class="glass-section">
+        <div class="glass-panel reveal" id="glassPanel3D">
+            <div class="glass-content">
+                <h2 class="glass-title">THE FUTURE IS NOW</h2>
+                <p class="glass-description">
+                    Immerse yourself in a world where technology meets unparalleled luxury. 
+                    AQUNDIX redefines interaction with intuitive AI and bespoke experiences.
+                </p>
+            </div>
+        </div>
+    </section>
+    
     <footer class="footer reveal">
         <div class="footer-content">
             <div class="footer-logo">AQUNDIX<span>.</span></div>
@@ -104,6 +116,28 @@
                 console.log("Menu Toggled");
             });
         }
+        // --- 3D Glassmorphism Effect ---
+        const glassPanel = document.getElementById('glassPanel3D');
+
+        if (glassPanel) {
+            glassPanel.addEventListener('mousemove', (e) => {
+                const panelRect = glassPanel.getBoundingClientRect();
+                const centerX = panelRect.left + panelRect.width / 2;
+                const centerY = panelRect.top + panelRect.height / 2;
+                const mouseX = e.clientX - centerX;
+                const mouseY = e.clientY - centerY;
+                // คำนวณองศาการเอียง (ปรับค่า 0.05 เพื่อเพิ่ม/ลดความรุนแรง)
+                const rotateY = mouseX * 0.02; 
+                const rotateX = mouseY * -0.02; // - เพื่อให้เอียงขึ้นเมื่อเมาส์อยู่ข้างบน
+            glassPanel.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+        });
+
+        // คืนค่าเมื่อเมาส์ออก
+        glassPanel.addEventListener('mouseleave', () => {
+           glassPanel.style.transform = `rotateX(0deg) rotateY(0deg) translateZ(0px)`;
+        });
+    }
+
     </script>
 </body>
 </html>
