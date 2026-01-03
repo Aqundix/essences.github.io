@@ -80,19 +80,6 @@ body {
 
 .mixed-gradient { background: linear-gradient(90deg, var(--gold) 0%, #fff 50%, var(--purple) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-/* --- 5. Footer (แก้ไขบั๊กการเด้ง) --- */
-.footer {
-    width: 100%;
-    padding: 60px 5% 40px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    background: linear-gradient(to bottom, transparent, rgba(138, 43, 226, 0.05));
-    text-align: center;
-    position: relative;
-}
-
-.footer-logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; }
-.footer-logo span { color: var(--gold); }
-
 .social-links { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 2rem; }
 .social-icon {
     width: 42px; height: 42px; border: 1px solid rgba(255, 215, 0, 0.2);
@@ -195,6 +182,7 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     background: linear-gradient(to bottom, transparent, rgba(138, 43, 226, 0.05));
     text-align: center;
+    backdrop-filter: blur(10px);
 }
 
 .footer-logo {
@@ -303,7 +291,7 @@ body {
 
 .sphere-2 {
     width: 120px; height: 120px;
-    bottom: 15%; right: 5%;
+    bottom: 15%; right: 21%;
     animation: float-v2 12s ease-in-out infinite;
     animation-delay: -3s;
 }
@@ -399,7 +387,10 @@ body {
 .chrome-sphere {
     position: absolute;
     border-radius: 50%;
-    /* ใช้สีเงินโครเมี่ยมแบบ High-Contrast ตามที่ต้องการ */
+    
+    /* 1. เพิ่มขอบสีดำบางๆ เพื่อตัดกับพื้นหลัง */
+    border: 1px solid rgba(0, 0, 0, 0.8);
+
     background: radial-gradient(
         circle at 35% 35%, 
         #ffffff 0%, 
@@ -409,12 +400,17 @@ body {
         #1a1a1a 80%, 
         #ffffff 100%
     );
+    
+    /* 2. ปรับปรุง Shadow: เพิ่มเงาดำฟุ้งรอบนอก (Outer Shadow) ให้หนาขึ้น */
     box-shadow: 
-        inset -5px -5px 15px rgba(255, 255, 255, 0.4),
+        inset -5px -5px 15px rgba(255, 255, 255, 0.4), 
         inset 10px 10px 20px rgba(0, 0, 0, 0.6),
-        0 20px 40px rgba(0, 0, 0, 0.5);
+        0 0 30px rgba(0, 0, 0, 0.9),  /* เงาดำฟุ้งรอบตัวลูกบอล */
+        20px 40px 60px rgba(0, 0, 0, 0.7); /* เงาตกกระทบ (Drop Shadow) */
+    
     will-change: transform;
 }
+
 
 @media (max-width: 768px) {
     .hero-title {
@@ -436,4 +432,108 @@ body {
         width: 100%; /* ให้ปุ่มกว้างเต็มในมือถือ (เลือกตามความชอบ) */
         max-width: 200px;
     }
+}
+
+/* --- สไตล์ของ Glassmorphism Section --- */
+.glass-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* จัดกลางในแนวตั้ง */
+    min-height: 80vh; /* ให้ Section นี้มีความสูงพอสมควร */
+    padding: 100px 5%;
+    position: relative;
+    z-index: 5;
+    
+    /* เตรียมสำหรับ 3D Perspective */
+    perspective: 1000px; 
+}
+
+/* สไตล์แผ่นกระจกหลัก (ตอนนี้มีเนื้อหาแล้ว) */
+.glass-panel {
+    width: 100%;
+    max-width: 900px;
+    min-height: 200px; /* กำหนดความสูงขั้นต่ำ */
+    
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(30px);
+    
+    border-radius: 35px; /* ขอบคมตามที่ปรับล่าสุด */
+    border: 1px solid rgba(255, 255, 255, 0.15); /* ขอบชัดเจนขึ้น */
+    
+    box-shadow: 
+        0 60px 120px rgba(0, 0, 0, 0.6), /* เงาที่ลึกขึ้น */
+        inset 0 0 40px rgba(255, 215, 0, 0.01); /* แสงสะท้อนทองจางๆ ด้านใน */
+    
+    padding: 60px 40px;
+    text-align: center;
+    transform-style: preserve-3d; /* สำคัญสำหรับ 3D Effect */
+    transition: transform 0.2s ease-out; /* ทำให้การขยับนุ่มนวล */
+}
+
+/* สไตล์เนื้อหาภายในแผ่นกระจก */
+.glass-content {
+    /* จัดกลางเนื้อหาภายใน */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.glass-title {
+    color: var(--gold);
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.glass-description {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    line-height: 1.8;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Container สำหรับคุมวิดีโอ */
+.video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* ให้อยู่หลังสุด */
+    overflow: hidden;
+}
+
+#bg-video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover; /* สำคัญ: ทำให้วิดีโอเต็มจอเหมือน background-size: cover */
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* ปรับแต่ง Body เพิ่มเติม */
+body {
+    background-color: var(--dark); /* เป็นสีสำรองระหว่างรอวิดีโอโหลด */
+    color: white;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    position: relative;
+}
+
+/* เพิ่ม Overlay สีดำจางๆ (ตัวเลือกเสริม) เพื่อให้ตัวหนังสืออ่านง่ายขึ้น */
+.video-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* ปรับความเข้มตามใจชอบ */
 }
