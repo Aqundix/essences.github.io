@@ -69,17 +69,39 @@ function previewMedia(input, displayId) {
 // 6. จัดการ Social (แก้ปัญหาที่ 1 และ 2)
 function addNewSocial() {
     const platform = document.getElementById('select-platform').value;
-    const url = prompt(`ใส่ลิงก์ ${platform} ของคุณ:`);
+    const url = prompt(`ใส่ลิงก์ ${platform} ของคุณ (ตัวอย่าง: https://${platform.toLowerCase()}.com/username):`);
 
-    if (url && url.trim() !== "") {
-        // ป้องกันการเพิ่มซ้ำ (ปัญหาที่ 1)
-        if (socialLinks.some(s => s.platform === platform)) {
-            alert("คุณเพิ่มแพลตฟอร์มนี้ไปแล้ว");
+    if (!url || url.trim() === "") return;
+
+    // 1. ตรวจสอบรูปแบบ URL พื้นฐาน (Regex)
+    const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
+    if (!urlPattern.test(url)) {
+        alert("กรุณาใส่รูปแบบลิงก์ที่ถูกต้อง (เช่น https://...)");
+        return;
+    }
+
+    // 2. ตรวจสอบว่าลิงก์ตรงกับแพลตฟอร์มที่เลือกหรือไม่ (Domain Check)
+    const lowerURL = url.toLowerCase();
+    const platformDomain = platform.toLowerCase();
+    
+    // ยกเว้นกรณีเลือก 'Other Link' จะไม่ตรวจชื่อโดเมน
+    if (platform !== "Link") {
+        if (!lowerURL.includes(platformDomain)) {
+            alert(`ลิงก์นี้ดูเหมือนไม่ใช่ลิงก์ของ ${platform} กรุณาตรวจสอบอีกครั้ง`);
             return;
         }
-        socialLinks.push({ platform, url });
-        renderEditSocials();
     }
+
+    // 3. ตรวจสอบการเพิ่มซ้ำ (ถ้าผ่านการตรวจลิงก์แล้ว)
+    if (socialLinks.some(s => s.platform === platform)) {
+        alert("คุณเพิ่มแพลตฟอร์มนี้ไปแล้ว");
+        return;
+    }
+
+    // เพิ่มข้อมูลเข้าสู่ระบบ
+    socialLinks.push({ platform, url: url.startsWith('http') ? url : `https://${url}` });
+    renderEditSocials();
+    alert(`เพิ่ม ${platform} เรียบร้อยแล้ว!`);
 }
 
 function renderEditSocials() {
