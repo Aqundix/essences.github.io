@@ -1,3 +1,68 @@
+// ตั้งค่าการเชื่อมต่อ (เอามาจาก Settings > API ใน Supabase)
+const SUPABASE_URL = 'URL_ของคุณ';
+const SUPABASE_KEY = 'API_KEY_ของคุณ';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ตัวอย่าง ID ของผู้ใช้ (ในระบบจริงอาจจะได้มาจาก Login หรือ URL Parameter)
+const userId = "user-001"; 
+
+// --- 1. ระบบดึงข้อมูล (Load Data) ---
+async function loadSavedData() {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+    if (data) {
+        document.getElementById('text-name').innerText = data.name;
+        document.getElementById('text-bio').innerText = data.bio;
+        if (data.avatar_url) document.getElementById('display-avatar').src = data.avatar_url;
+        if (data.banner_url) document.getElementById('display-banner').style.backgroundImage = `url('${data.banner_url}')`;
+        
+        socialLinks = data.socials || [];
+        renderProfileSocials();
+    }
+}
+
+// --- 2. ระบบอัปโหลดรูปภาพ (Upload to Storage) ---
+async function uploadImage(file, bucket) {
+    const fileName = `${userId}-${Date.now()}`;
+    const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(fileName, file);
+
+    if (error) throw error;
+    
+    // ดึง Public URL ของรูปที่อัปโหลดเสร็จแล้ว
+    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+    return urlData.publicUrl;
+}
+
+// --- 3. ระบบบันทึกทั้งหมด (Save Everything) ---
+async function saveAll() {
+    const nameVal = document.getElementById('edit-name').value.trim() || "Username";
+    const bioVal = document.getElementById('edit-bio').value.trim() || "Welcome...";
+
+    // อัปเดตข้อมูลลง Database
+    const { error } = await supabase
+        .from('profiles')
+        .upsert({ 
+            id: userId, 
+            name: nameName, 
+            bio: bioVal, 
+            socials: socialLinks 
+        });
+
+    if (!error) {
+        alert("บันทึกข้อมูลเรียบร้อย!");
+        loadSavedData(); // โหลดใหม่เพื่ออัปเดตหน้าจอ
+        switchView('view-profile');
+    } else {
+        alert("เกิดข้อผิดพลาด: " + error.message);
+    }
+}
+
 // 1. ตั้งค่าพื้นฐานและตัวแปร Global
 const ICON_MAP = {
     'Instagram': 'fa-brands fa-instagram',
