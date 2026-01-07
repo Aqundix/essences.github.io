@@ -3,39 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Editor</title>
+    <title>Responsive Profile Editor</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="app-container">
-        <header class="blue-header">
+        <header class="profile-header-bg" id="header-bg" onclick="document.getElementById('header-input').click()">
+            <div class="header-overlay">คลิกเพื่อเปลี่ยนรูปปก (.gif ได้)</div>
+            <input type="file" id="header-input" accept="image/*" onchange="changeHeader(event)" style="display: none;">
             <h2>Profile</h2>
         </header>
 
         <main class="content">
-            <section class="profile-header">
-                <div class="profile-circle" onclick="document.getElementById('file-input').click()">
-                    <img id="profile-img" src="" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+            <section class="profile-meta">
+                <div class="profile-circle" onclick="document.getElementById('profile-input').click()">
+                    <img id="profile-img" src="" style="display:none;">
                     <span id="profile-placeholder">Profile</span>
-                    <div class="edit-overlay">แก้ไข</div>
+                    <div class="circle-overlay">เปลี่ยนรูป</div>
                 </div>
-                <input type="file" id="file-input" accept="image/*" onchange="previewImage(event)" style="display: none;">
+                <input type="file" id="profile-input" accept="image/*" onchange="changeProfile(event)" style="display: none;">
                 
-                <div class="profile-text">
-                    <h1 id="display-name">Name</h1>
-                    <p id="display-bio">Description & Bio</p>
+                <div class="profile-info">
+                    <h1 id="display-name">Name ( Show )</h1>
+                    <div id="display-bio" class="bio-text">Description & Bio ( Show )</div>
                 </div>
             </section>
 
-            <section class="edit-form">
-                <label>ชื่อเล่น:</label>
-                <input type="text" id="input-name" placeholder="ระบุชื่อของคุณ...">
+            <section class="edit-section">
+                <div class="input-box">
+                    <label>ชื่อเล่น</label>
+                    <input type="text" id="input-name" placeholder="ระบุชื่อ...">
+                </div>
+
+                <div class="input-box">
+                    <label>Bio (จำกัด 250 ตัวอักษร)</label>
+                    <textarea id="input-bio" maxlength="250" placeholder="เขียนคำอธิบายของคุณที่นี่..." oninput="updateCount()"></textarea>
+                    <small id="char-count">0 / 250</small>
+                </div>
                 
-                <label>คำอธิบาย:</label>
-                <textarea id="input-bio" placeholder="ระบุคำอธิบายโปรไฟล์..."></textarea>
-                
-                <button class="save-btn" onclick="saveProfile()">บันทึกข้อมูล</button>
+                <button class="save-btn" onclick="saveData()">บันทึกการเปลี่ยนแปลง</button>
             </section>
         </main>
     </div>
