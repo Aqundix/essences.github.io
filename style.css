@@ -1,173 +1,102 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+:root {
+    --primary-blue: #0095ff;
+    --bg-dark: #0a0a0a;
+    --card-bg: #161618;
+    --glass: rgba(255, 255, 255, 0.05);
 }
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
 body {
-    background-color: #000;
+    background: radial-gradient(circle at top right, #1e1e2e, #000);
     color: white;
-    font-family: 'Prompt', sans-serif;
-    display: flex;
-    justify-content: center;
-    min-height: 100vh;
-}
-
-.app-container {
-    width: 100%;
-    max-width: 600px; /* ขนาดที่สวยทั้งใน PC และ Mobile */
-    background-color: #121212;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* ส่วนหัวปรับแต่งได้ */
-.profile-header-bg {
-    height: 30vh;
-    min-height: 180px;
-    background-color: #62b9d9;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
 }
 
-.header-overlay {
-    position: absolute;
-    background: rgba(0,0,0,0.3);
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 12px;
-    opacity: 0;
-    transition: 0.3s;
-}
-
-.profile-header-bg:hover .header-overlay {
-    opacity: 1;
-}
-
-/* ส่วนข้อมูลโปรไฟล์ */
-.content {
-    padding: 0 20px;
-}
-
-.profile-meta {
-    display: flex;
-    align-items: flex-end;
-    margin-top: -60px;
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.profile-circle {
-    width: 120px;
-    height: 120px;
-    background-color: #0099ff;
-    border-radius: 50%;
-    border: 5px solid #121212;
+.app-card {
+    width: 100%;
+    max-width: 420px;
+    height: 90vh;
+    background: var(--card-bg);
+    border-radius: 30px;
     overflow: hidden;
     position: relative;
-    cursor: pointer;
-    flex-shrink: 0;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-.profile-circle img {
-    width: 100%;
+/* การจัดการ View */
+.view {
+    display: none;
     height: 100%;
-    object-fit: cover;
+    flex-direction: column;
+    animation: fadeIn 0.4s ease-out;
+}
+.view.active { display: flex; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Header Banner */
+.header-banner {
+    height: 200px;
+    background: linear-gradient(45deg, #62b9d9, #0095ff);
+    background-size: cover;
+    background-position: center;
 }
 
-.circle-overlay {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    background: rgba(0,0,0,0.6);
-    font-size: 10px;
-    text-align: center;
-    padding: 2px 0;
-}
-
-/* จัดการ Bio ให้ขึ้นบรรทัดใหม่และไม่ล้น */
-.profile-info {
-    overflow-wrap: break-word; /* ตัดคำเมื่อยาวเกิน */
-    word-wrap: break-word;
-    word-break: break-word;
-    flex-grow: 1;
-}
-
-.bio-text {
-    color: #bbb;
-    font-size: 14px;
-    white-space: pre-wrap; /* รักษาการขึ้นบรรทัดใหม่ */
-    margin-top: 5px;
-    max-width: 100%;
-}
-
-/* ฟอร์มแก้ไข */
-.edit-section {
-    background: #1e1e1e;
+/* Profile Content */
+.profile-content {
     padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 30px;
-}
-
-.input-box {
-    margin-bottom: 15px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    margin-top: -60px;
 }
 
-.input-box label {
-    font-size: 13px;
-    color: #62b9d9;
-    margin-bottom: 5px;
-}
-
-input, textarea {
+.profile-avatar-wrapper {
+    width: 120px;
+    height: 120px;
+    border-radius: 35px; /* ทรงเหลี่ยมมนพรีเมี่ยม */
+    border: 5px solid var(--card-bg);
+    overflow: hidden;
     background: #333;
-    border: 1px solid #444;
-    padding: 12px;
-    color: white;
-    border-radius: 8px;
-    width: 100%;
-    font-size: 16px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
 
-textarea {
-    min-height: 100px;
-    resize: none;
+.profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+.profile-details { text-align: center; margin: 20px 0; width: 100%; }
+.profile-details h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+.profile-details p { font-size: 14px; color: #aaa; line-height: 1.6; word-wrap: break-word; }
+
+.social-pills { display: flex; gap: 10px; margin-bottom: 30px; }
+.pill { background: var(--glass); padding: 8px 16px; border-radius: 20px; font-size: 12px; border: 1px solid rgba(255,255,255,0.1); }
+
+/* Edit Page UI */
+.edit-header { padding: 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--glass); }
+.btn-back { background: none; border: none; color: white; cursor: pointer; font-size: 16px; }
+
+.edit-scroll-area { padding: 20px; overflow-y: auto; }
+.edit-media { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+.input-group-media { 
+    background: var(--glass); height: 80px; border-radius: 15px; 
+    display: flex; align-items: center; justify-content: center; 
+    text-align: center; font-size: 11px; cursor: pointer; border: 1px dashed #444;
 }
 
-#char-count {
-    text-align: right;
-    color: #777;
-    font-size: 12px;
+.input-field { margin-bottom: 20px; }
+.input-field label { display: block; font-size: 12px; color: var(--primary-blue); margin-bottom: 8px; text-transform: uppercase; }
+input, textarea { 
+    width: 100%; background: #222; border: none; padding: 15px; 
+    border-radius: 12px; color: white; font-size: 15px; 
 }
 
-.save-btn {
-    width: 100%;
-    padding: 15px;
-    background: #0099ff;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
+.btn-primary, .btn-save {
+    width: 100%; padding: 15px; border-radius: 15px; border: none;
+    background: var(--primary-blue); color: white; font-weight: 600; cursor: pointer;
+    transition: 0.3s;
 }
-
-/* สำหรับ PC ให้หน้าเว็บดูเป็น Card กึ่งกลาง */
-@media (min-width: 601px) {
-    body {
-        padding-top: 20px;
-    }
-    .app-container {
-        border-radius: 20px;
-        min-height: 80vh;
-        height: fit-content;
-        box-shadow: 0 0 20px rgba(0,0,0,0.8);
-    }
-}
+.btn-primary:hover { filter: brightness(1.2); }
