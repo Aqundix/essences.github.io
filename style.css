@@ -1,539 +1,170 @@
-:root {
-    --gold: #FFD700;
-    --gold-glow: rgba(255, 215, 0, 0.3);
-    --purple: #8A2BE2;
-    --purple-glow: rgba(138, 43, 226, 0.4);
-    --dark: #050505;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-    background-color: var(--dark);
-    color: white;
-    font-family: 'Inter', sans-serif;
-    overflow-x: hidden;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    /* ช่วยให้การเลื่อนบนมือถือลื่นขึ้น */
-    -webkit-overflow-scrolling: touch;
-    /* เขียนใน style.css background-image: url('../images/bg.jpg');*/
-}
-
-.navbar {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1rem 5%;
-    background: rgba(5, 5, 5, 0.7); /* เพิ่มความเข้มพื้นหลังเล็กน้อย */
-    backdrop-filter: blur(15px); /* ลดระดับ Blur ลงเล็กน้อยเพื่อความลื่น */
-    -webkit-backdrop-filter: blur(15px);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    position: fixed; width: 100%; z-index: 1000;
-    /* ป้องกันอาการกระพริบตอนเลื่อน */
-    transform: translateZ(0);
-}
-
-.logo { font-size: 1.5rem; font-weight: 900; }
-.logo span { color: var(--gold); }
-
-.hero {
-    min-height: 100vh;      /* บังคับความสูงเท่าหน้าจอเสมอ */
-    width: 100%;
-    display: flex;          /* ใช้ Flexbox */
-    align-items: center;     /* จัดกลางแนวตั้ง */
-    justify-content: center;  /* จัดกลางแนวนอน */
-    padding: 100px 5%;       /* เว้นระยะบน-ล่าง เผื่อ Navbar */
-    position: relative;
-    overflow: hidden;
-    text-align: center;      /* ให้ Text ทั้งหมดเริ่มจากกึ่งกลาง */
-}
-
-.hero-content {
-    max-width: 850px;       /* จำกัดความกว้างเพื่อให้อ่านง่าย */
-    width: 100%;
-    display: flex;
-    flex-direction: column;  /* เรียงเนื้อหาเป็นแนวตั้ง */
-    align-items: center;    /* จัด Badge, Title, Button ให้อยู่กลางแนวตั้งของตัวเอง */
-    justify-content: center;
-    z-index: 10;
-    position: relative;
-}
-
-/* ปรับระยะห่างให้สมดุล */
-.hero-title {
-    font-size: clamp(3rem, 8vw, 5.5rem);
-    font-weight: 900;
-    line-height: 1.1;
-    margin-bottom: 1.5rem;
-    letter-spacing: -2px;
-}
-
-.hero-subtitle {
-    color: #aaa;
-    font-size: 1.1rem;
-    line-height: 1.8;
-    margin-bottom: 2.5rem;
-    max-width: 600px;        /* ปรับให้ subtitle ไม่ยาวเกินไปจนอ่านยาก */
-    margin-left: auto;       /* เทคนิคจัดกึ่งกลาง p tag */
-    margin-right: auto;
-}
-
-.mixed-gradient { background: linear-gradient(90deg, var(--gold) 0%, #fff 50%, var(--purple) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-.social-links { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 2rem; }
-.social-icon {
-    width: 42px; height: 42px; border: 1px solid rgba(255, 215, 0, 0.2);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: bold;
-}
-.social-icon:hover { background: var(--gold); color: black; box-shadow: 0 0 20px var(--gold); }
-
-.copyright { color: #444; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; }
-
-.badge {
-    display: inline-flex; align-items: center;
-    padding: 0.5rem 1rem;
-    background: rgba(138, 43, 226, 0.1);
-    border: 1px solid rgba(138, 43, 226, 0.3);
-    border-radius: 50px;
-    font-size: 0.75rem; color: #d1b3ff;
-    margin-bottom: 2rem;
-}
-
-.badge-dot {
-    width: 6px; height: 6px; background: var(--purple);
-    border-radius: 50%; margin-right: 10px;
-    box-shadow: 0 0 10px var(--purple);
-}
-
-.hero-title {
-    font-size: 5.5rem; font-weight: 900; line-height: 1.1;
-    letter-spacing: -3px; margin-bottom: 1.5rem;
-}
-
-.mixed-gradient {
-    background: linear-gradient(90deg, var(--gold) 0%, #fff 50%, var(--purple) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.hero-subtitle {
-    color: #aaa; font-size: 1.1rem; line-height: 1.8;
-    margin-bottom: 2.5rem; max-width: 500px;
-}
-
-.cta-container {
-    display: flex;
-    gap: 1.5rem;
-    justify-content: center; /* จัดกลุ่มปุ่มให้อยู่กึ่งกลาง */
-    width: 100%;
-}
-
-.btn-gold-main {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.2rem 2.5rem;
-    font-weight: 600;
-    font-size: 1rem;
-    color: #ffffff; /* สีตัวอักษรขาวตามรูป */
-    background: #0d1117; /* สีพื้นหลังปุ่ม (ปรับให้เข้ากับเว็บของคุณ) */
-    border: 2px solid transparent; /* จองพื้นที่ไว้สำหรับขอบ */
-    border-radius: 12px;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-    background-clip: padding-box; /* สำคัญ: ทำให้พื้นหลังไม่ทับขอบ */
-    text-decoration: none;
-}
-
-/* สร้างขอบไล่เฉดสีด้วย Pseudo-element */
-.btn-gold-main::before {
-    content: '';
-    position: absolute;
-    top: -2px; left: -2px; right: -2px; bottom: -2px; /* ขยายให้เท่าขอบ 2px */
-    z-index: -1;
-    border-radius: 12px; /* ต้องเท่ากับตัวปุ่ม */
-    background: linear-gradient(
-        to right, 
-        #d4af37, /* สีทอง/ส้ม */
-        #d946ef, /* ชมพู */
-        #3b82f6, /* ฟ้า */
-        #10b981  /* เขียว */
-    );
-    transition: opacity 0.3s ease;
-}
-
-.reveal {
-    /* ป้องกันอาการกระตุกตอนเริ่ม Animation */
-    backface-visibility: hidden;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-    .hero { flex-direction: column; text-align: center; justify-content: center; gap: 4rem; }
-    .hero-content { display: flex; flex-direction: column; align-items: center; }
-    .hero-title { font-size: 3.5rem; }
-}
-
-/* Footer Styles */
-.footer {
-    padding: 80px 5% 40px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    background: linear-gradient(to bottom, transparent, rgba(138, 43, 226, 0.05));
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-
-.footer-logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: 2rem;
-}
-
-.footer-logo span { color: var(--gold); }
-
-.social-links {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-}
-
-.social-links {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.social-icon {
-    width: 48px; /* ขยายขนาดเล็กน้อยให้กดง่ายขึ้น */
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    /* สไตล์ปุ่มแบบโปร่งแสงขอบทองจางๆ */
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 215, 0, 0.15);
-    border-radius: 50%;
-    
-    color: var(--gold);
-    text-decoration: none;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    overflow: hidden;
-}
-
-/* เอฟเฟกต์เมื่อเอาเมาส์ไปวาง (Hover) */
-.social-icon:hover {
-    background: var(--gold);
-    color: #000; /* เปลี่ยนตัวอักษรเป็นสีดำเพื่อให้ตัดกับพื้นสีทอง */
-    border-color: var(--gold);
-    box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3); /* แสงฟุ้งสีทอง */
-}
-
-
-.copyright {
-    color: #444;
-    font-size: 0.7rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
-/* Button & Hover Effects */
-.btn-gold-main:hover {
-    filter: brightness(1.2);
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
-    transform: scale(1.02);
-}
-
-/* คอนเทนเนอร์สำหรับจัดวางลูกบอล */
-.chrome-sphere-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1; /* อยู่หลังเนื้อหา */
-    pointer-events: none;
-}
-
-.chrome-sphere {
-    position: absolute;
-    border-radius: 50%;
-    /* เทคนิคสร้าง Chrome Silver 3D */
-    background: radial-gradient(circle at 30% 30%, 
-        #ffffff 0%,     /* จุดกระทบแสงขาว (Highlight) */
-        #e0e0e0 20%,    /* เงินอ่อน */
-        #a0a0a0 50%,    /* เงินกลาง */
-        #404040 85%,    /* เงาเข้มด้านข้าง */
-        #b0b0b0 100%    /* แสงสะท้อนจากพื้น (Rim Light) */
-    );
-    box-shadow: 
-        inset -10px -10px 30px rgba(0,0,0,0.5), /* เงาด้านใน */
-        20px 30px 50px rgba(0,0,0,0.3);         /* เงานอกลูกบอล */
-    animation: float 8s ease-in-out infinite;
-    will-change: transform;
-}
-
-/* --- ขนาดสำหรับหน้าจอมือถือ (Default) --- */
-.sphere-1 {
-    width: 180px; height: 180px; /* เล็กลงหน่อยเพื่อให้ไม่บังเนื้อหาบนมือถือ */
-    top: 15%; left: 38%;
-    animation: float-v1 10s ease-in-out infinite;
-}
-
-.sphere-2 {
-    width: 120px; height: 120px;
-    bottom: 15%; right: 21%;
-    animation: float-v2 12s ease-in-out infinite;
-    animation-delay: -3s;
-}
-
-.sphere-3 {
-    width: 80px; height: 80px;
-    top: 50%; left: 28%;
-    filter: blur(2px);
-    opacity: 0.5;
-    animation: float-v3 15s ease-in-out infinite;
-    animation-delay: -5s;
-}
-
-/* --- ขนาดสำหรับหน้าจอคอมพิวเตอร์ (Desktop - ตั้งแต่ 1024px ขึ้นไป) --- */
-@media (min-width: 1024px) {
-    .sphere-1 {
-        width: 350px; height: 350px; /* ขยายใหญ่ขึ้นมาก */
-        top: 10%; left: 10%;
-    }
-
-    .sphere-2 {
-        width: 250px; height: 250px; /* ขยายใหญ่ขึ้น */
-        bottom: 10%; right: 15%;
-    }
-
-    .sphere-3 {
-        width: 150px; height: 150px; /* ขยายใหญ่ขึ้น */
-        top: 60%; left: 45%;
-        filter: blur(4px); /* เพิ่ม Blur ให้ดูมีระยะลึกขึ้นเมื่อลูกบอลใหญ่ */
-    }
-}
-
-
-/* แอนิเมชันลอยไปมา */
-@keyframes float {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-30px) rotate(5deg); }
-}
-
-.chrome-sphere {
-    position: absolute;
-    border-radius: 50%;
-    /* เทคนิค Silver Chrome: เพิ่ม Contrast และจุด Highlight */
-    background: radial-gradient(
-        circle at 35% 35%, 
-        #ffffff 0%,       /* จุดตกกระทบแสงขาวจ้า (Highlight) */
-        #f0f0f0 10%,      /* สีเงินสว่าง */
-        #dcdcdc 25%,      /* สีเงินผิวเรียบ */
-        #7a7a7a 55%,      /* ส่วนมืด (Mid-tone) */
-        #1a1a1a 80%,      /* เงาเข้มขอบลูกบอล (Shadow) */
-        #ffffff 100%      /* แสงสะท้อนจากพื้นกลับขึ้นมาที่ขอบ (Rim Light) */
-    );
-    
-    /* เพิ่มความเงาด้วย Box Shadow ทั้งในและนอก */
-    box-shadow: 
-        inset -5px -5px 15px rgba(255, 255, 255, 0.4), /* แสงสะท้อนด้านใน */
-        inset 10px 10px 20px rgba(0, 0, 0, 0.6),       /* เงามืดลึกด้านใน */
-        0 20px 40px rgba(0, 0, 0, 0.5);                /* เงานอกลูกบอล */
-}
-
-/* เอฟเฟกต์แสงเงาวาวแวบ (Shine Effect) */
-.chrome-sphere::before {
-    content: '';
-    position: absolute;
-    top: 15%;
-    left: 15%;
-    width: 30%;
-    height: 30%;
-    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
-    filter: blur(5px);
-    border-radius: 50%;
-}
-
-/* Animation แบบที่ 1: ลอยขึ้นลงและเอียงเล็กน้อย */
-@keyframes float-v1 {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(10px, -40px) rotate(5deg); }
-}
-
-/* Animation แบบที่ 2: เคลื่อนที่ไปทางซ้ายขวาแบบวงรี */
-@keyframes float-v2 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(-30px, 20px) scale(1.05); }
-}
-
-/* Animation แบบที่ 3: ลอยนิ่งๆ แต่ขยับรอบทิศทางช้าๆ */
-@keyframes float-v3 {
-    0%, 100% { transform: translate(0, 0); }
-    33% { transform: translate(20px, -15px); }
-    66% { transform: translate(-15px, 25px); }
-}
-
-.chrome-sphere {
-    position: absolute;
-    border-radius: 50%;
-    
-    /* 1. เพิ่มขอบสีดำบางๆ เพื่อตัดกับพื้นหลัง */
-    border: 1px solid rgba(0, 0, 0, 0.8);
-
-    background: radial-gradient(
-        circle at 35% 35%, 
-        #ffffff 0%, 
-        #f0f0f0 10%, 
-        #dcdcdc 25%, 
-        #7a7a7a 55%, 
-        #1a1a1a 80%, 
-        #ffffff 100%
-    );
-    
-    /* 2. ปรับปรุง Shadow: เพิ่มเงาดำฟุ้งรอบนอก (Outer Shadow) ให้หนาขึ้น */
-    box-shadow: 
-        inset -5px -5px 15px rgba(255, 255, 255, 0.4), 
-        inset 10px 10px 20px rgba(0, 0, 0, 0.6),
-        0 0 30px rgba(0, 0, 0, 0.9),  /* เงาดำฟุ้งรอบตัวลูกบอล */
-        20px 40px 60px rgba(0, 0, 0, 0.7); /* เงาตกกระทบ (Drop Shadow) */
-    
-    will-change: transform;
-}
-
-
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: clamp(2.5rem, 10vw, 3.5rem); /* ปรับขนาดฟอนต์ให้เล็กลงอัตโนมัติ */
-        letter-spacing: -1px;
-    }
-    
-    .hero-subtitle {
-        font-size: 0.95rem;
-        padding: 0 10px;
-    }
-
-    .cta-container {
-        flex-direction: column; /* เปลี่ยนปุ่มเป็นแนวตั้งถ้าหน้าจอแคบมาก */
-        align-items: center;
-    }
-    
-    .btn-gold-main {
-        width: 100%; /* ให้ปุ่มกว้างเต็มในมือถือ (เลือกตามความชอบ) */
-        max-width: 200px;
-    }
-}
-
-/* --- สไตล์ของ Glassmorphism Section --- */
-.glass-section {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center; /* จัดกลางในแนวตั้ง */
-    min-height: 80vh; /* ให้ Section นี้มีความสูงพอสมควร */
-    padding: 100px 5%;
-    position: relative;
-    z-index: 5;
-    
-    /* เตรียมสำหรับ 3D Perspective */
-    perspective: 1000px; 
-}
-
-/* สไตล์แผ่นกระจกหลัก (ตอนนี้มีเนื้อหาแล้ว) */
-.glass-panel {
-    width: 100%;
-    max-width: 900px;
-    min-height: 200px; /* กำหนดความสูงขั้นต่ำ */
-    
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(30px);
-    
-    border-radius: 35px; /* ขอบคมตามที่ปรับล่าสุด */
-    border: 1px solid rgba(255, 255, 255, 0.15); /* ขอบชัดเจนขึ้น */
-    
-    box-shadow: 
-        0 60px 120px rgba(0, 0, 0, 0.6), /* เงาที่ลึกขึ้น */
-        inset 0 0 40px rgba(255, 215, 0, 0.01); /* แสงสะท้อนทองจางๆ ด้านใน */
-    
-    padding: 60px 40px;
-    text-align: center;
-    transform-style: preserve-3d; /* สำคัญสำหรับ 3D Effect */
-    transition: transform 0.2s ease-out; /* ทำให้การขยับนุ่มนวล */
-}
-
-/* สไตล์เนื้อหาภายในแผ่นกระจก */
-.glass-content {
-    /* จัดกลางเนื้อหาภายใน */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
-
-.glass-title {
-    color: var(--gold);
-    font-size: clamp(1.8rem, 3vw, 2.8rem);
-    font-weight: 900;
-    text-transform: uppercase;
-}
-
-.glass-description {
-    color: rgba(255, 255, 255, 0.75);
-    font-size: clamp(1rem, 1.5vw, 1.2rem);
-    line-height: 1.8;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* Container สำหรับคุมวิดีโอ */
-.video-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1; /* ให้อยู่หลังสุด */
-    overflow: hidden;
-}
-
-#bg-video {
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover; /* สำคัญ: ทำให้วิดีโอเต็มจอเหมือน background-size: cover */
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-/* ปรับแต่ง Body เพิ่มเติม */
-body {
-    background-color: var(--dark); /* เป็นสีสำรองระหว่างรอวิดีโอโหลด */
-    color: white;
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
+* {
+    box-sizing: border-box;
     margin: 0;
-    position: relative;
+    padding: 0;
 }
 
-/* เพิ่ม Overlay สีดำจางๆ (ตัวเลือกเสริม) เพื่อให้ตัวหนังสืออ่านง่ายขึ้น */
-.video-container::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+body {
+    background-color: #000;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    color: white;
+}
+
+/* คอนเทนเนอร์หลัก */
+.app-container {
     width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4); /* ปรับความเข้มตามใจชอบ */
+    max-width: 500px; /* จำกัดความกว้างสูงสุดสำหรับหน้าจอคอม */
+    min-height: 100vh;
+    background-color: #121212;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header สีฟ้าที่ยืดหยุ่น */
+.blue-header {
+    background-color: #62b9d9;
+    height: 25vh; /* ใช้หน่วย vh เพื่อให้สัมพันธ์กับความสูงหน้าจอ */
+    min-height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ส่วนเนื้อหา */
+.content {
+    padding: 0 20px 40px 20px;
+}
+
+/* รูปโปรไฟล์และชื่อ */
+.profile-header {
+    display: flex;
+    align-items: flex-end;
+    margin-top: -60px; /* ดึงขึ้นไปทับส่วนฟ้า */
+    margin-bottom: 30px;
+    gap: 15px;
+}
+
+.profile-circle {
+    width: 120px;
+    height: 120px;
+    background-color: #0099ff;
+    border-radius: 50%;
+    border: 4px solid #121212;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    flex-shrink: 0; /* ป้องกันวงกลมเบี้ยวบนจอมือถือเล็กๆ */
+}
+
+.profile-text h1 {
+    font-size: clamp(1.2rem, 5vw, 1.5rem); /* ปรับขนาดฟอนต์ตามหน้าจอ */
+    margin-bottom: 4px;
+}
+
+.profile-text p {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+/* ฟอร์มแก้ไข */
+.edit-form {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+input[type="text"], textarea {
+    width: 100%;
+    padding: 15px;
+    background-color: #333;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.social-item {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #bbb;
+}
+
+.save-btn {
+    padding: 15px;
+    background-color: #0099ff;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.save-btn:active {
+    transform: scale(0.98);
+}
+
+/* ปรับแต่งสำหรับหน้าจอที่ใหญ่กว่ามือถือ */
+@media (min-width: 600px) {
+    body {
+        padding: 20px;
+    }
+    .app-container {
+        border-radius: 20px;
+        overflow: hidden;
+        min-height: 90vh;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+}
+/* ... (ใช้ CSS เดิมจากข้อความก่อนหน้า และเพิ่มส่วนนี้) ... */
+
+.profile-circle {
+    width: 120px;
+    height: 120px;
+    background-color: #0099ff;
+    border-radius: 50%;
+    border: 4px solid #121212;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden; /* ป้องกันรูปภาพล้นขอบวงกลม */
+}
+
+.edit-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 10px;
+    padding: 2px 0;
+    text-align: center;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.profile-circle:hover .edit-overlay {
+    opacity: 1;
+}
+
+.edit-form label {
+    font-size: 0.8rem;
+    color: #62b9d9;
+    margin-bottom: -10px;
 }
