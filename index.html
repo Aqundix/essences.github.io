@@ -3,141 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aqundix | Elite Luxury Tech</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;900&display=swap" rel="stylesheet">
+    <title>Profile Editor</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/scrollreveal"></script>
 </head>
 <body>
-   <div class="video-container">
-        <video autoplay muted loop playsinline id="bg-video">
-            <source src="snaptik_7580370433661209878_v2.mp4" type="video/mp4">
-            Your browser does not support HTML5 video.
-        </video>
-    </div>
-    
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loader-content">
-            <div class="loader-circle"></div>
-            <p class="loader-text">ACCESSING AQUNDIX SECURE LINK...</p>
-        </div>
-    </div>
 
-    <nav class="navbar">
-        <div class="logo">AQUNDIX<span>.</span></div>
-    </nav>
+    <div class="app-container">
+        <header class="blue-header">
+            <h2>Profile</h2>
+        </header>
 
-    <header class="hero">
-        <div class="hero-content">
-            <div class="badge reveal">
-                <span class="badge-dot"></span> New Evolution
-            </div>
-            
-            <h1 class="hero-title reveal">
-                AQUNDIX <br>
-                <span class="mixed-gradient">FUTURE ELITE</span>
-            </h1>
-
-            <p class="hero-subtitle reveal">
-                A new definition of luxury seamlessly integrated with smart technology.
-                Creating the most aggressive, powerful, and premium experience in the digital age.
-            </p>
-
-            <div class="cta-container reveal">
-                <a href="pages/about.html" class="btn-gold-main">Get Started</a>
-            </div>
-        </div>
-    </header>
-    
-    <section class="glass-section">
-        <div class="glass-panel reveal" id="glassPanel3D">
-            <div class="glass-content">
-                <h2 class="glass-title">THE FUTURE IS NOW</h2>
-                <p class="glass-description">
-                    Immerse yourself in a world where technology meets unparalleled luxury. 
-                    AQUNDIX redefines interaction with intuitive AI and bespoke experiences.
-                </p>
-            </div>
-        </div>
-    </section>
-    
-    <footer class="footer reveal">
-        <div class="footer-content">
-            <div class="footer-logo">AQUNDIX<span>.</span></div>
-        
-            <div class="social-links">
-                <a href="https://facebook.com/yourpage" target="_blank" class="social-icon">FB</a>
-                <a href="https://www.instagram.com/aqunbix?igsh=MTlqd291eGp4amZxMw==" target="_blank" class="social-icon">IG</a>
-                <a href="https://twitter.com/youraccount" target="_blank" class="social-icon">X</a>
-                <a href="https://linkedin.com/in/yourprofile" target="_blank" class="social-icon">LN</a>
-            </div>
-            <p class="copyright">© 2026 AQUNDIX LUXURY TECH. ALL RIGHTS RESERVED.</p>
-        </div>
-    </footer>
-
-    <script>
-        // --- ระบบ Loading ก่อนไปหน้า Social ---
-        document.querySelectorAll('.social-icon').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault(); 
-                const targetUrl = this.getAttribute('href');
-                const overlay = document.getElementById('loading-overlay');
-
-                // แสดงหน้าจอโหลด (ตรวจสอบว่ามี Class 'active' หรือใช้ Style โดยตรงใน CSS)
-                overlay.style.display = 'flex';
+        <main class="content">
+            <section class="profile-header">
+                <div class="profile-circle" onclick="document.getElementById('file-input').click()">
+                    <img id="profile-img" src="" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                    <span id="profile-placeholder">Profile</span>
+                    <div class="edit-overlay">แก้ไข</div>
+                </div>
+                <input type="file" id="file-input" accept="image/*" onchange="previewImage(event)" style="display: none;">
                 
-                // หน่วงเวลา 1.5 วินาทีเพื่อให้ดูสมจริง
-                setTimeout(() => {
-                    window.open(targetUrl, '_blank');
-                    
-                    // ปิดหน้าจอโหลด
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                    }, 500);
-                }, 1500);
-            });
-        });
+                <div class="profile-text">
+                    <h1 id="display-name">Name</h1>
+                    <p id="display-bio">Description & Bio</p>
+                </div>
+            </section>
 
-        // --- ระบบ ScrollReveal Animation ---
-        ScrollReveal().reveal('.reveal', {
-            distance: '60px',
-            duration: 1200,
-            easing: 'cubic-bezier(0.5, 0, 0, 1)',
-            interval: 200,
-            origin: 'bottom'
-        });
+            <section class="edit-form">
+                <label>ชื่อเล่น:</label>
+                <input type="text" id="input-name" placeholder="ระบุชื่อของคุณ...">
+                
+                <label>คำอธิบาย:</label>
+                <textarea id="input-bio" placeholder="ระบุคำอธิบายโปรไฟล์..."></textarea>
+                
+                <button class="save-btn" onclick="saveProfile()">บันทึกข้อมูล</button>
+            </section>
+        </main>
+    </div>
 
-        // --- Navigation Logic (ป้องกัน Error ถ้าไม่มี Element) ---
-        const hamburger = document.getElementById('hamburger');
-        if (hamburger) {
-            hamburger.addEventListener('click', () => {
-                // ใส่ Logic เปิดเมนูของคุณตรงนี้
-                console.log("Menu Toggled");
-            });
-        }
-        // --- 3D Glassmorphism Effect ---
-        const glassPanel = document.getElementById('glassPanel3D');
-
-        if (glassPanel) {
-            glassPanel.addEventListener('mousemove', (e) => {
-                const panelRect = glassPanel.getBoundingClientRect();
-                const centerX = panelRect.left + panelRect.width / 2;
-                const centerY = panelRect.top + panelRect.height / 2;
-                const mouseX = e.clientX - centerX;
-                const mouseY = e.clientY - centerY;
-                // คำนวณองศาการเอียง (ปรับค่า 0.05 เพื่อเพิ่ม/ลดความรุนแรง)
-                const rotateY = mouseX * 0.02; 
-                const rotateX = mouseY * -0.02; // - เพื่อให้เอียงขึ้นเมื่อเมาส์อยู่ข้างบน
-            glassPanel.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
-        });
-
-        // คืนค่าเมื่อเมาส์ออก
-        glassPanel.addEventListener('mouseleave', () => {
-           glassPanel.style.transform = `rotateX(0deg) rotateY(0deg) translateZ(0px)`;
-        });
-    }
-
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
