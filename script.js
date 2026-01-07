@@ -265,3 +265,59 @@ function resetAllData() {
         location.reload();
     }
 }
+
+// --- ฟังก์ชันลงทะเบียนผู้ใช้ใหม่ ---
+async function registerUser() {
+    const username = document.getElementById('reg-username').value.trim().toLowerCase();
+    const msg = document.getElementById('reg-msg');
+
+    if (!username || username.length < 3) {
+        msg.style.color = "#ff4444";
+        msg.innerText = "Username ต้องมีอย่างน้อย 3 ตัวอักษร";
+        return;
+    }
+
+    // 1. ตรวจสอบว่า Username นี้มีคนใช้หรือยัง
+    const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username)
+        .single();
+
+    if (existingUser) {
+        msg.style.color = "#ff4444";
+        msg.innerText = "ขออภัย! Username นี้มีคนใช้ไปแล้ว";
+        return;
+    }
+
+    // 2. สร้างแถวข้อมูลใหม่ใน Supabase
+    const { error } = await supabase
+        .from('profiles')
+        .insert([{ 
+            username: username, 
+            name: username, // ใช้ username เป็นชื่อเริ่มต้น
+            bio: "Welcome to my new profile!",
+            socials: [] 
+        }]);
+
+    if (!error) {
+        // ลงทะเบียนสำเร็จ -> พาไปหน้าโปรไฟล์ของตัวเอง
+        window.location.href = `?u=${username}`;
+    } else {
+        msg.innerText = "เกิดข้อผิดพลาด: " + error.message;
+    }
+}
+
+// --- ปรับปรุงการโหลดหน้าเว็บตอนเริ่มต้น ---
+document.addEventListener("DOMContentLoaded", async () => {
+    currentUsername = getUsernameFromURL();
+    
+    if (currentUsername) {
+        // ถ้ามี u= ในลิงก์ ให้ซ่อนหน้าลงทะเบียนและโหลดโปรไฟล์
+        document.getElementById('view-register').style.display = 'none';
+        await loadProfile(currentUsername);
+    } else {
+        // ถ้าไม่มี u= ให้แสดงหน้าลงทะเบียน
+        switchView('view-register');
+    }
+});
