@@ -32,7 +32,26 @@
                 </button>
                 
             </div>
+            
+            <div id="view-register" class="view active"> <div class="edit-container">
+        <h2 style="text-align: center; margin-bottom: 20px;">สร้างโปรไฟล์พรีเมียมของคุณ</h2>
+        <p style="text-align: center; color: #888; margin-bottom: 30px; font-size: 14px;">
+            กรุณาเลือก Username เพื่อเริ่มต้น (ใช้สำหรับลิงก์โปรไฟล์ของคุณ)
+        </p>
+        
+        <div class="input-field">
+            <label>Username (ภาษาอังกฤษเท่านั้น)</label>
+            <input type="text" id="reg-username" placeholder="เช่น: james_bond007">
+        </div>
 
+        <div class="edit-actions">
+            <button class="btn-save-final" onclick="registerUser()">สร้างโปรไฟล์ตอนนี้</button>
+        </div>
+        
+        <p id="reg-msg" style="margin-top: 15px; text-align: center; font-size: 13px;"></p>
+    </div>
+            </div>
+            
             <footer class="profile-footer">
                 <div class="footer-links">
                     <span>Privacy</span>
