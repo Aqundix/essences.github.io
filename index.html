@@ -3,48 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Profile Editor</title>
+    <title>Premium Profile Experience</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="app-container">
-        <header class="profile-header-bg" id="header-bg" onclick="document.getElementById('header-input').click()">
-            <div class="header-overlay">คลิกเพื่อเปลี่ยนรูปปก (.gif ได้)</div>
-            <input type="file" id="header-input" accept="image/*" onchange="changeHeader(event)" style="display: none;">
-            <h2>Profile</h2>
-        </header>
-
-        <main class="content">
-            <section class="profile-meta">
-                <div class="profile-circle" onclick="document.getElementById('profile-input').click()">
-                    <img id="profile-img" src="" style="display:none;">
-                    <span id="profile-placeholder">Profile</span>
-                    <div class="circle-overlay">เปลี่ยนรูป</div>
+    <div class="app-card">
+        <div id="view-profile" class="view active">
+            <div class="header-banner" id="display-banner"></div>
+            <div class="profile-content">
+                <div class="profile-avatar-wrapper">
+                    <img id="display-avatar" src="https://via.placeholder.com/150" alt="avatar">
                 </div>
-                <input type="file" id="profile-input" accept="image/*" onchange="changeProfile(event)" style="display: none;">
-                
-                <div class="profile-info">
-                    <h1 id="display-name">Name ( Show )</h1>
-                    <div id="display-bio" class="bio-text">Description & Bio ( Show )</div>
+                <div class="profile-details">
+                    <h1 id="text-name">Your Name</h1>
+                    <p id="text-bio">Your premium bio description goes here. Welcome to my profile!</p>
                 </div>
-            </section>
+                <div class="social-pills">
+                    <div class="pill">Instagram</div>
+                    <div class="pill">Discord</div>
+                </div>
+                <button class="btn-primary" onclick="switchView('view-edit')">Edit Profile</button>
+            </div>
+        </div>
 
-            <section class="edit-section">
-                <div class="input-box">
-                    <label>ชื่อเล่น</label>
-                    <input type="text" id="input-name" placeholder="ระบุชื่อ...">
+        <div id="view-edit" class="view">
+            <div class="edit-header">
+                <button class="btn-back" onclick="switchView('view-profile')">← Back</button>
+                <h2>Edit Profile</h2>
+            </div>
+            
+            <div class="edit-scroll-area">
+                <div class="edit-media">
+                    <div class="input-group-media" onclick="document.getElementById('input-banner').click()">
+                        <span>Change Cover (.gif)</span>
+                        <input type="file" id="input-banner" hidden accept="image/*" onchange="previewMedia(this, 'display-banner')">
+                    </div>
+                    <div class="input-group-media" onclick="document.getElementById('input-avatar').click()">
+                        <span>Change Profile (.gif)</span>
+                        <input type="file" id="input-avatar" hidden accept="image/*" onchange="previewMedia(this, 'display-avatar')">
+                    </div>
                 </div>
 
-                <div class="input-box">
-                    <label>Bio (จำกัด 250 ตัวอักษร)</label>
-                    <textarea id="input-bio" maxlength="250" placeholder="เขียนคำอธิบายของคุณที่นี่..." oninput="updateCount()"></textarea>
+                <div class="input-field">
+                    <label>Display Name</label>
+                    <input type="text" id="edit-name" placeholder="Enter name...">
+                </div>
+
+                <div class="input-field">
+                    <label>Bio (Max 250)</label>
+                    <textarea id="edit-bio" maxlength="250" placeholder="Tell your story..." oninput="updateCount()"></textarea>
                     <small id="char-count">0 / 250</small>
                 </div>
-                
-                <button class="save-btn" onclick="saveData()">บันทึกการเปลี่ยนแปลง</button>
-            </section>
-        </main>
+
+                <button class="btn-save" onclick="saveAll()">Save Changes</button>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
