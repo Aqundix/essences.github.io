@@ -6,165 +6,168 @@
 
 body {
     background-color: #000;
-    font-family: sans-serif;
+    color: white;
+    font-family: 'Prompt', sans-serif;
     display: flex;
     justify-content: center;
-    color: white;
+    min-height: 100vh;
 }
 
-/* คอนเทนเนอร์หลัก */
 .app-container {
     width: 100%;
-    max-width: 500px; /* จำกัดความกว้างสูงสุดสำหรับหน้าจอคอม */
-    min-height: 100vh;
+    max-width: 600px; /* ขนาดที่สวยทั้งใน PC และ Mobile */
     background-color: #121212;
-    position: relative;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Header สีฟ้าที่ยืดหยุ่น */
-.blue-header {
+/* ส่วนหัวปรับแต่งได้ */
+.profile-header-bg {
+    height: 30vh;
+    min-height: 180px;
     background-color: #62b9d9;
-    height: 25vh; /* ใช้หน่วย vh เพื่อให้สัมพันธ์กับความสูงหน้าจอ */
-    min-height: 150px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* ส่วนเนื้อหา */
-.content {
-    padding: 0 20px 40px 20px;
-}
-
-/* รูปโปรไฟล์และชื่อ */
-.profile-header {
-    display: flex;
-    align-items: flex-end;
-    margin-top: -60px; /* ดึงขึ้นไปทับส่วนฟ้า */
-    margin-bottom: 30px;
-    gap: 15px;
-}
-
-.profile-circle {
-    width: 120px;
-    height: 120px;
-    background-color: #0099ff;
-    border-radius: 50%;
-    border: 4px solid #121212;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    flex-shrink: 0; /* ป้องกันวงกลมเบี้ยวบนจอมือถือเล็กๆ */
-}
-
-.profile-text h1 {
-    font-size: clamp(1.2rem, 5vw, 1.5rem); /* ปรับขนาดฟอนต์ตามหน้าจอ */
-    margin-bottom: 4px;
-}
-
-.profile-text p {
-    color: #aaa;
-    font-size: 0.9rem;
-}
-
-/* ฟอร์มแก้ไข */
-.edit-form {
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-input[type="text"], textarea {
-    width: 100%;
-    padding: 15px;
-    background-color: #333;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-size: 1rem;
-}
-
-textarea {
-    min-height: 120px;
-    resize: vertical;
-}
-
-.social-item {
-    background-color: #333;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    color: #bbb;
-}
-
-.save-btn {
-    padding: 15px;
-    background-color: #0099ff;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.save-btn:active {
-    transform: scale(0.98);
-}
-
-/* ปรับแต่งสำหรับหน้าจอที่ใหญ่กว่ามือถือ */
-@media (min-width: 600px) {
-    body {
-        padding: 20px;
-    }
-    .app-container {
-        border-radius: 20px;
-        overflow: hidden;
-        min-height: 90vh;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-}
-/* ... (ใช้ CSS เดิมจากข้อความก่อนหน้า และเพิ่มส่วนนี้) ... */
-
-.profile-circle {
-    width: 120px;
-    height: 120px;
-    background-color: #0099ff;
-    border-radius: 50%;
-    border: 4px solid #121212;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-size: cover;
+    background-position: center;
     position: relative;
     cursor: pointer;
-    overflow: hidden; /* ป้องกันรูปภาพล้นขอบวงกลม */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.edit-overlay {
+.header-overlay {
     position: absolute;
-    bottom: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    font-size: 10px;
-    padding: 2px 0;
-    text-align: center;
+    background: rgba(0,0,0,0.3);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
     opacity: 0;
     transition: 0.3s;
 }
 
-.profile-circle:hover .edit-overlay {
+.profile-header-bg:hover .header-overlay {
     opacity: 1;
 }
 
-.edit-form label {
-    font-size: 0.8rem;
+/* ส่วนข้อมูลโปรไฟล์ */
+.content {
+    padding: 0 20px;
+}
+
+.profile-meta {
+    display: flex;
+    align-items: flex-end;
+    margin-top: -60px;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.profile-circle {
+    width: 120px;
+    height: 120px;
+    background-color: #0099ff;
+    border-radius: 50%;
+    border: 5px solid #121212;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.profile-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.circle-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.6);
+    font-size: 10px;
+    text-align: center;
+    padding: 2px 0;
+}
+
+/* จัดการ Bio ให้ขึ้นบรรทัดใหม่และไม่ล้น */
+.profile-info {
+    overflow-wrap: break-word; /* ตัดคำเมื่อยาวเกิน */
+    word-wrap: break-word;
+    word-break: break-word;
+    flex-grow: 1;
+}
+
+.bio-text {
+    color: #bbb;
+    font-size: 14px;
+    white-space: pre-wrap; /* รักษาการขึ้นบรรทัดใหม่ */
+    margin-top: 5px;
+    max-width: 100%;
+}
+
+/* ฟอร์มแก้ไข */
+.edit-section {
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.input-box {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-box label {
+    font-size: 13px;
     color: #62b9d9;
-    margin-bottom: -10px;
+    margin-bottom: 5px;
+}
+
+input, textarea {
+    background: #333;
+    border: 1px solid #444;
+    padding: 12px;
+    color: white;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 16px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: none;
+}
+
+#char-count {
+    text-align: right;
+    color: #777;
+    font-size: 12px;
+}
+
+.save-btn {
+    width: 100%;
+    padding: 15px;
+    background: #0099ff;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* สำหรับ PC ให้หน้าเว็บดูเป็น Card กึ่งกลาง */
+@media (min-width: 601px) {
+    body {
+        padding-top: 20px;
+    }
+    .app-container {
+        border-radius: 20px;
+        min-height: 80vh;
+        height: fit-content;
+        box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    }
 }
