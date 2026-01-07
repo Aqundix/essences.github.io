@@ -1,34 +1,50 @@
-// ฟังก์ชันแสดงตัวอย่างรูปภาพเมื่อเลือกไฟล์
-function previewImage(event) {
-    const reader = new FileReader();
-    const profileImg = document.getElementById('profile-img');
-    const placeholder = document.getElementById('profile-placeholder');
-
-    reader.onload = function() {
-        if (reader.readyState === 2) {
-            profileImg.src = reader.result;
-            profileImg.style.display = 'block';
-            placeholder.style.display = 'none';
+// เปลี่ยนรูปโปรไฟล์
+function changeProfile(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById('profile-img');
+            img.src = e.target.result;
+            img.style.display = 'block';
+            document.getElementById('profile-placeholder').style.display = 'none';
         }
-    }
-    
-    if (event.target.files[0]) {
-        reader.readAsDataURL(event.target.files[0]);
+        reader.readAsDataURL(file);
     }
 }
 
-// ฟังก์ชันบันทึกชื่อและคำอธิบาย
-function saveProfile() {
-    const nameInput = document.getElementById('input-name').value;
-    const bioInput = document.getElementById('input-bio').value;
+// เปลี่ยนรูป Header (รองรับ .gif)
+function changeHeader(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('header-bg').style.backgroundImage = `url('${e.target.result}')`;
+        }
+        reader.readAsDataURL(file);
+    }
+}
 
-    if (nameInput.trim() !== "") {
-        document.getElementById('display-name').textContent = nameInput;
+// อัปเดตตัวนับตัวอักษร Bio
+function updateCount() {
+    const bioInput = document.getElementById('input-bio');
+    const countDisplay = document.getElementById('char-count');
+    countDisplay.textContent = `${bioInput.value.length} / 250`;
+}
+
+// บันทึกข้อมูล
+function saveData() {
+    const name = document.getElementById('input-name').value;
+    const bio = document.getElementById('input-bio').value;
+
+    if (name.trim() !== "") {
+        document.getElementById('display-name').textContent = name;
     }
 
-    if (bioInput.trim() !== "") {
-        document.getElementById('display-bio').textContent = bioInput;
+    // อัปเดต Bio พร้อมจัดการการขึ้นบรรทัดใหม่
+    if (bio.trim() !== "" || bio === "") {
+        document.getElementById('display-bio').textContent = bio;
     }
 
-    alert("บันทึกโปรไฟล์สำเร็จ!");
+    alert("บันทึกข้อมูลและรูปภาพสำเร็จ!");
 }
