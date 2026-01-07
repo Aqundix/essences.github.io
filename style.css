@@ -476,3 +476,31 @@ textarea:focus::placeholder {
     border-radius: 8px;
     cursor: pointer;
 }
+
+/* ปรับแต่งปุ่มและช่องเลือกในหน้า Edit ให้กะทัดรัด */
+.add-social-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+select#select-platform {
+    flex: 1;
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 12px;
+}
+
+.btn-add {
+    padding: 10px 20px;
+    font-size: 13px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.edit-social-item span {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
