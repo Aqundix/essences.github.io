@@ -1,65 +1,70 @@
-// ตั้งค่าการเชื่อมต่อ (เอามาจาก Settings > API ใน Supabase)
-const SUPABASE_URL = 'URL_ของคุณ';
-const SUPABASE_KEY = 'API_KEY_ของคุณ';
+// 1. ตั้งค่า Supabase (นำมาจากหน้า Settings > API ใน Supabase)
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ตัวอย่าง ID ของผู้ใช้ (ในระบบจริงอาจจะได้มาจาก Login หรือ URL Parameter)
-const userId = "user-001"; 
+let socialLinks = [];
+let currentUsername = "";
 
-// --- 1. ระบบดึงข้อมูล (Load Data) ---
-async function loadSavedData() {
+// 2. ดึง Username จาก URL (เช่น ?u=mario)
+function getUsernameFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('u'); // คืนค่า 'mario'
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    currentUsername = getUsernameFromURL();
+    
+    if (currentUsername) {
+        await loadProfile(currentUsername);
+    } else {
+        // ถ้าไม่มี u= ในลิงก์ ให้แสดงหน้าว่างหรือแจ้งเตือน
+        document.getElementById('text-name').innerText = "โปรดระบุ Username ใน URL";
+    }
+});
+
+// 3. ฟังก์ชันดึงข้อมูลจาก Supabase
+async function loadProfile(username) {
     const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('username', username)
         .single();
 
     if (data) {
+        // อัปเดตหน้า UI
         document.getElementById('text-name').innerText = data.name;
         document.getElementById('text-bio').innerText = data.bio;
+        socialLinks = data.socials || [];
+        
         if (data.avatar_url) document.getElementById('display-avatar').src = data.avatar_url;
         if (data.banner_url) document.getElementById('display-banner').style.backgroundImage = `url('${data.banner_url}')`;
         
-        socialLinks = data.socials || [];
         renderProfileSocials();
+    } else {
+        console.log("ไม่พบผู้ใช้ชื่อนี้");
     }
 }
 
-// --- 2. ระบบอัปโหลดรูปภาพ (Upload to Storage) ---
-async function uploadImage(file, bucket) {
-    const fileName = `${userId}-${Date.now()}`;
-    const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(fileName, file);
-
-    if (error) throw error;
-    
-    // ดึง Public URL ของรูปที่อัปโหลดเสร็จแล้ว
-    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
-    return urlData.publicUrl;
-}
-
-// --- 3. ระบบบันทึกทั้งหมด (Save Everything) ---
+// 4. ฟังก์ชันบันทึกข้อมูล (Save)
 async function saveAll() {
     const nameVal = document.getElementById('edit-name').value.trim() || "Username";
     const bioVal = document.getElementById('edit-bio').value.trim() || "Welcome...";
 
-    // อัปเดตข้อมูลลง Database
     const { error } = await supabase
         .from('profiles')
-        .upsert({ 
-            id: userId, 
-            name: nameName, 
+        .update({ 
+            name: nameVal, 
             bio: bioVal, 
             socials: socialLinks 
-        });
+        })
+        .eq('username', currentUsername);
 
     if (!error) {
-        alert("บันทึกข้อมูลเรียบร้อย!");
-        loadSavedData(); // โหลดใหม่เพื่ออัปเดตหน้าจอ
+        await loadProfile(currentUsername);
         switchView('view-profile');
     } else {
-        alert("เกิดข้อผิดพลาด: " + error.message);
+        alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
     }
 }
 
@@ -102,32 +107,36 @@ function prepareEditView() {
     switchView('view-edit');
 }
 
-// 5. จัดการรูปภาพ (แก้ปัญหาที่ 3 และ 4)
-function previewMedia(input, displayId) {
+async function previewMedia(input, displayId) {
     if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const result = e.target.result;
-            
-            // แสดงในหน้าโปรไฟล์
-            const displayEl = document.getElementById(displayId);
-            if (displayId === 'display-banner') {
-                displayEl.style.backgroundImage = `url('${result}')`;
-            } else {
-                displayEl.src = result;
-            }
+        const file = input.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${currentUsername}-${displayId}-${Math.random()}.${fileExt}`;
 
-            // แสดงในหน้า Edit (Media Box) - แก้ปัญหาที่ 4
-            const mediaBox = input.parentElement;
-            mediaBox.style.backgroundImage = `url('${result}')`;
-            mediaBox.style.backgroundSize = 'cover';
-            mediaBox.style.backgroundPosition = 'center';
-            mediaBox.style.color = 'transparent'; // ซ่อนไอคอน/ตัวหนังสือ
-            
-            // บันทึกลง Storage ทันที
-            localStorage.setItem(displayId, result);
-        };
-        reader.readAsDataURL(input.files[0]);
+        // 1. อัปโหลดไป Supabase Storage (ต้องสร้าง Bucket ชื่อ 'media' ก่อน)
+        const { data, error } = await supabase.storage
+            .from('media')
+            .upload(fileName, file);
+
+        if (error) {
+            alert("อัปโหลดรูปไม่สำเร็จ: " + error.message);
+            return;
+        }
+
+        // 2. รับ URL สาธารณะของรูป
+        const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
+        const publicUrl = urlData.publicUrl;
+
+        // 3. อัปเดต URL ลงในตาราง Profiles ทันที
+        const updateField = (displayId === 'display-banner') ? { banner_url: publicUrl } : { avatar_url: publicUrl };
+        await supabase.from('profiles').update(updateField).eq('username', currentUsername);
+
+        // 4. แสดงผลบนหน้าจอ
+        if (displayId === 'display-banner') {
+            document.getElementById(displayId).style.backgroundImage = `url('${publicUrl}')`;
+        } else {
+            document.getElementById(displayId).src = publicUrl;
+        }
     }
 }
 
