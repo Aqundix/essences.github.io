@@ -14,6 +14,16 @@ let socialLinks = JSON.parse(localStorage.getItem('savedSocials')) || [];
 // 2. เริ่มทำงานเมื่อโหลดหน้าเว็บ
 document.addEventListener("DOMContentLoaded", () => {
     loadSavedData();
+    
+    // ป้องกันการกด Enter ใน Input แล้วหน้า Refresh
+    const editForm = document.querySelector('.edit-container');
+    if(editForm) {
+        editForm.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        });
+    }
 });
 
 // 3. ฟังก์ชันสลับหน้า (Switch View)
@@ -44,22 +54,22 @@ function previewMedia(input, displayId) {
         reader.onload = function(e) {
             const result = e.target.result;
             
-            // แสดงในหน้าโปรไฟล์
             const displayEl = document.getElementById(displayId);
-            if (displayId === 'display-banner') {
-                displayEl.style.backgroundImage = `url('${result}')`;
-            } else {
-                displayEl.src = result;
+            if (displayEl) {
+                if (displayId === 'display-banner') {
+                    displayEl.style.backgroundImage = `url('${result}')`;
+                } else {
+                    displayEl.src = result;
+                }
             }
 
-            // แสดงในหน้า Edit (Media Box) - แก้ปัญหาที่ 4
+            // อัปเดตพื้นหลังของ Label (ช่องอัปโหลด)
             const mediaBox = input.parentElement;
             mediaBox.style.backgroundImage = `url('${result}')`;
             mediaBox.style.backgroundSize = 'cover';
             mediaBox.style.backgroundPosition = 'center';
-            mediaBox.style.color = 'transparent'; // ซ่อนไอคอน/ตัวหนังสือ
+            mediaBox.style.color = 'transparent'; // ซ่อน Icon
             
-            // บันทึกลง Storage ทันที
             localStorage.setItem(displayId, result);
         };
         reader.readAsDataURL(input.files[0]);
@@ -126,10 +136,14 @@ function removeSocial(index) {
 
 // 7. บันทึกและอัปเดต (แก้ปัญหา Save แล้วไม่เด้ง/ไม่อัปเดต)
 function saveAll() {
-    const nameVal = document.getElementById('edit-name').value.trim();
-    const bioVal = document.getElementById('edit-bio').value.trim();
+    const nameInput = document.getElementById('edit-name');
+    const bioInput = document.getElementById('edit-bio');
+    
+    if (!nameInput || !bioInput) return;
 
-    // บันทึกค่า (ถ้าว่างให้ใช้ค่าเริ่มต้น)
+    const nameVal = nameInput.value.trim();
+    const bioVal = bioInput.value.trim();
+
     const finalName = nameVal || "Username";
     const finalBio = bioVal || "Welcome to my custom profile.";
 
@@ -137,13 +151,18 @@ function saveAll() {
     localStorage.setItem('pBio', finalBio);
     localStorage.setItem('savedSocials', JSON.stringify(socialLinks));
 
-    // อัปเดตหน้า Profile ทันที
-    document.getElementById('text-name').innerText = finalName;
-    document.getElementById('text-bio').innerText = finalBio;
+    // อัปเดต UI หน้า Profile
+    const textName = document.getElementById('text-name');
+    const textBio = document.getElementById('text-bio');
+    
+    if(textName) textName.innerText = finalName;
+    if(textBio) textBio.innerText = finalBio;
+    
     renderProfileSocials();
-
-    // เด้งกลับหน้าหลัก
     switchView('view-profile');
+    
+    // เลื่อนหน้าจอขึ้นไปบนสุด (เผื่อกรณีจอมือถือ)
+    window.scrollTo(0, 0);
 }
 
 function renderProfileSocials() {
