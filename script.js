@@ -1,9 +1,4 @@
-// 1. ตั้งค่า Supabase (ใส่ URL และ Key ของคุณ)
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// 2. ตัวแปร Global
+// 1. ตั้งค่าพื้นฐานและตัวแปร Global
 const ICON_MAP = {
     'Instagram': 'fa-brands fa-instagram',
     'TikTok': 'fa-brands fa-tiktok',
@@ -14,167 +9,101 @@ const ICON_MAP = {
     'Link': 'fa-solid fa-link'
 };
 
-let socialLinks = [];
-let currentUsername = "";
+let socialLinks = JSON.parse(localStorage.getItem('savedSocials')) || [];
 
-// 3. เริ่มต้นระบบเมื่อโหลดหน้าจอ
-document.addEventListener("DOMContentLoaded", async () => {
-    const params = new URLSearchParams(window.location.search);
-    currentUsername = params.get('u');
-    
-    if (currentUsername) {
-        // ถ้ามี User ใน URL ให้โหลดโปรไฟล์
-        const registerView = document.getElementById('view-register');
-        if (registerView) registerView.style.display = 'none';
-        await loadProfile(currentUsername);
-    } else {
-        // ถ้าไม่มี ให้ไปหน้าลงทะเบียน
-        switchView('view-register');
-    }
+// 2. เริ่มทำงานเมื่อโหลดหน้าเว็บ
+document.addEventListener("DOMContentLoaded", () => {
+    loadSavedData();
 });
 
-// 4. ฟังก์ชันหลัก (Core Functions)
-async function loadProfile(username) {
-    const { data, error } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .eq('username', username)
-        .single();
-
-    if (data) {
-        document.getElementById('text-name').innerText = data.name || "Username";
-        document.getElementById('text-bio').innerText = data.bio || "";
-        socialLinks = data.socials || [];
-        
-        if (data.avatar_url) document.getElementById('display-avatar').src = data.avatar_url;
-        if (data.banner_url) document.getElementById('display-banner').style.backgroundImage = `url('${data.banner_url}')`;
-        
-        renderProfileSocials();
-        switchView('view-profile');
-    } else {
-        alert("ไม่พบผู้ใช้ชื่อนี้ ระบบจะพาไปหน้าลงทะเบียน");
-        window.location.href = window.location.pathname;
-    }
-}
-
-async function saveAll() {
-    const nameVal = document.getElementById('edit-name').value.trim() || "Username";
-    const bioVal = document.getElementById('edit-bio').value.trim() || "";
-
-    const { error } = await supabaseClient
-        .from('profiles')
-        .update({ 
-            name: nameVal, 
-            bio: bioVal, 
-            socials: socialLinks 
-        })
-        .eq('username', currentUsername);
-
-    if (!error) {
-        await loadProfile(currentUsername); // โหลดข้อมูลใหม่เพื่ออัปเดต UI
-    } else {
-        alert("บันทึกไม่สำเร็จ: " + error.message);
-    }
-}
-
-async function registerUser() {
-    const usernameInput = document.getElementById('reg-username');
-    const username = usernameInput.value.trim().toLowerCase();
-    const msg = document.getElementById('reg-msg');
-
-    if (username.length < 3) {
-        msg.innerText = "ชื่อสั้นเกินไป (ขั้นต่ำ 3 ตัว)";
-        return;
-    }
-
-    // สร้างข้อมูลใหม่
-    const { error } = await supabaseClient
-        .from('profiles')
-        .insert([{ 
-            username: username, 
-            name: username,
-            bio: "Welcome to my profile",
-            socials: [] 
-        }]);
-
-    if (!error) {
-        window.location.href = `?u=${username}`;
-    } else {
-        msg.innerText = "ชื่อนี้อาจถูกใช้ไปแล้ว หรือเกิดข้อผิดพลาด";
-    }
-}
-
-// 5. การจัดการรูปภาพ (Supabase Storage)
-async function previewMedia(input, displayId) {
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${currentUsername}-${displayId}.${fileExt}`;
-
-        // อัปโหลด (ใช้ upsert เพื่อทับไฟล์เดิมของ user คนนี้)
-        const { data, error } = await supabaseClient.storage
-            .from('media')
-            .upload(fileName, file, { upsert: true });
-
-        if (error) {
-            alert("อัปโหลดไม่สำเร็จ: " + error.message);
-            return;
-        }
-
-        const { data: urlData } = supabaseClient.storage.from('media').getPublicUrl(fileName);
-        const publicUrl = urlData.publicUrl;
-
-        // บันทึก URL ลง Table
-        const updateField = (displayId === 'display-banner') ? { banner_url: publicUrl } : { avatar_url: publicUrl };
-        await supabaseClient.from('profiles').update(updateField).eq('username', currentUsername);
-
-        // แสดงผลทันที
-        if (displayId === 'display-banner') {
-            document.getElementById(displayId).style.backgroundImage = `url('${publicUrl}')`;
-        } else {
-            document.getElementById(displayId).src = publicUrl;
-        }
-    }
-}
-
-// 6. ฟังก์ชันจัดการ UI (Helper Functions)
+// 3. ฟังก์ชันสลับหน้า (Switch View)
 function switchView(viewId) {
-    document.querySelectorAll('.view').forEach(v => {
-        v.classList.remove('active');
-        v.style.display = 'none';
-    });
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     const target = document.getElementById(viewId);
-    if (target) {
-        target.classList.add('active');
-        target.style.display = 'flex';
-    }
+    if (target) target.classList.add('active');
 }
 
+// 4. เตรียมข้อมูลก่อนเข้าหน้าแก้ไข (แก้ปัญหา Placeholder)
 function prepareEditView() {
     const currentName = document.getElementById('text-name').innerText;
     const currentBio = document.getElementById('text-bio').innerText;
 
+    // ถ้าเป็นค่าเริ่มต้น ให้ช่องกรอกเป็นค่าว่างเพื่อโชว์ Placeholder สีเทา
     document.getElementById('edit-name').value = (currentName === "Username") ? "" : currentName;
-    document.getElementById('edit-bio').value = (currentBio.includes("Welcome")) ? "" : currentBio;
+    document.getElementById('edit-bio').value = (currentBio === "Welcome to my custom profile.") ? "" : currentBio;
 
     updateCount();
-    renderEditSocials();
+    renderEditSocials(); // แสดง Social ที่เคยเพิ่มไว้ในหน้า Edit
     switchView('view-edit');
 }
 
-function renderProfileSocials() {
-    const container = document.getElementById('display-socials');
-    if (!container) return;
-    container.innerHTML = "";
-    socialLinks.forEach(item => {
-        const a = document.createElement('a');
-        a.href = item.url;
-        a.target = "_blank";
-        a.className = "social-item";
-        a.innerHTML = `<i class="${ICON_MAP[item.platform]}"></i> <span>${item.platform}</span>`;
-        container.appendChild(a);
-    });
+// 5. จัดการรูปภาพ (แก้ปัญหาที่ 3 และ 4)
+function previewMedia(input, displayId) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const result = e.target.result;
+            
+            // แสดงในหน้าโปรไฟล์
+            const displayEl = document.getElementById(displayId);
+            if (displayId === 'display-banner') {
+                displayEl.style.backgroundImage = `url('${result}')`;
+            } else {
+                displayEl.src = result;
+            }
+
+            // แสดงในหน้า Edit (Media Box) - แก้ปัญหาที่ 4
+            const mediaBox = input.parentElement;
+            mediaBox.style.backgroundImage = `url('${result}')`;
+            mediaBox.style.backgroundSize = 'cover';
+            mediaBox.style.backgroundPosition = 'center';
+            mediaBox.style.color = 'transparent'; // ซ่อนไอคอน/ตัวหนังสือ
+            
+            // บันทึกลง Storage ทันที
+            localStorage.setItem(displayId, result);
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
 }
+
+// 6. จัดการ Social (แก้ปัญหาที่ 1 และ 2)
+function addNewSocial() {
+    const platform = document.getElementById('select-platform').value;
+    const url = prompt(`ใส่ลิงก์ ${platform} ของคุณ (ตัวอย่าง: https://${platform.toLowerCase()}.com/username):`);
+
+    if (!url || url.trim() === "") return;
+
+    // 1. ตรวจสอบรูปแบบ URL พื้นฐาน (Regex)
+    const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
+    if (!urlPattern.test(url)) {
+        alert("กรุณาใส่รูปแบบลิงก์ที่ถูกต้อง (เช่น https://...)");
+        return;
+    }
+
+    // 2. ตรวจสอบว่าลิงก์ตรงกับแพลตฟอร์มที่เลือกหรือไม่ (Domain Check)
+    const lowerURL = url.toLowerCase();
+    const platformDomain = platform.toLowerCase();
+    
+    // ยกเว้นกรณีเลือก 'Other Link' จะไม่ตรวจชื่อโดเมน
+    if (platform !== "Link") {
+        if (!lowerURL.includes(platformDomain)) {
+            alert(`ลิงก์นี้ดูเหมือนไม่ใช่ลิงก์ของ ${platform} กรุณาตรวจสอบอีกครั้ง`);
+            return;
+        }
+    }
+
+    // 3. ตรวจสอบการเพิ่มซ้ำ (ถ้าผ่านการตรวจลิงก์แล้ว)
+    if (socialLinks.some(s => s.platform === platform)) {
+        alert("คุณเพิ่มแพลตฟอร์มนี้ไปแล้ว");
+        return;
+    }
+
+    // เพิ่มข้อมูลเข้าสู่ระบบ
+    socialLinks.push({ platform, url: url.startsWith('http') ? url : `https://${url}` });
+    renderEditSocials();
+    alert(`เพิ่ม ${platform} เรียบร้อยแล้ว!`);
+}
+
 
 function renderEditSocials() {
     const list = document.getElementById('edit-social-list');
@@ -190,26 +119,76 @@ function renderEditSocials() {
     });
 }
 
-function addNewSocial() {
-    const platform = document.getElementById('select-platform').value;
-    const url = prompt(`ใส่ลิงก์ ${platform} ของคุณ:`);
-    if (!url || !url.includes('.')) return;
-
-    if (socialLinks.some(s => s.platform === platform)) {
-        alert("คุณเพิ่มแพลตฟอร์มนี้ไปแล้ว");
-        return;
-    }
-
-    socialLinks.push({ platform, url: url.startsWith('http') ? url : `https://${url}` });
-    renderEditSocials();
-}
-
 function removeSocial(index) {
     socialLinks.splice(index, 1);
     renderEditSocials();
 }
 
+// 7. บันทึกและอัปเดต (แก้ปัญหา Save แล้วไม่เด้ง/ไม่อัปเดต)
+function saveAll() {
+    const nameVal = document.getElementById('edit-name').value.trim();
+    const bioVal = document.getElementById('edit-bio').value.trim();
+
+    // บันทึกค่า (ถ้าว่างให้ใช้ค่าเริ่มต้น)
+    const finalName = nameVal || "Username";
+    const finalBio = bioVal || "Welcome to my custom profile.";
+
+    localStorage.setItem('pName', finalName);
+    localStorage.setItem('pBio', finalBio);
+    localStorage.setItem('savedSocials', JSON.stringify(socialLinks));
+
+    // อัปเดตหน้า Profile ทันที
+    document.getElementById('text-name').innerText = finalName;
+    document.getElementById('text-bio').innerText = finalBio;
+    renderProfileSocials();
+
+    // เด้งกลับหน้าหลัก
+    switchView('view-profile');
+}
+
+function renderProfileSocials() {
+    const container = document.getElementById('display-socials');
+    container.innerHTML = "";
+    socialLinks.forEach(item => {
+        const a = document.createElement('a');
+        a.href = item.url;
+        a.target = "_blank";
+        a.className = "social-item";
+        a.innerHTML = `<i class="${ICON_MAP[item.platform]}"></i> <span>${item.platform}</span>`;
+        container.appendChild(a);
+    });
+}
+
+// 8. โหลดข้อมูลเมื่อเข้าเว็บ
+function loadSavedData() {
+    const n = localStorage.getItem('pName');
+    const b = localStorage.getItem('pBio');
+    const av = localStorage.getItem('display-avatar');
+    const bn = localStorage.getItem('display-banner');
+
+    if (n) document.getElementById('text-name').innerText = n;
+    if (b) document.getElementById('text-bio').innerText = b;
+    if (av) {
+        document.getElementById('display-avatar').src = av;
+        document.getElementById('input-avatar').parentElement.style.backgroundImage = `url('${av}')`;
+        document.getElementById('input-avatar').parentElement.style.color = 'transparent';
+    }
+    if (bn) {
+        document.getElementById('display-banner').style.backgroundImage = `url('${bn}')`;
+        document.getElementById('input-banner').parentElement.style.backgroundImage = `url('${bn}')`;
+        document.getElementById('input-banner').parentElement.style.color = 'transparent';
+    }
+    renderProfileSocials();
+}
+
 function updateCount() {
     const bio = document.getElementById('edit-bio').value;
     document.getElementById('char-count').innerText = `${bio.length} / 250`;
+}
+
+function resetAllData() {
+    if (confirm("ล้างข้อมูลทั้งหมด?")) {
+        localStorage.clear();
+        location.reload();
+    }
 }
