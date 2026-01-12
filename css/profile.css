@@ -1,0 +1,432 @@
+:root {
+    --bg-color: #313338;
+    --card-bg: #111214;
+    --text-main: #f2f3f5;
+    --text-muted: #b5bac1;
+    --discord-blue: #5865f2;
+    --green-status: #23a55a;
+}
+
+body {
+    background: #36393f;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+
+.profile-card {
+    width: 340px;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.banner {
+    height: 100px;
+    background-color: #5c6fb1;
+    background-size: cover;
+    background-position: center;
+}
+
+.profile-header {
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: -45px;
+}
+
+.avatar-container {
+    position: relative;
+    border: 6px solid var(--card-bg);
+    border-radius: 50%;
+}
+
+.avatar-container img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: block;
+    object-fit: cover;
+    background: #333;
+}
+
+.status-dot {
+    width: 16px;
+    height: 16px;
+    background-color: var(--green-status);
+    border: 4px solid var(--card-bg);
+    border-radius: 50%;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+}
+
+.edit-btn {
+    background-color: var(--discord-blue);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-bottom: 10px;
+    transition: 0.2s;
+}
+
+.edit-btn:hover { background-color: #4752c4; }
+
+.profile-body { padding: 16px; }
+.profile-body h2 { margin: 0; font-size: 20px; }
+.tag { color: var(--text-muted); margin: 4px 0; font-size: 14px; }
+hr { border: 0.5px solid #3f4147; margin: 12px 0; }
+.section h3 { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: bold; }
+.section p { font-size: 14px; line-height: 1.4; margin: 0; }
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-content {
+    background: var(--bg-color);
+    padding: 24px;
+    border-radius: 8px;
+    width: 320px;
+}
+
+label { display: block; font-size: 12px; color: var(--text-muted); margin: 15px 0 5px; text-transform: uppercase; font-weight: bold; }
+
+input[type="text"], textarea, input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    background: #1e1f22;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.save-btn { background: var(--discord-blue); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+.cancel-btn { background: transparent; color: white; border: none; cursor: pointer; }
+
+
+
+
+
+
+/* จัดวางช่องเลือกไฟล์คู่กับรูปตัวอย่าง */
+.preview-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #1e1f22;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.mini-preview {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--discord-blue);
+}
+
+.mini-banner-preview {
+    width: 80px;
+    height: 40px;
+    border-radius: 4px;
+    background-color: #5c6fb1;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #4f545c    ;
+}
+
+
+
+
+
+
+/* จัดระเบียบ Container ให้ Card เรียงต่อกันลงมา */
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* ระยะห่างระหว่าง 2 Card */
+    padding: 20px;
+}
+
+.social-card {
+    width: 340px;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    box-sizing: border-box;
+}
+
+.social-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e1f22;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.social-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: bold;
+}
+
+.social-item a {
+    font-size: 13px;
+    color: var(--discord-blue);
+    text-decoration: none;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.social-item a:hover {
+    text-decoration: underline;
+}
+
+/* เพิ่มความสูงให้ Modal เล็กน้อยเพราะมีช่องกรอกเยอะขึ้น */
+.modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+
+
+/* จัดการ Social Layout */
+.social-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.social-left i {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+}
+
+/* ปรับแต่งปุ่ม Choose File ใหม่ */
+.custom-file-upload {
+    background-color: #4e5058;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+    border: 1px solid transparent;
+}
+
+.custom-file-upload:hover {
+    background-color: #6d6f78;
+}
+
+/* ซ่อน Input File ของจริง */
+input[type="file"] {
+    display: none;
+}
+
+/* ตกแต่ง Modal เพิ่มเติม */
+.preview-container {
+    border: 1px dashed #4e5058;
+    background: #2b2d31;
+}
+
+.back-nav { margin-bottom: 20px; }
+.back-btn {
+    background: none; border: none; color: #b9bbbe; cursor: pointer;
+    font-size: 0.9rem; font-family: 'Kanit', sans-serif; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px; text-decoration: none;
+}
+.back-btn:hover { color: white; }
+
+.back-navigation {
+    margin-bottom: 15px; /* เว้นระยะห่างจาก Card */
+}
+
+.back-link {
+    color: #b9bbbe; /* สีเทาอ่อนแบบ Discord */
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s ease;
+    font-weight: 400;
+}
+
+.back-link:hover {
+    color: #ffffff; /* เปลี่ยนเป็นสีขาวเมื่อชี้ */
+}
+
+.back-link i {
+    font-size: 0.8rem;
+}
+
+/* เพิ่มเติม: ปรับแต่ง Profile Card เล็กน้อยเพื่อให้ปุ่มดูเด่นขึ้น */
+.container {
+    padding-top: 20px;
+}
+
+/* จัดกลุ่มปุ่มในหน้าแก้ไข */
+.upload-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ปุ่มลบรูปภาพ */
+.btn-remove {
+    background-color: #4f545c;
+    color: #ffffff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: 'Kanit', sans-serif;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.btn-remove:hover {
+    background-color: #ed4245; /* สีแดงเมื่อชี้ (Discord Danger Color) */
+}
+
+/* ปรับ Preview Container ให้จัดวางปุ่มได้สวยขึ้น */
+.preview-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.reset-owner-btn {
+    background: #4f545c;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'Kanit', sans-serif;
+    transition: 0.2s;
+}
+
+.reset-owner-btn:hover {
+    background: #ed4245; /* เปลี่ยนเป็นสีแดงเมื่อชี้ */
+}
+
+/* --- การจัดวางกลุ่มปุ่มจัดการ (Edit & Reset) --- */
+.profile-actions {
+    position: absolute;
+    top: 495px;         /* ขยับขึ้น-ลงตามความชอบ ( Banner สูง 100px ) */
+    right: 95px;
+    display: flex;
+    flex-direction: column; 
+    gap: 1px;          /* ระยะห่างระหว่างปุ่ม */
+    z-index: 10;
+    align-items: flex-end;
+}
+
+/* สไตล์มาตรฐานของปุ่มทั้งคู่ */
+.edit-btn, .reset-owner-btn {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    width: 140px;       /* ความกว้างคงที่เพื่อให้ดูสมดุล */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* สีปุ่ม Edit (Discord Blue) */
+.edit-btn {
+    background-color: #5865f2;
+    color: white;
+}
+.edit-btn:hover { background-color: #4752c4; transform: translateY(-1px); }
+
+/* สีปุ่ม Reset (Discord Red) */
+.reset-owner-btn {
+    background-color: #ed4245;
+    color: white;
+}
+.reset-owner-btn:hover { background-color: #c03537; transform: translateY(-1px); }
+
+/* เอฟเฟกต์ตอนกดปุ่ม */
+.edit-btn:active, .reset-owner-btn:active {
+    transform: scale(0.96);
+}
+
+/* --- ระบบตัวนับตัวอักษร (Bio Counter) --- */
+.char-counter {
+    font-size: 11px;
+    color: #b5bac1;
+    text-align: right;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.char-counter.warning {
+    color: #faa61a; /* สีส้มแจ้งเตือนเมื่อใกล้เต็ม */
+}
+
+/* ปรับปรุงหน้าตาของ Textarea */
+textarea#inputAbout {
+    resize: none;      /* ห้ามลากขยายช่องเองเพื่อไม่ให้ UI พัง */
+    width: 100%;
+    padding: 10px;
+    background: #1e1f22;
+    color: white;
+    border-radius: 4px;
+    border: 1px solid transparent;
+}
+textarea#inputAbout:focus {
+    border-color: #5865f2;
+    outline: none;
+}
