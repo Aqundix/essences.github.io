@@ -2,6 +2,16 @@ const listDiv = document.getElementById('member-list');
 const dbName = "ProfileDB";
 const storeName = "member_data";
 
+const firebaseConfig = {
+    apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
+    authDomain: "aqundix-d3f38.firebaseapp.com",
+    projectId: "aqundix-d3f38",
+    storageBucket: "aqundix-d3f38.firebasestorage.app",
+    messagingSenderId: "923430604932",
+    appId: "1:923430604932:web:a06344e33b3df87aef72d1",
+    measurementId: "G-NC6SKF25ZB"
+};
+
 /** เชื่อมต่อฐานข้อมูล IndexedDB **/
 function initDB() {
     return new Promise((resolve, reject) => {
