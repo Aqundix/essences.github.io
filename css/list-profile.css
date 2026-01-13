@@ -181,3 +181,15 @@ body {
 
 .auth-confirm { background: #ed4245; color: white; }
 .auth-cancel { background: #4f545c; color: white; }
+
+/* ปุ่มปกติ */
+.view-link { background-color: #5865f2; color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px; display: inline-block; }
+
+/* ปุ่มที่คนอื่นจองแล้ว */
+.view-link.locked { background: #ed4245 !important; cursor: not-allowed; opacity: 0.8; }
+
+/* ปุ่มที่จำกัดสิทธิ์ (เครื่องเราจองอันอื่นแล้ว) */
+.view-link.limit { background: #4f545c !important; cursor: not-allowed; opacity: 0.5; }
+
+/* ปุ่มเจ้าของ */
+.view-link.owned { background: #43b581 !important; }
