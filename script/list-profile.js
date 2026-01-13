@@ -31,49 +31,44 @@ async function renderList() {
             const savedData = allData[idStr];
             const defaultAvatar = "img/profile.jpg"; 
 
-            let userData = {
-                name: savedData?.name || "ยังไม่ได้ตั้งชื่อ",
-                tag: `@${idStr.padStart(4, '0')}`,
-                avatar: (savedData?.avatar && savedData.avatar !== "none") ? savedData.avatar : defaultAvatar, 
-                banner: savedData?.banner || "", 
-                isLocked: savedData?.isLocked || false
-            };
+            // ดึงค่า Banner และตรวจสอบความถูกต้อง
+            let bannerStyle = "background-color: #5865f2;"; // สีเริ่มต้น
+            if (savedData?.banner && savedData.banner !== "none" && savedData.banner !== "") {
+                // หากข้อมูลเก็บมาในรูปแบบ url("...") อยู่แล้วให้นำมาใช้เลย
+                bannerStyle = `background-image: ${savedData.banner}; background-size: cover; background-position: center;`;
+            }
 
-            // --- แก้ไข Logic การจำกัดสิทธิ์ 1 คนต่อ 1 โปรไฟล์ ---
+            const isLocked = savedData?.isLocked || false;
+            const isOwner = myOwnedProfile === idStr;
+
+            // --- ระบบจำกัดสิทธิ์ 1 คนต่อ 1 โปรไฟล์ ---
             let actionButton = '';
-            const isLockedByMe = myOwnedProfile === idStr;
-
-            if (userData.isLocked && !isLockedByMe) {
-                // กรณีโปรไฟล์นี้คนอื่นจองแล้ว
-                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #ed4245;">ดูโปรไฟล์ (จองแล้ว)</a>`;
-            } else if (isLockedByMe) {
-                // กรณีโปรไฟล์นี้เป็นของเราเอง
+            if (isLocked && !isOwner) {
+                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #ed4245;">ดูโปรไฟล์</a>`;
+            } else if (isOwner) {
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
             } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-                // กรณีเรามีโปรไฟล์อื่นอยู่แล้ว จะไม่สามารถกดจัดการอันนี้ได้
-                actionButton = `<span class="view-link" style="background: #4f545c; cursor: not-allowed; opacity: 0.5;">จำกัด 1 สิทธิ์</span>`;
+                // มีสิทธิ์อื่นอยู่แล้ว ล็อคปุ่มจัดการ
+                actionButton = `<span class="view-link" style="background: #4f545c; cursor: not-allowed; opacity: 0.6;">จำกัด 1 สิทธิ์</span>`;
             } else {
-                // กรณีว่าง และเรายังไม่มีการจองใดๆ
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
 
-            // --- แก้ไขให้รูปปก (Banner) แสดงผล ---
-            // ตรวจสอบว่า banner มีข้อมูลและไม่ใช่ค่า "none"
-            const hasBanner = userData.banner && userData.banner !== "" && userData.banner !== "none";
-            // ใช้สไตล์ inline เพื่อดึงรูปมาทำเป็นพื้นหลังส่วนบนของ Card
-            const bannerHTML = hasBanner ? `<div class="banner-bg" style="background-image: ${userData.banner}; background-size: cover; background-position: center; height: 60px; width: 100%; position: absolute; top: 0; left: 0; border-radius: 8px 8px 0 0;"></div>` : '';
-
             const itemHTML = `
-                <div class="profile-item" style="position: relative; overflow: hidden; padding-top: 45px; background: #2f3136; border-radius: 8px; margin-bottom: 10px;">
-                    ${bannerHTML}
-                    <div class="user-info" style="position: relative; z-index: 1; padding: 10px;">
-                        <img src="${userData.avatar}" onerror="this.onerror=null; this.src='${defaultAvatar}';" style="width: 50px; height: 50px; border-radius: 50%; border: 3px solid #2f3136;">
-                        <div class="name-details">
-                            <span class="name" style="color: white; font-weight: bold;">${userData.name}</span>
-                            <span class="tag" style="color: #b9bbbe; font-size: 0.8em;">${userData.tag}</span>
+                <div class="profile-item" style="position: relative; overflow: hidden; background: #2f3136; border-radius: 8px; margin-bottom: 12px; min-height: 120px;">
+                    <div class="card-banner" style="position: absolute; top: 0; left: 0; width: 100%; height: 50px; z-index: 0; ${bannerStyle}"></div>
+                    
+                    <div class="user-info" style="position: relative; z-index: 1; padding: 40px 15px 10px 15px; display: flex; align-items: center; gap: 15px;">
+                        <img src="${savedData?.avatar || defaultAvatar}" 
+                             style="width: 60px; height: 60px; border-radius: 50%; border: 4px solid #2f3136; background: #2f3136;"
+                             onerror="this.src='${defaultAvatar}'">
+                        <div class="name-details" style="margin-top: 10px;">
+                            <div class="name" style="color: white; font-weight: bold; font-size: 1.1em;">${savedData?.name || "Username " + idStr}</div>
+                            <div class="tag" style="color: #b9bbbe; font-size: 0.85em;">@${idStr.padStart(4, '0')}</div>
                         </div>
                     </div>
-                    <div style="position: relative; z-index: 1; padding: 0 10px 10px 10px;">
+
+                    <div style="position: relative; z-index: 1; padding: 0 15px 15px 15px;">
                         ${actionButton}
                     </div>
                 </div>
@@ -81,10 +76,14 @@ async function renderList() {
             listDiv.insertAdjacentHTML('beforeend', itemHTML);
         }
     } catch (e) {
-        console.error(e);
-        listDiv.innerHTML = '<p style="text-align:center; color: white;">ดึงข้อมูลล้มเหลว</p>';
+        console.error("Render error:", e);
+        listDiv.innerHTML = '<p style="text-align:center; color: white;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
     }
 }
+
+// โหลดข้อมูลใหม่ทุกครั้งที่กลับมาที่หน้าต่างนี้
+window.addEventListener('focus', renderList);
+renderList();
 
 window.addEventListener('focus', renderList);
 renderList();
