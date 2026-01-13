@@ -26,22 +26,22 @@
                 </div>
 
                 <div class="profile-actions">
-                    <button class="edit-btn" onclick="openModal()">
+                    <button id="editBtn" class="edit-btn" onclick="openModal()" style="display:none;">
                         <i class="fa-solid fa-pen"></i> Edit Profile
                     </button>
                     <button id="resetOwnershipBtn" class="reset-owner-btn" onclick="releaseProfile()" style="display:none;">
-                        <i class="fa-solid fa-arrow-rotate-left"></i> Restore
+                        <i class="fa-solid fa-arrow-rotate-left"></i> Restore Ownership
                     </button>
                 </div>
             </div>
 
             <div class="profile-body">
-                <h2 id="displayName">Username</h2>
+                <h2 id="displayName">Loading...</h2>
                 <p class="tag" id="displayTag">@0000</p> 
                 <hr>
                 <div class="section">
                     <h3>About Me</h3>
-                    <p id="displayAbout">คลิกปุ่ม Edit เพื่อเริ่มแก้ไขโปรไฟล์ของคุณ...</p>
+                    <p id="displayAbout">กรุณารอสักครู่ กำลังโหลดข้อมูล...</p>
                 </div>
             </div>
         </div>
@@ -76,18 +76,18 @@
         </div>
     </div>
 
-    <div class="modal" id="editModal">
+    <div class="modal" id="editModal" style="display: none;">
         <div class="modal-content">
             <h3>Edit Profile & Socials</h3>
             
             <label>Display Name</label>
-            <input type="text" id="inputName" maxlength="32">
+            <input type="text" id="inputName" maxlength="32" placeholder="ใส่ชื่อของคุณ">
             
             <label>About Me</label>
             <textarea id="inputAbout" rows="3" maxlength="255" oninput="updateCharCount()"></textarea>
             <div id="charCounter" class="char-counter">0 / 255</div>
 
-            <label>Avatar (JPG, PNG, GIF)</label>
+            <label>Avatar (รูปโปรไฟล์)</label>
             <div class="preview-container">
                 <img id="previewAvatar" src="../img/profile.jpg" class="mini-preview">
                 <div class="upload-actions">
@@ -101,7 +101,7 @@
                 </div>
             </div>
 
-            <label>Banner Image</label>
+            <label>Banner Image (รูปพื้นหลัง)</label>
             <div class="preview-container">
                 <div id="previewBanner" class="mini-banner-preview"></div>
                 <div class="upload-actions">
@@ -117,18 +117,18 @@
 
             <hr style="margin: 20px 0; border: 0.5px solid #3f4147;">
 
-            <label>Facebook URL</label>
-            <input type="text" id="inputFB" placeholder="https://www.facebook.com/username">
+            <label><i class="fa-brands fa-facebook"></i> Facebook URL</label>
+            <input type="text" id="inputFB" placeholder="https://www.facebook.com/your-id">
 
-            <label>Instagram URL</label>
-            <input type="text" id="inputIG" placeholder="https://www.instagram.com/username">
+            <label><i class="fa-brands fa-instagram"></i> Instagram URL</label>
+            <input type="text" id="inputIG" placeholder="https://www.instagram.com/your-id">
 
-            <label>GitHub URL</label>
-            <input type="text" id="inputGH" placeholder="https://github.com/username">
+            <label><i class="fa-brands fa-github"></i> GitHub URL</label>
+            <input type="text" id="inputGH" placeholder="https://github.com/your-id">
 
             <div class="modal-actions">
                 <button class="cancel-btn" onclick="closeModal()">Cancel</button>
-                <button class="save-btn" onclick="saveProfile()">Save Changes</button>
+                <button id="mainSaveBtn" class="save-btn" onclick="saveProfile()">Save Changes</button>
             </div>
         </div>
     </div>
