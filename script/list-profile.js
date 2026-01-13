@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+// เพิ่ม "remove" ในการ import
+import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
@@ -31,44 +32,43 @@ async function renderList() {
             const savedData = allData[idStr];
             const defaultAvatar = "img/profile.jpg"; 
 
-            // ดึงค่า Banner และตรวจสอบความถูกต้อง
-            let bannerStyle = "background-color: #5865f2;"; // สีเริ่มต้น
+            // --- แก้ไข Logic Banner ให้แม่นยำขึ้น ---
+            let bannerDisplay = "background-color: #5865f2;"; 
             if (savedData?.banner && savedData.banner !== "none" && savedData.banner !== "") {
-                // หากข้อมูลเก็บมาในรูปแบบ url("...") อยู่แล้วให้นำมาใช้เลย
-                bannerStyle = `background-image: ${savedData.banner}; background-size: cover; background-position: center;`;
+                // ตรวจสอบว่ามี url() ครอบอยู่หรือยัง ถ้าไม่มีให้เติม
+                const bVal = savedData.banner.includes('url(') ? savedData.banner : `url("${savedData.banner}")`;
+                bannerDisplay = `background-image: ${bVal}; background-size: cover; background-position: center;`;
             }
 
             const isLocked = savedData?.isLocked || false;
             const isOwner = myOwnedProfile === idStr;
 
-            // --- ระบบจำกัดสิทธิ์ 1 คนต่อ 1 โปรไฟล์ ---
             let actionButton = '';
             if (isLocked && !isOwner) {
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #ed4245;">ดูโปรไฟล์</a>`;
             } else if (isOwner) {
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
             } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-                // มีสิทธิ์อื่นอยู่แล้ว ล็อคปุ่มจัดการ
                 actionButton = `<span class="view-link" style="background: #4f545c; cursor: not-allowed; opacity: 0.6;">จำกัด 1 สิทธิ์</span>`;
             } else {
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
 
             const itemHTML = `
-                <div class="profile-item" style="position: relative; overflow: hidden; background: #2f3136; border-radius: 8px; margin-bottom: 12px; min-height: 120px;">
-                    <div class="card-banner" style="position: absolute; top: 0; left: 0; width: 100%; height: 50px; z-index: 0; ${bannerStyle}"></div>
+                <div class="profile-item" style="position: relative; overflow: hidden; background: #2f3136; border-radius: 8px; margin-bottom: 12px; min-height: 120px; border: 1px solid #444;">
+                    <div class="card-banner" style="position: absolute; top: 0; left: 0; width: 100%; height: 60px; z-index: 0; ${bannerDisplay}"></div>
                     
-                    <div class="user-info" style="position: relative; z-index: 1; padding: 40px 15px 10px 15px; display: flex; align-items: center; gap: 15px;">
+                    <div class="user-info" style="position: relative; z-index: 1; padding: 45px 15px 10px 15px; display: flex; align-items: center; gap: 15px;">
                         <img src="${savedData?.avatar || defaultAvatar}" 
-                             style="width: 60px; height: 60px; border-radius: 50%; border: 4px solid #2f3136; background: #2f3136;"
+                             style="width: 65px; height: 65px; border-radius: 50%; border: 4px solid #2f3136; background: #2f3136; object-fit: cover;"
                              onerror="this.src='${defaultAvatar}'">
-                        <div class="name-details" style="margin-top: 10px;">
+                        <div class="name-details" style="margin-top: 15px;">
                             <div class="name" style="color: white; font-weight: bold; font-size: 1.1em;">${savedData?.name || "Username " + idStr}</div>
                             <div class="tag" style="color: #b9bbbe; font-size: 0.85em;">@${idStr.padStart(4, '0')}</div>
                         </div>
                     </div>
 
-                    <div style="position: relative; z-index: 1; padding: 0 15px 15px 15px;">
+                    <div style="position: relative; z-index: 1; padding: 5px 15px 15px 15px;">
                         ${actionButton}
                     </div>
                 </div>
@@ -81,18 +81,20 @@ async function renderList() {
     }
 }
 
-window.addEventListener('focus', renderList);
-renderList();
+// --- ส่วน Admin Functions ---
 
-// ผูกฟังก์ชันเข้ากับหน้าต่าง (window) เพื่อให้ HTML เรียกใช้งานได้
 window.openAuthModal = function() { 
-    document.getElementById('adminAuthModal').style.display = 'flex'; 
+    const modal = document.getElementById('adminAuthModal');
+    if(modal) modal.style.display = 'flex'; 
 };
 
 window.closeAuthModal = function() { 
-    document.getElementById('adminAuthModal').style.display = 'none'; 
-    document.getElementById('adminUser').value = '';
-    document.getElementById('adminPass').value = '';
+    const modal = document.getElementById('adminAuthModal');
+    if(modal) {
+        modal.style.display = 'none'; 
+        document.getElementById('adminUser').value = '';
+        document.getElementById('adminPass').value = '';
+    }
 };
 
 window.verifyAndReset = async function() {
@@ -100,14 +102,15 @@ window.verifyAndReset = async function() {
     const pass = document.getElementById('adminPass').value;
 
     if (user === "admin" && pass === "admin") {
-        if (confirm("ยืนยันการล้างข้อมูลทั้งหมดบน Server?")) {
+        if (confirm("!!! คำเตือน !!!\nยืนยันการล้างข้อมูลทั้งหมดบน Server? การกระทำนี้ไม่สามารถย้อนกลับได้")) {
             try {
+                // เรียกใช้ remove() ที่ Import มาแล้ว
                 await remove(ref(db, 'members'));
                 localStorage.clear();
-                alert("รีเซ็ตระบบเรียบร้อย!");
+                alert("รีเซ็ตระบบเรียบร้อยแล้ว!");
                 location.reload(); 
             } catch (e) {
-                alert("เกิดข้อผิดพลาด: " + e.message);
+                alert("เกิดข้อผิดพลาดขณะลบข้อมูล: " + e.message);
             }
         }
     } else { 
@@ -115,9 +118,13 @@ window.verifyAndReset = async function() {
     }
 };
 
-window.onclick = (e) => { 
-    if (e.target.id === 'adminAuthModal') window.closeAuthModal(); 
-};
+// ปิด Modal เมื่อคลิกข้างนอก
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('adminAuthModal');
+    if (e.target === modal) window.closeAuthModal();
+});
 
-window.addEventListener('focus', renderList);
+// รันครั้งแรกเมื่อโหลดหน้า
 renderList();
+// รีเฟรชข้อมูลเมื่อหน้าต่างกลับมาได้รับความสนใจ (Focus)
+window.addEventListener('focus', renderList);
