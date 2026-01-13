@@ -1,5 +1,4 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-// เพิ่ม "remove" ในการ import
 import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -23,7 +22,6 @@ async function renderList() {
     try {
         const snapshot = await get(ref(db, 'members'));
         const allData = snapshot.exists() ? snapshot.val() : {};
-
         listDiv.innerHTML = '';
         const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
@@ -32,12 +30,11 @@ async function renderList() {
             const savedData = allData[idStr];
             const defaultAvatar = "img/profile.jpg"; 
 
-            // --- แก้ไข Logic Banner ให้แม่นยำขึ้น ---
-            let bannerDisplay = "background-color: #5865f2;"; 
+            // --- แก้ไข Logic การแสดง Banner ---
+            let bannerInlineStyle = ""; 
             if (savedData?.banner && savedData.banner !== "none" && savedData.banner !== "") {
-                // ตรวจสอบว่ามี url() ครอบอยู่หรือยัง ถ้าไม่มีให้เติม
                 const bVal = savedData.banner.includes('url(') ? savedData.banner : `url("${savedData.banner}")`;
-                bannerDisplay = `background-image: ${bVal}; background-size: cover; background-position: center;`;
+                bannerDisplay = `background-image: ${bVal};`;
             }
 
             const isLocked = savedData?.isLocked || false;
@@ -45,7 +42,7 @@ async function renderList() {
 
             let actionButton = '';
             if (isLocked && !isOwner) {
-                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #ed4245;">ดูโปรไฟล์</a>`;
+                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #5865f2;">ดูโปรไฟล์</a>`;
             } else if (isOwner) {
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
             } else if (myOwnedProfile && myOwnedProfile !== idStr) {
@@ -55,19 +52,17 @@ async function renderList() {
             }
 
             const itemHTML = `
-                <div class="profile-item" style="position: relative; overflow: hidden; background: #2f3136; border-radius: 8px; margin-bottom: 12px; min-height: 120px; border: 1px solid #444;">
-                    <div class="card-banner" style="position: absolute; top: 0; left: 0; width: 100%; height: 60px; z-index: 0; ${bannerDisplay}"></div>
-                    
-                    <div class="user-info" style="position: relative; z-index: 1; padding: 45px 15px 10px 15px; display: flex; align-items: center; gap: 15px;">
+                <div class="profile-item">
+                    <div class="card-banner" style="${bannerDisplay}"></div>
+                    <div class="user-info">
                         <img src="${savedData?.avatar || defaultAvatar}" 
-                             style="width: 65px; height: 65px; border-radius: 50%; border: 4px solid #2f3136; background: #2f3136; object-fit: cover;"
+                             style="width: 65px; height: 65px; border-radius: 50%; border: 4px solid #2f3136; object-fit: cover;"
                              onerror="this.src='${defaultAvatar}'">
-                        <div class="name-details" style="margin-top: 15px;">
+                        <div class="name-details" style="margin-top: 15px; position: relative; z-index: 2;">
                             <div class="name" style="color: white; font-weight: bold; font-size: 1.1em;">${savedData?.name || "Username " + idStr}</div>
                             <div class="tag" style="color: #b9bbbe; font-size: 0.85em;">@${idStr.padStart(4, '0')}</div>
                         </div>
                     </div>
-
                     <div style="position: relative; z-index: 1; padding: 5px 15px 15px 15px;">
                         ${actionButton}
                     </div>
@@ -81,50 +76,30 @@ async function renderList() {
     }
 }
 
-// --- ส่วน Admin Functions ---
-
-window.openAuthModal = function() { 
-    const modal = document.getElementById('adminAuthModal');
-    if(modal) modal.style.display = 'flex'; 
-};
-
-window.closeAuthModal = function() { 
-    const modal = document.getElementById('adminAuthModal');
-    if(modal) {
-        modal.style.display = 'none'; 
-        document.getElementById('adminUser').value = '';
-        document.getElementById('adminPass').value = '';
-    }
-};
+// --- ฟังก์ชัน Admin (แก้ไขให้ใช้งานได้จริง) ---
+window.openAuthModal = () => document.getElementById('adminAuthModal').style.display = 'flex';
+window.closeAuthModal = () => document.getElementById('adminAuthModal').style.display = 'none';
 
 window.verifyAndReset = async function() {
     const user = document.getElementById('adminUser').value;
     const pass = document.getElementById('adminPass').value;
 
     if (user === "admin" && pass === "admin") {
-        if (confirm("!!! คำเตือน !!!\nยืนยันการล้างข้อมูลทั้งหมดบน Server? การกระทำนี้ไม่สามารถย้อนกลับได้")) {
+        if (confirm("ยืนยันการล้างข้อมูลทั้งหมด? ข้อมูลในระบบจะหายถาวร")) {
             try {
-                // เรียกใช้ remove() ที่ Import มาแล้ว
-                await remove(ref(db, 'members'));
+                await remove(ref(db, 'members')); // ต้องมี remove ใน import ด้านบน
                 localStorage.clear();
-                alert("รีเซ็ตระบบเรียบร้อยแล้ว!");
-                location.reload(); 
+                alert("รีเซ็ตเรียบร้อย!");
+                location.reload();
             } catch (e) {
-                alert("เกิดข้อผิดพลาดขณะลบข้อมูล: " + e.message);
+                alert("Error: " + e.message);
             }
         }
-    } else { 
-        alert("รหัสผ่านไม่ถูกต้อง"); 
+    } else {
+        alert("Username หรือ Password ไม่ถูกต้อง");
     }
 };
 
-// ปิด Modal เมื่อคลิกข้างนอก
-window.addEventListener('click', (e) => {
-    const modal = document.getElementById('adminAuthModal');
-    if (e.target === modal) window.closeAuthModal();
-});
-
-// รันครั้งแรกเมื่อโหลดหน้า
+// เริ่มรันระบบ
 renderList();
-// รีเฟรชข้อมูลเมื่อหน้าต่างกลับมาได้รับความสนใจ (Focus)
 window.addEventListener('focus', renderList);
