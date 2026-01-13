@@ -19,9 +19,11 @@ const db = getDatabase(app);
 const listDiv = document.getElementById('member-list');
 
 /** ดึงรายชื่อสมาชิกมาแสดงผล **/
+// ... (ส่วน Import และ Config เหมือนเดิม) ...
+
 async function renderList() {
     if (!listDiv) return;
-    listDiv.innerHTML = '<p style="text-align:center; color: white;">กำลังโหลดข้อมูลจาก Server...</p>';
+    listDiv.innerHTML = '<p style="text-align:center; color: white;">กำลังโหลดข้อมูล...</p>';
     
     try {
         const snapshot = await get(ref(db, 'members'));
@@ -34,50 +36,58 @@ async function renderList() {
             const idStr = i.toString();
             const savedData = allData[idStr];
             const defaultAvatar = "img/profile.jpg"; 
-    
+
             let userData = {
                 name: savedData?.name || "ยังไม่ได้ตั้งชื่อ",
                 tag: `@${idStr.padStart(4, '0')}`,
-                avatar: (savedData?.avatar && savedData.avatar !== "none") ? savedData.avatar : defaultAvatar,
+                avatar: (savedData?.avatar && savedData.avatar !== "none") ? savedData.avatar : defaultAvatar, 
+                banner: savedData?.banner || "", // ดึงค่า Banner
                 isLocked: savedData?.isLocked || false
             };
-    
+
+            // --- Logic การจัดการสิทธิ์ 1 คนต่อ 1 สิทธิ์ ---
             let actionButton = '';
-            const myOwnedProfile = localStorage.getItem('my_owned_profile');
             const isLockedByMe = myOwnedProfile === idStr;
-    
-            // ปุ่มดูโปรไฟล์ (มีให้กดทุกคน)
-            const viewBtn = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #5865f2;">ดูโปรไฟล์</a>`;
-    
+
             if (userData.isLocked && !isLockedByMe) {
-                actionButton = `${viewBtn} <span class="status-tag locked">ถูกจองแล้ว</span>`;
+                // โปรไฟล์นี้คนอื่นจองแล้ว
+                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #ed4245;">ดูโปรไฟล์ (จองแล้ว)</a>`;
             } else if (isLockedByMe) {
+                // โปรไฟล์นี้เป็นของคุณ
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
+            } else if (myOwnedProfile && myOwnedProfile !== idStr) {
+                // คุณจองไอดีอื่นไปแล้ว (จำกัดสิทธิ์)
+                actionButton = `<span class="view-link" style="background: #4f545c; cursor: not-allowed; opacity: 0.5;">จำกัด 1 สิทธิ์</span>`;
             } else {
+                // ยังว่างและคุณยังไม่มีการจอง
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
 
+            // จัดการเรื่องรูปแบนเนอร์ให้แสดงผล
             const hasBanner = userData.banner && userData.banner !== "" && userData.banner !== "none";
-            const bannerTag = hasBanner ? `<img src="${userData.banner}" class="banner-bg">` : '';
+            // ถ้ามี Banner ให้แสดงเป็น img tag หรือใช้สไตล์ background
+            const bannerHTML = hasBanner ? `<div class="banner-bg" style="background-image: ${userData.banner}; background-size: cover; background-position: center; height: 60px; width: 100%; position: absolute; top: 0; left: 0; z-index: 0;"></div>` : '';
 
             const itemHTML = `
-                <div class="profile-item">
-                    ${bannerTag}
-                    <div class="user-info">
+                <div class="profile-item" style="position: relative; overflow: hidden; padding-top: 40px;">
+                    ${bannerHTML}
+                    <div class="user-info" style="position: relative; z-index: 1;">
                         <img src="${userData.avatar}" onerror="this.onerror=null; this.src='${defaultAvatar}';">
                         <div class="name-details">
                             <span class="name">${userData.name}</span>
                             <span class="tag">${userData.tag}</span>
                         </div>
                     </div>
-                    ${actionButton}
+                    <div style="position: relative; z-index: 1;">
+                        ${actionButton}
+                    </div>
                 </div>
             `;
             listDiv.insertAdjacentHTML('beforeend', itemHTML);
         }
     } catch (e) {
-        console.error("Firebase Error:", e);
-        listDiv.innerHTML = '<p style="text-align:center; color: white;">ไม่สามารถดึงข้อมูลได้</p>';
+        console.error(e);
+        listDiv.innerHTML = '<p style="text-align:center; color: white;">ดึงข้อมูลล้มเหลว</p>';
     }
 }
 
