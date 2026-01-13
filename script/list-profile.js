@@ -34,29 +34,25 @@ async function renderList() {
             const idStr = i.toString();
             const savedData = allData[idStr];
             const defaultAvatar = "img/profile.jpg"; 
-
+    
             let userData = {
                 name: savedData?.name || "ยังไม่ได้ตั้งชื่อ",
                 tag: `@${idStr.padStart(4, '0')}`,
-                avatar: (savedData?.avatar && savedData.avatar !== "none") ? savedData.avatar : defaultAvatar, 
-                banner: savedData?.banner || "",
+                avatar: (savedData?.avatar && savedData.avatar !== "none") ? savedData.avatar : defaultAvatar,
                 isLocked: savedData?.isLocked || false
             };
-
-            if (userData.banner) {
-                userData.banner = userData.banner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
-            }
-
+    
             let actionButton = '';
-            const isLockedByOthers = userData.isLocked && myOwnedProfile !== idStr;
+            const myOwnedProfile = localStorage.getItem('my_owned_profile');
             const isLockedByMe = myOwnedProfile === idStr;
-
-            if (isLockedByOthers) {
-                actionButton = `<span class="view-link locked" style="background: #ed4245; cursor: not-allowed; opacity: 0.8;">ถูกจองแล้ว</span>`;
+    
+            // ปุ่มดูโปรไฟล์ (มีให้กดทุกคน)
+            const viewBtn = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #5865f2;">ดูโปรไฟล์</a>`;
+    
+            if (userData.isLocked && !isLockedByMe) {
+                actionButton = `${viewBtn} <span class="status-tag locked">ถูกจองแล้ว</span>`;
             } else if (isLockedByMe) {
-                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link owned" style="background: #43b581;">แก้ไขของคุณ</a>`;
-            } else if (myOwnedProfile && !isLockedByMe) {
-                actionButton = `<span class="view-link limit" style="background: #4f545c; cursor: not-allowed; opacity: 0.5;">จำกัด 1 สิทธิ์</span>`;
+                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
             } else {
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
