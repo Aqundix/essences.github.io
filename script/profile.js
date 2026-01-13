@@ -4,6 +4,9 @@ const userId = urlParams.get('id') || "1";
 const DEFAULT_AVATAR = "../img/profile.jpg";
 const DEFAULT_BANNER_COLOR = "#5865f2";
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
     authDomain: "aqundix-d3f38.firebaseapp.com",
@@ -14,6 +17,27 @@ const firebaseConfig = {
     measurementId: "G-NC6SKF25ZB"
 };
 
+async function saveProfile() {
+    // ... ดึงค่าจาก input เหมือนเดิม ...
+    const newData = {
+        id: userId,
+        name: document.getElementById('inputName').value,
+        about: document.getElementById('inputAbout').value,
+        avatar: document.getElementById('previewAvatar').src,
+        banner: document.getElementById('previewBanner').style.backgroundImage,
+        isLocked: true
+    };
+
+    try {
+        const db = getDatabase();
+        await set(ref(db, 'members/' + userId), newData);
+        localStorage.setItem('my_owned_profile', userId);
+        alert("บันทึกสำเร็จ! ทุกคนจะเห็นโปรไฟล์ของคุณแล้ว");
+        closeModal();
+    } catch (e) {
+        alert("บันทึกล้มเหลว: " + e.message);
+    }
+}
 // --- ตั้งค่าระบบฐานข้อมูล (IndexedDB) ---
 const dbName = "ProfileDB";
 const storeName = "member_data";
