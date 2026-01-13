@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+// ข้อมูล Config จากหน้าจอของคุณ (ภาพที่ 1)
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
     authDomain: "aqundix-d3f38.firebaseapp.com",
@@ -18,7 +19,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('id') || "1";
 const DEFAULT_AVATAR = "../img/profile.jpg";
 
-// --- ฟังก์ชันหลักที่ผูกกับ HTML ---
+// --- ฟังก์ชันสำหรับ UI ---
 
 window.openModal = function() {
     document.getElementById('editModal').style.display = 'flex';
@@ -58,21 +59,21 @@ window.removeImage = function(previewId, type) {
     }
 };
 
-// ฟังก์ชันเซฟข้อมูลแบบ Merge (ป้องกันข้อมูลส่วนอื่นหาย)
+// --- ฟังก์ชันจัดการข้อมูล ---
+
 window.saveProfile = async function() {
     const saveBtn = document.getElementById('mainSaveBtn');
     saveBtn.disabled = true;
-    saveBtn.innerText = "Saving...";
+    saveBtn.innerText = "กำลังบันทึก...";
 
     try {
-        // ดึงข้อมูลเดิมมากันเหนียว
         const snapshot = await get(ref(db, 'members/' + userId));
         const oldData = snapshot.val() || {};
 
         const newData = {
             id: userId,
             name: document.getElementById('inputName').value || oldData.name || `Username ${userId}`,
-            about: document.getElementById('inputAbout').value || oldData.about || "No bio yet.",
+            about: document.getElementById('inputAbout').value || oldData.about || "ยังไม่ได้ตั้ง Bio",
             avatar: document.getElementById('previewAvatar').src,
             banner: document.getElementById('previewBanner').style.backgroundImage || oldData.banner || "",
             fb: document.getElementById('inputFB').value || "",
@@ -86,14 +87,14 @@ window.saveProfile = async function() {
         alert("บันทึกข้อมูลเรียบร้อย!");
         location.reload();
     } catch (e) {
-        alert("Error: " + e.message);
+        alert("เกิดข้อผิดพลาด: " + e.message);
         saveBtn.disabled = false;
         saveBtn.innerText = "Save Changes";
     }
 };
 
 window.releaseProfile = async function() {
-    if (!confirm("ต้องการลบข้อมูลและคืนสิทธิ์โปรไฟล์นี้ใช่หรือไม่?")) return;
+    if (!confirm("คุณต้องการลบข้อมูลและคืนสิทธิ์โปรไฟล์นี้ใช่หรือไม่?")) return;
     try {
         await remove(ref(db, 'members/' + userId));
         localStorage.removeItem('my_owned_profile');
@@ -104,7 +105,7 @@ window.releaseProfile = async function() {
     }
 };
 
-// --- ฟังก์ชันโหลดข้อมูลและตรวจสอบสิทธิ์ (แก้ปัญหาปุ่มหาย) ---
+// --- ฟังก์ชันโหลดข้อมูล (แก้ไขเรื่องปุ่มหาย) ---
 
 async function loadProfile() {
     const myOwnedProfile = localStorage.getItem('my_owned_profile');
@@ -114,39 +115,32 @@ async function loadProfile() {
         const snapshot = await get(ref(db, 'members/' + userId));
         const data = snapshot.val();
 
-        // 1. จัดการการแสดงผลปุ่ม (Edit / Restore)
-        if (!data || !data.isLocked) {
-            // ถ้ายังไม่มีใครจอง
-            if (!myOwnedProfile) {
-                document.getElementById('editBtn').style.display = 'inline-block';
-            }
-        } else if (myOwnedProfile === userId) {
-            // ถ้าเราเป็นเจ้าของ
-            document.getElementById('editBtn').style.display = 'inline-block';
-            document.getElementById('resetOwnershipBtn').style.display = 'inline-block';
-        }
-
-        // 2. แสดงผลข้อมูล (ถ้าไม่มีให้ใช้ค่าเริ่มต้น)
+        // แสดงข้อมูลพื้นฐาน (ป้องกัน Loading ค้าง)
         document.getElementById('displayName').innerText = data?.name || `Username ${userId}`;
         document.getElementById('displayTag').innerText = formattedTag;
         document.getElementById('displayAbout').innerText = data?.about || "คลิกปุ่ม Edit เพื่อเริ่มแก้ไขโปรไฟล์ของคุณ...";
         document.getElementById('displayAvatar').src = data?.avatar || DEFAULT_AVATAR;
+        if (data?.banner) document.getElementById('displayBanner').style.backgroundImage = data.banner;
+
+        // เช็คสิทธิ์เพื่อโชว์ปุ่ม
+        const isLocked = data?.isLocked || false;
+        const isOwner = myOwnedProfile === userId;
+
+        if (!isLocked || isOwner) {
+            document.getElementById('editBtn').style.display = 'inline-block';
+        }
         
-        if (data?.banner) {
-            document.getElementById('displayBanner').style.backgroundImage = data.banner;
+        if (isOwner) {
+            document.getElementById('resetOwnershipBtn').style.display = 'inline-block';
         }
 
-        // 3. ใส่ข้อมูลลงใน Modal (Input) เผื่อไว้ตอนกดแก้ไข
+        // ใส่ข้อมูลลง Modal
         if (data) {
             document.getElementById('inputName').value = data.name || "";
             document.getElementById('inputAbout').value = data.about || "";
             document.getElementById('previewAvatar').src = data.avatar || DEFAULT_AVATAR;
             document.getElementById('previewBanner').style.backgroundImage = data.banner || "";
-            document.getElementById('inputFB').value = data.fb || "";
-            document.getElementById('inputIG').value = data.ig || "";
-            document.getElementById('inputGH').value = data.gh || "";
             
-            // Social Card
             if (data.fb || data.ig || data.gh) {
                 document.getElementById('socialCard').style.display = 'block';
                 if (data.fb) { document.getElementById('itemFB').style.display = 'flex'; document.getElementById('linkFB').href = data.fb; }
@@ -154,11 +148,9 @@ async function loadProfile() {
                 if (data.gh) { document.getElementById('itemGH').style.display = 'flex'; document.getElementById('linkGH').href = data.gh; }
             }
         }
-
     } catch (e) {
         console.error("Load error:", e);
     }
 }
 
-// รันเมื่อโหลดหน้าจอ
 window.onload = loadProfile;
