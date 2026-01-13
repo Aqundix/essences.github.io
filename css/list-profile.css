@@ -15,20 +15,39 @@ body {
     margin-bottom: 30px; 
 }
 
-/* แถบรายชื่อสมาชิกแต่ละคน */
+/* ปรับแต่งส่วนไอเทมโปรไฟล์ */
 .profile-item {
     position: relative;
-    margin-bottom: 12px;
-    padding: 15px 20px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: 0.3s;
-    border: 1px solid rgba(255,255,255,0.05);
     overflow: hidden;
     background: #2f3136;
-    min-height: 85px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    min-height: 120px;
+    border: 1px solid #444;
+}
+
+/* คลาสสำหรับ Banner */
+.card-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px; /* ความสูงของ Banner */
+    z-index: 0;
+    background-color: #5865f2; /* สีสำรองถ้าไม่มีรูป */
+    background-size: cover;
+    background-position: center;
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+}
+
+/* บังคับให้ข้อมูลผู้ใช้อยู่เหนือ Banner */
+.user-info {
+    position: relative;
+    z-index: 1;
+    padding: 40px 15px 10px 15px; /* ดันรูปลงมาให้ทับขอบ Banner */
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 /* ภาพแบนเนอร์พื้นหลัง */
@@ -61,12 +80,6 @@ body {
 .user-info, .view-link {
     position: relative;
     z-index: 2;
-}
-
-.user-info { 
-    display: flex; 
-    align-items: center; 
-    gap: 15px; 
 }
 
 .user-info img {
