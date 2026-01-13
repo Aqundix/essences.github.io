@@ -1,12 +1,8 @@
 // 1. นำเข้า Firebase SDK แบบ CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const listDiv = document.getElementById('member-list');
-const dbName = "ProfileDB";
-const storeName = "member_data";
-
-// 2. ตั้งค่า Firebase Config (จากข้อมูลที่คุณให้มา)
+// 2. ตั้งค่า Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
     authDomain: "aqundix-d3f38.firebaseapp.com",
@@ -22,13 +18,12 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const listDiv = document.getElementById('member-list');
 
-/** ดึงรายชื่อสมาชิกมาแสดงผลจาก Firebase **/
+/** ดึงรายชื่อสมาชิกมาแสดงผล **/
 async function renderList() {
     if (!listDiv) return;
     listDiv.innerHTML = '<p style="text-align:center; color: white;">กำลังโหลดข้อมูลจาก Server...</p>';
     
     try {
-        // ดึงข้อมูลทั้งหมดจาก Path "members" ใน Firebase
         const snapshot = await get(ref(db, 'members'));
         const allData = snapshot.exists() ? snapshot.val() : {};
 
@@ -37,9 +32,7 @@ async function renderList() {
 
         for (let i = 1; i <= 15; i++) {
             const idStr = i.toString();
-            // ดึงข้อมูลสมาชิกจาก Firebase ตาม ID
             const savedData = allData[idStr];
-            
             const defaultAvatar = "img/profile.jpg"; 
 
             let userData = {
@@ -50,12 +43,10 @@ async function renderList() {
                 isLocked: savedData?.isLocked || false
             };
 
-            // จัดการเรื่องรูปแบนเนอร์
             if (userData.banner) {
                 userData.banner = userData.banner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
             }
 
-            // --- Logic การจัดการสิทธิ์ปุ่ม ---
             let actionButton = '';
             const isLockedByOthers = userData.isLocked && myOwnedProfile !== idStr;
             const isLockedByMe = myOwnedProfile === idStr;
@@ -90,25 +81,20 @@ async function renderList() {
         }
     } catch (e) {
         console.error("Firebase Error:", e);
-        listDiv.innerHTML = '<p style="text-align:center; color: white;">ไม่สามารถดึงข้อมูลจาก Server ได้</p>';
+        listDiv.innerHTML = '<p style="text-align:center; color: white;">ไม่สามารถดึงข้อมูลได้</p>';
     }
 }
 
-/** ระบบอัปเดตข้อมูลอัตโนมัติเมื่อกลับมาที่หน้าเดิม **/
-window.addEventListener('focus', () => {
-    renderList(); 
-});
-
-/** ระบบ Admin สำหรับ Reset ข้อมูล (ใน Firebase) **/
+// ผูกฟังก์ชันเข้ากับหน้าต่าง (window) เพื่อให้ HTML เรียกใช้งานได้
 window.openAuthModal = function() { 
     document.getElementById('adminAuthModal').style.display = 'flex'; 
-}
+};
 
 window.closeAuthModal = function() { 
     document.getElementById('adminAuthModal').style.display = 'none'; 
     document.getElementById('adminUser').value = '';
     document.getElementById('adminPass').value = '';
-}
+};
 
 window.verifyAndReset = async function() {
     const user = document.getElementById('adminUser').value;
@@ -117,25 +103,22 @@ window.verifyAndReset = async function() {
     if (user === "admin" && pass === "admin") {
         if (confirm("ยืนยันการล้างข้อมูลทั้งหมดบน Server?")) {
             try {
-                // คำสั่งลบข้อมูลใน Path "members" ทั้งหมดบน Firebase
-                const { getDatabase, ref, remove } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
-                await remove(ref(getDatabase(), 'members'));
-                
+                await remove(ref(db, 'members'));
                 localStorage.clear();
-                alert("รีเซ็ตระบบบน Cloud เรียบร้อย!");
+                alert("รีเซ็ตระบบเรียบร้อย!");
                 location.reload(); 
             } catch (e) {
-                alert("เกิดข้อผิดพลาดในการรีเซ็ต: " + e.message);
+                alert("เกิดข้อผิดพลาด: " + e.message);
             }
         }
     } else { 
         alert("รหัสผ่านไม่ถูกต้อง"); 
     }
-}
+};
 
 window.onclick = (e) => { 
     if (e.target.id === 'adminAuthModal') window.closeAuthModal(); 
-}
+};
 
-// รันครั้งแรกเมื่อโหลดหน้า
+window.addEventListener('focus', renderList);
 renderList();
