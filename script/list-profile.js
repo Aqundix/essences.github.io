@@ -19,7 +19,8 @@ function initDB() {
 
 /** ดึงรายชื่อสมาชิกมาแสดงผลพร้อมระบบตรวจสอบสิทธิ์ **/
 async function renderList() {
-    listDiv.innerHTML = '<p style="text-align:center;">กำลังโหลดข้อมูลสมาชิก...</p>';
+    if (!listDiv) return;
+    
     try {
         const db = await initDB();
         const transaction = db.transaction(storeName, "readonly");
@@ -30,13 +31,11 @@ async function renderList() {
             const allData = allRecordsRequest.result;
             listDiv.innerHTML = '';
             
-            // ดึง ID ที่เครื่องนี้เป็นเจ้าของจาก localStorage
             const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
             for (let i = 1; i <= 15; i++) {
                 const idStr = i.toString();
                 const savedData = allData.find(item => item.id === idStr);
-
                 const defaultAvatar = "img/profile.jpg"; 
 
                 let userData = {
@@ -56,33 +55,23 @@ async function renderList() {
                     userData.banner = rawBanner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
                 }
 
-                // --- ส่วนคำนวณปุ่ม Action ตามเงื่อนไขสิทธิ์ ---
+                // --- Logic การจัดการสิทธิ์ปุ่ม ---
                 let actionButton = '';
                 const isLockedByOthers = userData.isLocked && myOwnedProfile !== idStr;
                 const isLockedByMe = myOwnedProfile === idStr;
 
                 if (isLockedByOthers) {
-                    // 1. ถ้ามีคนอื่นจองไปแล้ว
-                    actionButton = `<span class="view-link" style="background: #ed4245; cursor: not-allowed; opacity: 0.8;">ถูกจองแล้ว</span>`;
+                    actionButton = `<span class="view-link locked">ถูกจองแล้ว</span>`;
                 } else if (isLockedByMe) {
-                    // 2. ถ้าเครื่องเราเป็นเจ้าของ ID นี้
-                    actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
+                    actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
                 } else if (myOwnedProfile && !isLockedByMe) {
-                    // 3. ถ้าเครื่องเราจองอันอื่นไปแล้ว แต่อันนี้ยังว่างอยู่ (ก็กดไม่ได้)
-                    actionButton = `<span class="view-link" style="background: #4f545c; cursor: not-allowed; opacity: 0.5;">จำกัด 1 สิทธิ์</span>`;
+                    actionButton = `<span class="view-link limit">จำกัด 1 สิทธิ์</span>`;
                 } else {
-                    // 4. ยังไม่มีใครจอง และเครื่องนี้ยังไม่ได้จองใคร
                     actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
                 }
-                // ตรวจสอบว่ามีข้อมูลแบนเนอร์จริง และไม่ใช่ค่าว่าง หรือคำว่า "none"
-                const hasBanner = userData.banner && 
-                    userData.banner !== "" && 
-                    userData.banner !== "none" && 
-                    userData.banner !== "undefined";
 
-                // สร้างแท็ก Banner เฉพาะเมื่อมีข้อมูลรูปภาพเท่านั้น
+                const hasBanner = userData.banner && userData.banner !== "" && userData.banner !== "none";
                 const bannerTag = hasBanner ? `<img src="${userData.banner}" class="banner-bg">` : '';
-
 
                 const itemHTML = `
                     <div class="profile-item">
@@ -105,18 +94,19 @@ async function renderList() {
     }
 }
 
-/** ระบบจัดการ Modal สำหรับ Admin **/
-function openAuthModal() { 
-    document.getElementById('adminAuthModal').style.display = 'flex'; 
-}
+/** ใหม่: ระบบอัปเดตข้อมูลอัตโนมัติเมื่อกลับมาที่หน้าเดิม **/
+window.addEventListener('focus', () => {
+    renderList(); // โหลดข้อมูลใหม่ทันทีที่ผู้ใช้สลับหน้ากลับมา
+});
 
+/** ระบบ Admin และ Reset **/
+function openAuthModal() { document.getElementById('adminAuthModal').style.display = 'flex'; }
 function closeAuthModal() { 
     document.getElementById('adminAuthModal').style.display = 'none'; 
     document.getElementById('adminUser').value = '';
     document.getElementById('adminPass').value = '';
 }
 
-/** ยืนยันรหัสผ่านและล้างข้อมูลทั้งหมด (Reset ระบบ) **/
 async function verifyAndReset() {
     const user = document.getElementById('adminUser').value;
     const pass = document.getElementById('adminPass').value;
@@ -128,22 +118,15 @@ async function verifyAndReset() {
             const store = transaction.objectStore(storeName);
             
             store.clear().onsuccess = () => {
-                // ล้าง localStorage ของ admin เอง และรีเฟรชหน้าเพื่อให้ระบบเริ่มใหม่
                 localStorage.clear();
-                alert("รีเซ็ตระบบเรียบร้อย! ทุกโปรไฟล์เปิดว่างแล้ว");
-                closeAuthModal();
+                alert("รีเซ็ตระบบเรียบร้อย!");
                 location.reload(); 
             };
         }
-    } else { 
-        alert("Username หรือ Password ไม่ถูกต้อง"); 
-    }
+    } else { alert("รหัสผ่านไม่ถูกต้อง"); }
 }
 
-// ปิด Modal เมื่อคลิกนอกกรอบ
-window.onclick = (e) => { 
-    if (e.target.id === 'adminAuthModal') closeAuthModal(); 
-}
+window.onclick = (e) => { if (e.target.id === 'adminAuthModal') closeAuthModal(); }
 
-// เริ่มต้นโหลดรายการเมื่อเปิดหน้าเว็บ
+// รันครั้งแรกเมื่อโหลดหน้า
 renderList();
