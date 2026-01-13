@@ -139,32 +139,32 @@ async function saveProfile() {
     const newData = {
         id: userId,
         name: document.getElementById('inputName').value,
-        tag: document.getElementById('displayTag').innerText,
         about: document.getElementById('inputAbout').value,
-        avatar: document.getElementById('previewAvatar').src,
+        avatar: document.getElementById('previewAvatar').src, // เก็บเป็น Base64 หรือ Path
         banner: document.getElementById('previewBanner').style.backgroundImage,
         fb: document.getElementById('inputFB').value,
         ig: document.getElementById('inputIG').value,
         gh: document.getElementById('inputGH').value,
-        isLocked: true // --- ล็อกสถานะใน DB ว่าโปรไฟล์นี้มีเจ้าของแล้ว ---
+        isLocked: true, // บอกระบบว่าโปรไฟล์นี้มีคนจองแล้ว
+        lastUpdated: new Date().getTime() // เก็บเวลาที่อัปเดตล่าสุด
     };
 
     try {
         const db = await initDB();
         const transaction = db.transaction(storeName, "readwrite");
         const store = transaction.objectStore(storeName);
+        
+        // ใช้ .put() เพื่อเขียนทับข้อมูลเดิมหรือสร้างใหม่หากยังไม่มี
         store.put(newData);
 
         transaction.oncomplete = () => {
-            // --- บันทึก ID ลงในเครื่องผู้ใช้ เพื่อจำว่าเครื่องนี้เป็นเจ้าของ ID นี้ ---
             localStorage.setItem('my_owned_profile', userId);
-            
+            alert("บันทึกและอัปโหลดข้อมูลเข้าสู่ระบบเรียบร้อย!");
             updateDisplay(newData);
             closeModal();
-            alert("บันทึกข้อมูลและยืนยันสิทธิ์การเป็นเจ้าของเรียบร้อย!");
         };
     } catch (e) {
-        alert("บันทึกไม่สำเร็จ: " + e);
+        console.error("Save error:", e);
     }
 }
 
