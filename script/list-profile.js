@@ -2,6 +2,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+const listDiv = document.getElementById('member-list');
+const dbName = "ProfileDB";
+const storeName = "member_data";
+
 // 2. ตั้งค่า Firebase Config (จากข้อมูลที่คุณให้มา)
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
