@@ -28,13 +28,12 @@ async function renderList() {
         for (let i = 1; i <= 15; i++) {
             const idStr = i.toString();
             const savedData = allData[idStr];
-            const defaultAvatar = "img/profile.jpg"; 
-
-            // --- แก้ไข Logic การแสดง Banner ---
-            let bannerInlineStyle = ""; 
+            
+            // ประกาศตัวแปรให้ตรงกัน
+            let bannerStyle = "background-color: #5865f2;"; 
             if (savedData?.banner && savedData.banner !== "none" && savedData.banner !== "") {
                 const bVal = savedData.banner.includes('url(') ? savedData.banner : `url("${savedData.banner}")`;
-                bannerDisplay = `background-image: ${bVal};`;
+                bannerStyle = `background-image: ${bVal}; background-size: cover; background-position: center;`;
             }
 
             const isLocked = savedData?.isLocked || false;
@@ -51,9 +50,11 @@ async function renderList() {
                 actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
 
+                    
+            // ในส่วน itemHTML ให้ใช้ตัวแปร bannerStyle
             const itemHTML = `
                 <div class="profile-item">
-                    <div class="card-banner" style="${bannerDisplay}"></div>
+                    <div class="card-banner" style="${bannerStyle}"></div>
                     <div class="user-info">
                         <img src="${savedData?.avatar || defaultAvatar}" 
                              style="width: 65px; height: 65px; border-radius: 50%; border: 4px solid #2f3136; object-fit: cover;"
