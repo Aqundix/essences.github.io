@@ -33,21 +33,6 @@ window.closeModal = function() {
     document.getElementById('editModal').style.display = 'none';
 };
 
-window.showPreview = function(input, previewId, isBanner = false) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const preview = document.getElementById(previewId);
-            if (isBanner) {
-                preview.style.backgroundImage = `url("${e.target.result}")`;
-            } else {
-                preview.src = e.target.result;
-            }
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-};
-
 window.removeImage = function(previewId, type) {
     const preview = document.getElementById(previewId);
     if (type === 'avatar') {
@@ -63,33 +48,69 @@ window.updateCharCount = function() {
 };
 
 window.saveProfile = async function() {
-    const newData = {
-        id: userId,
-        name: document.getElementById('inputName').value,
-        about: document.getElementById('inputAbout').value,
-        avatar: document.getElementById('previewAvatar').src,
-        banner: document.getElementById('previewBanner').style.backgroundImage,
-        fb: document.getElementById('inputFB').value,
-        ig: document.getElementById('inputIG').value,
-        gh: document.getElementById('inputGH').value,
-        isLocked: true
-    };
+    const saveBtn = document.querySelector('.save-btn');
+    saveBtn.innerText = "กำลังบันทึก...";
+    saveBtn.disabled = true;
 
     try {
+        // 1. ดึงข้อมูลเดิมจาก Server มาก่อนเพื่อป้องกันข้อมูลหาย
+        const snapshot = await get(ref(db, 'members/' + userId));
+        const oldData = snapshot.val() || {};
+
+        // 2. รวบรวมข้อมูลใหม่ (ถ้าอันไหนว่างให้ใช้ค่าเดิม)
+        const newData = {
+            id: userId,
+            name: document.getElementById('inputName').value || oldData.name || "Username",
+            about: document.getElementById('inputAbout').value || oldData.about || "",
+            avatar: document.getElementById('previewAvatar').src, // Base64 จากการเลือกรูป
+            banner: document.getElementById('previewBanner').style.backgroundImage || oldData.banner || "",
+            fb: document.getElementById('inputFB').value || "",
+            ig: document.getElementById('inputIG').value || "",
+            gh: document.getElementById('inputGH').value || "",
+            isLocked: true
+        };
+
+        // 3. บันทึกทับลงไป
         await set(ref(db, 'members/' + userId), newData);
         localStorage.setItem('my_owned_profile', userId);
+        
         alert("บันทึกสำเร็จ!");
-        location.reload();
+        location.reload(); // รีเฟรชเพื่ออัปเดตหน้าจอ
     } catch (e) {
-        alert("บันทึกล้มเหลว: " + e.message);
+        alert("เกิดข้อผิดพลาด: " + e.message);
+        saveBtn.innerText = "Save Changes";
+        saveBtn.disabled = false;
     }
 };
 
 window.releaseProfile = async function() {
-    if (confirm("ต้องการคืนสิทธิ์โปรไฟล์นี้หรือไม่?")) {
+    if (!confirm("ต้องการลบข้อมูลทั้งหมดและคืนสิทธิ์ใช่หรือไม่?")) return;
+
+    try {
+        // ลบข้อมูลออกจาก Firebase
         await remove(ref(db, 'members/' + userId));
+        // ล้างสิทธิ์ในเครื่อง
         localStorage.removeItem('my_owned_profile');
+        alert("ล้างข้อมูลและคืนสิทธิ์สำเร็จ");
         window.location.href = "../index.html";
+    } catch (e) {
+        alert("Error: " + e.message);
+    }
+};
+
+// เพิ่มฟังก์ชันนี้เพื่อจัดการรูปหาย
+window.showPreview = function(input, previewId, isBanner = false) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.getElementById(previewId);
+            if (isBanner) {
+                preview.style.backgroundImage = `url("${e.target.result}")`;
+            } else {
+                preview.src = e.target.result;
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
     }
 };
 
