@@ -1,8 +1,6 @@
-// 1. นำเข้า Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// 2. ข้อมูล Config (ตรวจสอบความถูกต้องจาก Firebase Console ของคุณ)
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
     authDomain: "aqundix-d3f38.firebaseapp.com",
@@ -16,39 +14,52 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ดึง ID จาก URL
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('id') || "1";
 const DEFAULT_AVATAR = "../img/profile.jpg";
-const DEFAULT_BANNER_COLOR = "#5865f2";
 
-/** --- หัวใจสำคัญ: ผูกฟังก์ชันเข้ากับ window เพื่อให้ HTML เรียกใช้งานได้ --- **/
+// --- ฟังก์ชันที่ต้องส่งออกไปให้ HTML (window.) ---
 
 window.openModal = async function() {
-    // ตรวจสอบสิทธิ์ก่อนเปิด
     const myOwnedProfile = localStorage.getItem('my_owned_profile');
     if (myOwnedProfile && myOwnedProfile !== userId) {
-        alert(`คุณได้สิทธิ์ดูแลโปรไฟล์ ID: ${myOwnedProfile} ไปแล้ว ไม่สามารถแก้ไขโปรไฟล์อื่นได้`);
+        alert(`คุณจอง ID: ${myOwnedProfile} ไปแล้ว ไม่สามารถแก้ไข ID อื่นได้`);
         return;
     }
-
     document.getElementById('editModal').style.display = 'flex';
-    
-    // ดึงข้อมูลปัจจุบันมาใส่ใน Input
-    document.getElementById('inputName').value = document.getElementById('displayName').innerText;
-    document.getElementById('inputAbout').value = document.getElementById('displayAbout').innerText;
-    
-    const snapshot = await get(ref(db, 'members/' + userId));
-    const data = snapshot.val();
-    if (data) {
-        document.getElementById('inputFB').value = data.fb || "";
-        document.getElementById('inputIG').value = data.ig || "";
-        document.getElementById('inputGH').value = data.gh || "";
-    }
 };
 
 window.closeModal = function() {
     document.getElementById('editModal').style.display = 'none';
+};
+
+window.showPreview = function(input, previewId, isBanner = false) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.getElementById(previewId);
+            if (isBanner) {
+                preview.style.backgroundImage = `url("${e.target.result}")`;
+            } else {
+                preview.src = e.target.result;
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+window.removeImage = function(previewId, type) {
+    const preview = document.getElementById(previewId);
+    if (type === 'avatar') {
+        preview.src = DEFAULT_AVATAR;
+    } else {
+        preview.style.backgroundImage = "none";
+    }
+};
+
+window.updateCharCount = function() {
+    const text = document.getElementById('inputAbout').value;
+    document.getElementById('charCounter').innerText = `${text.length} / 255`;
 };
 
 window.saveProfile = async function() {
@@ -67,93 +78,56 @@ window.saveProfile = async function() {
     try {
         await set(ref(db, 'members/' + userId), newData);
         localStorage.setItem('my_owned_profile', userId);
-        alert("บันทึกข้อมูลเรียบร้อย!");
-        updateDisplay(newData);
-        window.closeModal();
+        alert("บันทึกสำเร็จ!");
+        location.reload();
     } catch (e) {
         alert("บันทึกล้มเหลว: " + e.message);
     }
 };
 
 window.releaseProfile = async function() {
-    if (!confirm("คุณต้องการคืนสิทธิ์โปรไฟล์นี้ใช่หรือไม่?")) return;
-
-    try {
+    if (confirm("ต้องการคืนสิทธิ์โปรไฟล์นี้หรือไม่?")) {
         await remove(ref(db, 'members/' + userId));
         localStorage.removeItem('my_owned_profile');
-        alert("คืนสิทธิ์โปรไฟล์เรียบร้อย!");
         window.location.href = "../index.html";
-    } catch (e) {
-        alert("Error: " + e.message);
     }
 };
 
-// ฟังก์ชันอื่นๆ ที่ต้องใช้ในหน้าเว็บ
-window.showPreview = function(input, previewId, isBanner = false) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.getElementById(previewId);
-            if (isBanner) {
-                preview.style.backgroundImage = `url("${e.target.result}")`;
-                preview.style.backgroundSize = "cover";
-            } else {
-                preview.src = e.target.result;
-            }
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-};
-
-window.updateCharCount = function() {
-    const textarea = document.getElementById('inputAbout');
-    const counter = document.getElementById('charCounter');
-    counter.innerText = `${textarea.value.length} / 255`;
-};
-
-/** --- ส่วนการโหลดข้อมูลจาก Cloud --- **/
-
-async function loadProfile() {
+// --- โหลดข้อมูลเมื่อเปิดหน้า ---
+async function loadData() {
+    const snapshot = await get(ref(db, 'members/' + userId));
+    const data = snapshot.val();
     const formattedTag = "@" + userId.padStart(4, '0');
-    try {
-        const snapshot = await get(ref(db, 'members/' + userId));
-        const data = snapshot.val();
 
-        if (data) {
-            data.tag = formattedTag;
-            updateDisplay(data);
-            
-            // ตรวจสอบว่าเป็นเจ้าของหรือไม่ เพื่อโชว์ปุ่ม Restore
-            const myOwned = localStorage.getItem('my_owned_profile');
-            if (myOwned === userId) {
-                document.getElementById('resetOwnershipBtn').style.display = 'flex';
-            }
-        } else {
-            updateDisplay({
-                name: "Username " + userId,
-                tag: formattedTag,
-                about: "คลิกปุ่ม Edit เพื่อเริ่มแก้ไขโปรไฟล์ของคุณ...",
-                avatar: DEFAULT_AVATAR
-            });
+    if (data) {
+        document.getElementById('displayName').innerText = data.name;
+        document.getElementById('displayTag').innerText = formattedTag;
+        document.getElementById('displayAbout').innerText = data.about;
+        document.getElementById('displayAvatar').src = data.avatar || DEFAULT_AVATAR;
+        if (data.banner) document.getElementById('displayBanner').style.backgroundImage = data.banner;
+        
+        // ใส่ข้อมูลลงใน Modal เตรียมไว้
+        document.getElementById('inputName').value = data.name;
+        document.getElementById('inputAbout').value = data.about;
+        document.getElementById('previewAvatar').src = data.avatar || DEFAULT_AVATAR;
+        document.getElementById('previewBanner').style.backgroundImage = data.banner || "";
+        document.getElementById('inputFB').value = data.fb || "";
+        document.getElementById('inputIG').value = data.ig || "";
+        document.getElementById('inputGH').value = data.gh || "";
+
+        // จัดการเรื่องปุ่ม Restore และ Social Card
+        const myOwned = localStorage.getItem('my_owned_profile');
+        if (myOwned === userId) document.getElementById('resetOwnershipBtn').style.display = 'inline-block';
+        
+        if (data.fb || data.ig || data.gh) {
+            document.getElementById('socialCard').style.display = 'block';
+            if (data.fb) { document.getElementById('itemFB').style.display = 'flex'; document.getElementById('linkFB').href = data.fb; }
+            if (data.ig) { document.getElementById('itemIG').style.display = 'flex'; document.getElementById('linkIG').href = data.ig; }
+            if (data.gh) { document.getElementById('itemGH').style.display = 'flex'; document.getElementById('linkGH').href = data.gh; }
         }
-    } catch (e) {
-        console.error("Load error:", e);
-    }
-}
-
-function updateDisplay(data) {
-    document.getElementById('displayName').innerText = data.name;
-    document.getElementById('displayTag').innerText = data.tag || "@0000";
-    document.getElementById('displayAbout').innerText = data.about;
-    document.getElementById('displayAvatar').src = data.avatar || DEFAULT_AVATAR;
-    
-    const banner = document.getElementById('displayBanner');
-    if (data.banner && data.banner !== "none") {
-        banner.style.backgroundImage = data.banner;
     } else {
-        banner.style.backgroundColor = DEFAULT_BANNER_COLOR;
+        document.getElementById('displayTag').innerText = formattedTag;
     }
 }
 
-// เริ่มต้นโหลดหน้าเว็บ
-window.onload = loadProfile;
+window.onload = loadData;
