@@ -4,6 +4,16 @@ const userId = urlParams.get('id') || "1";
 const DEFAULT_AVATAR = "../img/profile.jpg";
 const DEFAULT_BANNER_COLOR = "#5865f2";
 
+const firebaseConfig = {
+    apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
+    authDomain: "aqundix-d3f38.firebaseapp.com",
+    projectId: "aqundix-d3f38",
+    storageBucket: "aqundix-d3f38.firebasestorage.app",
+    messagingSenderId: "923430604932",
+    appId: "1:923430604932:web:a06344e33b3df87aef72d1",
+    measurementId: "G-NC6SKF25ZB"
+};
+
 // --- ตั้งค่าระบบฐานข้อมูล (IndexedDB) ---
 const dbName = "ProfileDB";
 const storeName = "member_data";
