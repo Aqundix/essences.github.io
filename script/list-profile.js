@@ -17,8 +17,6 @@ const listDiv = document.getElementById('member-list');
 
 async function renderList() {
     if (!listDiv) return;
-    listDiv.innerHTML = '<p style="text-align:center; color: white;">กำลังโหลดข้อมูล...</p>';
-    
     try {
         const snapshot = await get(ref(db, 'members'));
         const allData = snapshot.exists() ? snapshot.val() : {};
@@ -29,78 +27,63 @@ async function renderList() {
             const idStr = i.toString();
             const savedData = allData[idStr];
             
-            // ประกาศตัวแปรให้ตรงกัน
-            let bannerStyle = "background-color: #5865f2;"; 
+            // แก้ไขเรื่อง Banner และสีน้ำเงินค้าง
+            let finalBanner = "background-color: #5865f2;";
             if (savedData?.banner && savedData.banner !== "none" && savedData.banner !== "") {
-                const bVal = savedData.banner.includes('url(') ? savedData.banner : `url("${savedData.banner}")`;
-                bannerStyle = `background-image: ${bVal}; background-size: cover; background-position: center;`;
+                const bUrl = savedData.banner.includes('url(') ? savedData.banner : `url("${savedData.banner}")`;
+                finalBanner = `background-image: ${bUrl}; background-size: cover; background-position: center;`;
             }
 
             const isLocked = savedData?.isLocked || false;
             const isOwner = myOwnedProfile === idStr;
+            let actionBtn = '';
 
-            let actionButton = '';
             if (isLocked && !isOwner) {
-                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #5865f2;">ดูโปรไฟล์</a>`;
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #ed4245;">ดูโปรไฟล์</a>`;
             } else if (isOwner) {
-                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
-            } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-                actionButton = `<span class="view-link" style="background: #4f545c; cursor: not-allowed; opacity: 0.6;">จำกัด 1 สิทธิ์</span>`;
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
+            } else if (myOwnedProfile) {
+                actionBtn = `<span class="view-link" style="background: #4f545c; opacity: 0.6;">จำกัด 1 สิทธิ์</span>`;
             } else {
-                actionButton = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
 
-                    
-            // ในส่วน itemHTML ให้ใช้ตัวแปร bannerStyle
-            const itemHTML = `
-                <div class="profile-item">
-                    <div class="card-banner" style="${bannerStyle}"></div>
-                    <div class="user-info">
-                        <img src="${savedData?.avatar || defaultAvatar}" 
-                             style="width: 65px; height: 65px; border-radius: 50%; border: 4px solid #2f3136; object-fit: cover;"
-                             onerror="this.src='${defaultAvatar}'">
-                        <div class="name-details" style="margin-top: 15px; position: relative; z-index: 2;">
-                            <div class="name" style="color: white; font-weight: bold; font-size: 1.1em;">${savedData?.name || "Username " + idStr}</div>
-                            <div class="tag" style="color: #b9bbbe; font-size: 0.85em;">@${idStr.padStart(4, '0')}</div>
+            listDiv.insertAdjacentHTML('beforeend', `
+                <div class="profile-item" style="position: relative; overflow: hidden; background: #2f3136; border-radius: 8px; margin-bottom: 12px; min-height: 120px;">
+                    <div class="card-banner" style="position: absolute; top: 0; left: 0; width: 100%; height: 60px; z-index: 0; ${finalBanner}"></div>
+                    <div class="user-info" style="position: relative; z-index: 1; padding: 45px 15px 10px 15px; display: flex; align-items: center; gap: 15px;">
+                        <img src="${savedData?.avatar || 'img/profile.jpg'}" style="width: 65px; height: 65px; border-radius: 50%; border: 4px solid #2f3136; object-fit: cover;">
+                        <div style="margin-top: 15px;">
+                            <div style="color: white; font-weight: bold;">${savedData?.name || "Username " + idStr}</div>
+                            <div style="color: #b9bbbe; font-size: 0.85em;">@${idStr.padStart(4, '0')}</div>
                         </div>
                     </div>
-                    <div style="position: relative; z-index: 1; padding: 5px 15px 15px 15px;">
-                        ${actionButton}
-                    </div>
+                    <div style="position: relative; z-index: 1; padding: 0 15px 15px 15px;">${actionBtn}</div>
                 </div>
-            `;
-            listDiv.insertAdjacentHTML('beforeend', itemHTML);
+            `);
         }
     } catch (e) {
-        console.error("Render error:", e);
         listDiv.innerHTML = '<p style="text-align:center; color: white;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+        console.error(e);
     }
 }
 
-// --- ฟังก์ชัน Admin (แก้ไขให้ใช้งานได้จริง) ---
+// ส่วนของ Admin Reset
 window.openAuthModal = () => document.getElementById('adminAuthModal').style.display = 'flex';
-window.closeAuthModal = () => document.getElementById('adminAuthModal').style.display = 'none';
-
-window.verifyAndReset = async function() {
-    const user = document.getElementById('adminUser').value;
-    const pass = document.getElementById('adminPass').value;
-
-    if (user === "admin" && pass === "admin") {
-        if (confirm("ยืนยันการล้างข้อมูลทั้งหมด? ข้อมูลในระบบจะหายถาวร")) {
-            try {
-                await remove(ref(db, 'members')); // ต้องมี remove ใน import ด้านบน
-                localStorage.clear();
-                alert("รีเซ็ตเรียบร้อย!");
-                location.reload();
-            } catch (e) {
-                alert("Error: " + e.message);
-            }
-        }
-    } else {
-        alert("Username หรือ Password ไม่ถูกต้อง");
-    }
+window.closeAuthModal = () => {
+    document.getElementById('adminAuthModal').style.display = 'none';
+    document.getElementById('adminUser').value = '';
+    document.getElementById('adminPass').value = '';
 };
 
-// เริ่มรันระบบ
+window.verifyAndReset = async () => {
+    if (document.getElementById('adminUser').value === "admin" && document.getElementById('adminPass').value === "admin") {
+        if (confirm("ล้างข้อมูลทั้งหมด?")) {
+            await remove(ref(db, 'members'));
+            localStorage.clear();
+            location.reload();
+        }
+    } else { alert("รหัสผ่านผิด"); }
+};
+
 renderList();
-window.addEventListener('focus', renderList);
