@@ -128,8 +128,10 @@ window.handleImageUpload = function(input, previewId) {
     }
 };
 
-// --- ฟังก์ชันโหลดข้อมูล (แก้ไขเรื่องปุ่มหาย) ---
+// เพิ่มไว้ด้านบนของฟังก์ชัน loadProfile
+const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
+// --- ฟังก์ชันโหลดข้อมูล (แก้ไขเรื่องปุ่มหาย) ---
 async function loadProfile() {
     const myOwnedProfile = localStorage.getItem('my_owned_profile');
     const formattedTag = "@" + userId.padStart(4, '0');
@@ -152,16 +154,23 @@ async function loadProfile() {
         }
 
         // เช็คสิทธิ์เพื่อโชว์ปุ่ม
-        const isLocked = data?.isLocked || false;
-        const isOwner = myOwnedProfile === userId;
+        // ค้นหาส่วนที่เช็ค isLocked ในไฟล์ profile.js
+const isLocked = data?.isLocked || false;
+const isOwner = myOwnedProfile === userId;
 
-        if (!isLocked || isOwner) {
-            document.getElementById('editBtn').style.display = 'inline-block';
-        }
-        
-        if (isOwner) {
-            document.getElementById('resetOwnershipBtn').style.display = 'inline-block';
-        }
+const editBtn = document.getElementById('editBtn');
+
+// เงื่อนไข: ถ้ายังไม่ล็อค (คนแรกที่เข้ามา) หรือ ถ้าเราเป็นเจ้าของ ให้โชว์ปุ่ม Edit
+if (!isLocked || isOwner) {
+    editBtn.style.display = 'inline-block';
+} else {
+    editBtn.style.display = 'none'; // คนอื่นที่มาทีหลังจะไม่เห็นปุ่ม
+}
+
+// ปุ่ม Reset (คืนสิทธิ์) จะขึ้นเฉพาะคนที่เป็นเจ้าของเท่านั้น
+if (isOwner) {
+    document.getElementById('resetOwnershipBtn').style.display = 'inline-block';
+}
 
         // ใส่ข้อมูลลง Modal
         // ค้นหาช่วงท้ายของฟังก์ชัน loadProfile และปรับตามนี้
