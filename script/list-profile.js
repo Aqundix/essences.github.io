@@ -23,44 +23,44 @@ async function renderList() {
         listDiv.innerHTML = '';
         const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
+        // ค้นหาส่วน loop ในไฟล์ list-profile.js แล้วแทนที่ด้วยโค้ดนี้
         for (let i = 1; i <= 15; i++) {
             const idStr = i.toString();
             const savedData = allData[idStr];
             
-            let bannerStyle = "background-color: #5865f2;"; 
-            if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
-                const cleanUrl = savedData.banner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
-                bannerStyle = `background-image: url("${cleanUrl}"); background-size: cover; background-position: center;`;
+            // ตั้งค่า Banner (ถ้าไม่มีให้ใช้สีพื้นฐาน)
+            let bannerStyle = "background-color: #5865f2;";
+            if (savedData?.banner && savedData.banner !== "none") {
+                bannerStyle = `background-image: url('${savedData.banner}'); background-size: cover; background-position: center;`;
             }
-
+        
             const isLocked = savedData?.isLocked || false;
             const isOwner = myOwnedProfile === idStr;
             let actionBtn = '';
-
+        
             if (isLocked && !isOwner) {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
             } else if (isOwner) {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
             } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-                actionBtn = `<span class="view-link limit">จำกัด 1 สิทธิ์</span>`;
+                actionBtn = `<span class="view-link limit">จองแล้ว</span>`;
             } else {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
-
-            // โครงสร้าง HTML ใหม่: หุ้มด้วย user-content-wrapper เพื่อดันปุ่มไปทางขวา
+        
             const itemHTML = `
                 <div class="profile-item">
                     <div class="card-banner" style="${bannerStyle}"></div>
                     <div class="banner-overlay"></div>
-                    <div class="user-content-wrapper">
-                        <div class="user-info">
+                    <div class="content-wrapper">
+                        <div class="user-info-side">
                             <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
                             <div class="name-details">
                                 <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
                                 <span class="tag">@${idStr.padStart(4, '0')}</span>
                             </div>
                         </div>
-                        <div class="button-area">
+                        <div class="button-side">
                             ${actionBtn}
                         </div>
                     </div>
