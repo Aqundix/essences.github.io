@@ -15,16 +15,7 @@ body {
     margin-bottom: 30px; 
 }
 
-.banner-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 100%);
-}
-
+/* ปรับแต่งส่วนไอเทมโปรไฟล์ */
 .profile-item {
     position: relative;
     overflow: hidden;
@@ -33,72 +24,30 @@ body {
     margin-bottom: 12px;
     min-height: 120px;
     border: 1px solid #444;
-    transition: 0.2s;
 }
 
-/* ให้ Banner อยู่หลังสุดและเต็มใบ */
+/* คลาสสำหรับ Banner */
 .card-banner {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 60px; /* ปรับความสูงตามต้องการ */
     z-index: 0;
+    background-color: #5865f2; /* สีพื้นฐานถ้าไม่มีรูป */
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
 }
 
-/* แผ่นกรองสีดำจางๆ เพื่อให้ชื่ออ่านง่ายขึ้น */
-.profile-item::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.45); 
+/* บังคับให้ข้อมูลผู้ใช้อยู่เหนือ Banner */
+.user-info {
+    position: relative;
     z-index: 1;
-}
-
-.user-info, .view-link {
-    position: relative;
-    z-index: 2; /* ให้อยู่เหนือ Banner และ Overlay */
-}
-
-/* รูปร่างของชื่อและ Tag */
-.name-details .name { 
-    color: white;
-    font-weight: 500; 
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.8); 
-}
-
-.user-content {
-    position: relative;
-    z-index: 2;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.user-info-main {
+    padding: 40px 15px 10px 15px; /* ดันรูปลงมาให้ทับขอบ Banner */
     display: flex;
     align-items: center;
     gap: 15px;
-}
-
-.avatar-img {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    border: 3px solid #5865f2;
-    object-fit: cover;
-}
-
-.user-name {
-    color: white;
-    font-weight: bold;
-    font-size: 1.2em;
-}
-
-.user-tag {
-    color: #b9bbbe;
-    font-size: 0.85em;
 }
 
 /* ภาพแบนเนอร์พื้นหลัง */
@@ -109,6 +58,15 @@ body {
     z-index: 0;
 }
 
+/* แผ่นกรองสีดำเพื่อให้ข้อความชัดเจน */
+.profile-item::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5); 
+    z-index: 1;
+}
+
 .profile-item:hover { 
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -116,6 +74,12 @@ body {
 
 .profile-item:hover::before {
     background: rgba(0, 0, 0, 0.35);
+}
+
+/* ดันเนื้อหา (รูปโปรไฟล์/ชื่อ) ให้อยู่หน้าสุด */
+.user-info, .view-link {
+    position: relative;
+    z-index: 2;
 }
 
 .user-info img {
@@ -132,6 +96,23 @@ body {
     font-size: 1.1rem; 
     display: block; 
     text-shadow: 2px 2px 4px rgba(0,0,0,0.8); 
+}
+
+.name-details .tag { 
+    color: #dcddde; 
+    font-size: 0.85rem; 
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8); 
+}
+
+.view-link {
+    background: #5865f2;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    transition: 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .view-link:hover { 
@@ -225,51 +206,3 @@ body {
 
 /* ปุ่มเจ้าของ */
 .view-link.owned { background: #43b581 !important; }
-
-/* คอนเทนเนอร์หลักที่หุ้มข้อมูลและปุ่ม */
-.user-content-wrapper {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    justify-content: space-between; /* ดันเนื้อหาแยกซ้าย-ขวา */
-    align-items: center;           /* จัดให้อยู่กลางแนวตั้ง */
-    padding: 15px;
-    height: 100%;
-    min-height: 120px;
-}
-
-/* ปรับส่วนข้อมูลผู้ใช้ไม่ให้มี padding เกิน */
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-/* จัดการส่วนปุ่ม */
-.button-area {
-    display: flex;
-    align-items: center;
-}
-
-/* ปรับแต่งปุ่มให้ดูเล็กลงและกระชับขึ้นเมื่ออยู่ทางขวา */
-.view-link {
-    display: inline-block;
-    padding: 8px 16px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap; /* ป้องกันปุ่มตัดบรรทัด */
-    transition: 0.2s;
-}
-
-/* สำหรับมือถือ: ถ้าจอแคบให้ปุ่มเล็กลงอีก */
-@media (max-width: 480px) {
-    .user-content-wrapper {
-        padding: 10px;
-    }
-    .view-link {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-}
