@@ -18,6 +18,12 @@ const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('id') || "1";
 const DEFAULT_AVATAR = "../img/profile.jpg";
 
+// --- ฟังก์ชันสุ่ม Tag ID (ต้องเป็นสูตรเดียวกับหน้า list-profile.js) ---
+function getPersistentTag(seed) {
+    const val = (parseInt(seed) * 48271) % 9000; 
+    return (val + 1000).toString().padStart(4, '0'); 
+}
+
 // --- ฟังก์ชัน UI ---
 window.openModal = () => document.getElementById('editModal').style.display = 'flex';
 window.closeModal = () => document.getElementById('editModal').style.display = 'none';
@@ -52,13 +58,14 @@ function updateSocialDisplay(data) {
 
     let hasSocial = false;
     for (const [key, id] of Object.entries(items)) {
-        const val = data?.[key];
+        let val = data?.[key];
         const itemEl = document.getElementById(id.item);
         const linkEl = document.getElementById(id.link);
         
         if (val && val.trim() !== "") {
+            val = val.trim();
             itemEl.style.display = 'flex';
-            // ตรวจสอบว่ามี http หรือไม่ ถ้าไม่มีให้เติม https://
+            // ตรวจสอบและเติม https:// อัตโนมัติป้องกันลิงก์เสีย
             linkEl.href = val.startsWith('http') ? val : `https://${val}`;
             hasSocial = true;
         } else {
@@ -78,12 +85,16 @@ async function loadProfile() {
 
         // 1. แสดงหน้าโปรไฟล์หลัก
         document.getElementById('displayName').innerText = data?.name || "Username";
-        document.getElementById('displayTag').innerText = "@" + userId.padStart(4, '0');
+        
+        // ใช้ฟังก์ชันสุ่ม Tag ID ให้ตรงกับหน้าลิสต์
+        const tagId = getPersistentTag(userId);
+        document.getElementById('displayTag').innerText = "@" + tagId;
+        
         document.getElementById('displayAbout').innerText = data?.about || "คลิก Edit เพื่อเริ่มแก้ไขโปรไฟล์ของคุณ...";
         document.getElementById('displayAvatar').src = data?.avatar || DEFAULT_AVATAR;
         
         const bannerArea = document.getElementById('displayBanner');
-        if (data?.banner) {
+        if (data?.banner && data.banner !== "none") {
             bannerArea.style.backgroundImage = `url('${data.banner}')`;
             bannerArea.style.backgroundColor = "transparent";
         } else {
@@ -94,24 +105,28 @@ async function loadProfile() {
         // เรียกใช้ฟังก์ชันแสดง Social
         updateSocialDisplay(data);
 
-        // 2. แสดงปุ่ม Edit และ Restore
+        // 2. เช็คสิทธิ์ปุ่ม Edit และ Restore
         const isLocked = data?.isLocked || false;
         const isOwner = myOwnedProfile === userId;
 
+        // แสดงปุ่ม Edit ถ้ายังไม่มีใครจอง หรือ เราเป็นเจ้าของ
         if (!isLocked || isOwner) {
-            document.getElementById('editBtn').style.display = 'flex';
+            const editBtn = document.getElementById('editBtn');
+            if(editBtn) editBtn.style.display = 'flex';
         }
         
+        // แสดงปุ่มคืนสิทธิ์เฉพาะเจ้าของเท่านั้น
         if (isOwner) {
-            document.getElementById('resetOwnershipBtn').style.display = 'flex';
+            const resetBtn = document.getElementById('resetOwnershipBtn');
+            if(resetBtn) resetBtn.style.display = 'flex';
         }
 
-        // 3. เตรียมข้อมูลใส่ใน Modal (Preview)
+        // 3. เตรียมข้อมูลใส่ใน Modal (สำหรับตอนเปิดขึ้นมาแก้ไข)
         if (data) {
             document.getElementById('inputName').value = data.name || "";
             document.getElementById('inputAbout').value = data.about || "";
             document.getElementById('previewAvatar').src = data.avatar || DEFAULT_AVATAR;
-            if (data.banner) {
+            if (data.banner && data.banner !== "none") {
                 document.getElementById('previewBanner').style.backgroundImage = `url('${data.banner}')`;
             }
             document.getElementById('inputFB').value = data.fb || "";
@@ -136,7 +151,8 @@ window.saveProfile = async function() {
     
     if (!banner) {
         const bg = previewBanner.style.backgroundImage;
-        banner = bg && bg !== 'none' ? bg.slice(5, -2).replace(/"/g, "") : "";
+        // ล้างเอา url("") ออกเพื่อให้เหลือแต่ string ของรูป
+        banner = bg && bg !== 'none' ? bg.slice(5, -2).replace(/"/g, "") : "none";
     }
 
     const profileData = {
@@ -158,7 +174,7 @@ window.saveProfile = async function() {
             if (loading) loading.style.display = 'none';
             alert("บันทึกข้อมูลสำเร็จ!");
             location.reload();
-        }, 1000); // หน่วงเวลา 1 วิให้เห็นหน้าจอโหลด
+        }, 1000); 
     } catch (e) {
         if (loading) loading.style.display = 'none';
         alert("เกิดข้อผิดพลาด: " + e.message);
@@ -167,7 +183,7 @@ window.saveProfile = async function() {
 
 // --- ฟังก์ชันคืนสิทธิ์โปรไฟล์ ---
 window.releaseProfile = async function() {
-    if (confirm("ต้องการคืนสิทธิ์โปรไฟล์นี้เพื่อให้ผู้อื่นใช้งานหรือไม่?")) {
+    if (confirm("ต้องการคืนสิทธิ์โปรไฟล์นี้เพื่อให้ผู้อื่นใช้งานหรือไม่? (ข้อมูลจะถูกลบ)")) {
         try {
             await remove(ref(db, 'members/' + userId));
             localStorage.removeItem('my_owned_profile');
@@ -179,17 +195,15 @@ window.releaseProfile = async function() {
     }
 };
 
-// --- ฟังก์ชันสำหรับลบรูปภาพ ---
+// --- ฟังก์ชันสำหรับลบรูปภาพใน Modal ---
 window.removeImage = function(previewId, type) {
     const preview = document.getElementById(previewId);
     
     if (confirm(`คุณต้องการลบรูป${type === 'avatar' ? 'โปรไฟล์' : 'แบนเนอร์'}ใช่หรือไม่?`)) {
         if (type === 'avatar') {
-            // คืนค่ากลับเป็นรูปเริ่มต้น
             preview.src = DEFAULT_AVATAR;
             delete preview.dataset.base64;
         } else {
-            // ล้างรูปแบนเนอร์ออก (กลับเป็นสีพื้นหลัง)
             preview.style.backgroundImage = 'none';
             preview.style.backgroundColor = '#5865f2';
             delete preview.dataset.base64;
