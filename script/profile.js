@@ -50,7 +50,7 @@ window.showPreview = function(input, previewId, isBanner = false) {
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            const result = e.target.result;
+            const result = e.target.result; // นี่คือ Base64 ของรูป
             const preview = document.getElementById(previewId);
             
             if (isBanner) {
@@ -59,7 +59,7 @@ window.showPreview = function(input, previewId, isBanner = false) {
             } else {
                 preview.src = result;
             }
-            // เก็บค่า Base64 ไว้ที่ Element เพื่อให้ฟังก์ชัน Save ดึงไปใช้ได้ง่าย
+            // เก็บค่า Base64 ไว้ที่ตัวแปรสำรอง
             preview.dataset.base64 = result;
         };
         reader.readAsDataURL(file);
@@ -67,25 +67,25 @@ window.showPreview = function(input, previewId, isBanner = false) {
 };
 
 // 2. ฟังก์ชันบันทึกข้อมูล (แก้ปัญหาข้อมูลหาย)
-window.saveProfile = async function() {
-    const name = document.getElementById('inputName').value;
-    const about = document.getElementById('inputAbout').value;
-    
-    // ดึงค่ารูป Avatar: ถ้ามีรูปใหม่ใน dataset ให้ใช้รูปใหม่ ถ้าไม่มีให้ใช้รูปเดิมจาก src
-    const avatar = document.getElementById('previewAvatar').dataset.base64 || document.getElementById('previewAvatar').src;
-    
-    // ดึงค่ารูป Banner: ถ้ามีรูปใหม่ใน dataset ให้ใช้รูปใหม่ ถ้าไม่มีให้แกะค่าจาก backgroundImage เดิม
-    let banner = document.getElementById('previewBanner').dataset.base64;
+window.saveProfile = async function() {window.saveProfile = async function() {
+    const previewAvatar = document.getElementById('previewAvatar');
+    const previewBanner = document.getElementById('previewBanner');
+
+    // 1. ดึงค่า Avatar
+    const avatar = previewAvatar.dataset.base64 || previewAvatar.src;
+
+    // 2. ดึงค่า Banner (จัดการเรื่อง url("") ออก)
+    let banner = previewBanner.dataset.base64;
     if (!banner) {
-        const bgImg = document.getElementById('previewBanner').style.backgroundImage;
-        // ล้างคำว่า url("...") ออกให้เหลือแค่ตัว Link หรือ Base64
+        const bgImg = previewBanner.style.backgroundImage;
+        // ถ้าไม่มีการอัปโหลดใหม่ ให้แกะเอา URL เดิมออกมา
         banner = bgImg ? bgImg.slice(5, -2).replace(/"/g, "") : "";
     }
 
     try {
         await set(ref(db, 'members/' + userId), {
-            name: name,
-            about: about,
+            name: document.getElementById('inputName').value,
+            about: document.getElementById('inputAbout').value,
             avatar: avatar,
             banner: banner,
             fb: document.getElementById('inputFB').value,
@@ -93,7 +93,6 @@ window.saveProfile = async function() {
             gh: document.getElementById('inputGH').value,
             isLocked: true
         });
-        localStorage.setItem('my_owned_profile', userId);
         alert("บันทึกข้อมูลเรียบร้อย!");
         location.reload();
     } catch (e) {
@@ -165,17 +164,32 @@ async function loadProfile() {
         }
 
         // ใส่ข้อมูลลง Modal
-        if (data) {
+        // ค้นหาช่วงท้ายของฟังก์ชัน loadProfile และปรับตามนี้
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            
+            // --- แสดงผลหน้าหลัก ---
+            document.getElementById('displayAvatar').src = data.avatar || DEFAULT_AVATAR;
+            const bannerArea = document.getElementById('displayBanner');
+            if (data.banner) {
+                bannerArea.style.backgroundImage = `url('${data.banner}')`;
+                bannerArea.style.backgroundColor = "transparent";
+            }
+        
+            // --- ส่วนสำคัญ: ใส่ข้อมูลลงใน Modal (Preview) ---
             document.getElementById('inputName').value = data.name || "";
             document.getElementById('inputAbout').value = data.about || "";
-            document.getElementById('previewAvatar').src = data.avatar || DEFAULT_AVATAR;
-            document.getElementById('previewBanner').style.backgroundImage = data.banner || "";
             
-            if (data.fb || data.ig || data.gh) {
-                document.getElementById('socialCard').style.display = 'block';
-                if (data.fb) { document.getElementById('itemFB').style.display = 'flex'; document.getElementById('linkFB').href = data.fb; }
-                if (data.ig) { document.getElementById('itemIG').style.display = 'flex'; document.getElementById('linkIG').href = data.ig; }
-                if (data.gh) { document.getElementById('itemGH').style.display = 'flex'; document.getElementById('linkGH').href = data.gh; }
+            // เซ็ต Preview รูปใน Modal
+            const previewAvatar = document.getElementById('previewAvatar');
+            const previewBanner = document.getElementById('previewBanner');
+            
+            previewAvatar.src = data.avatar || DEFAULT_AVATAR;
+            if (data.banner) {
+                previewBanner.style.backgroundImage = `url('${data.banner}')`;
+                previewBanner.style.backgroundColor = "transparent";
+                // ลบ dataset เพื่อรอรับการอัปโหลดใหม่
+                delete previewBanner.dataset.base64;
             }
         }
     } catch (e) {
