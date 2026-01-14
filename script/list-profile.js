@@ -15,6 +15,13 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const listDiv = document.getElementById('member-list');
 
+// ฟังก์ชันสุ่มตัวเลขแบบคงที่ (เพื่อให้โปรไฟล์เดิมได้เลข ID เดิมทุกครั้งที่โหลดหน้าเว็บ)
+function getPersistentTag(seed) {
+    // ใช้สูตรคณิตศาสตร์สร้างเลขสุ่มจากค่า Index (Seed)
+    const val = (parseInt(seed) * 48271) % 9000; 
+    return (val + 1000).toString().padStart(4, '0'); // ผลลัพธ์ 1000 - 9999
+}
+
 async function renderList() {
     if (!listDiv) return;
     try {
@@ -23,43 +30,43 @@ async function renderList() {
         listDiv.innerHTML = '';
         const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
-        // ค้นหาส่วน loop ในไฟล์ list-profile.js แล้วแทนที่ด้วยโค้ดนี้
         for (let i = 1; i <= 15; i++) {
             const idStr = i.toString();
             const savedData = allData[idStr];
+            const tagId = getPersistentTag(idStr); // เรียกใช้ฟังก์ชันสุ่ม ID
             
-            // ตั้งค่า Banner (ถ้าไม่มีให้ใช้สีพื้นฐาน)
+            // การจัดการ Banner
             let bannerStyle = "background-color: #5865f2;";
             if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
-                // ใช้ backgroundImage และครอบด้วย url() ให้เรียบร้อย
-                // หาก savedData.banner เป็น base64 หรือ URL ของ GIF ระบบจะจัดการให้เอง
                 bannerStyle = `background-image: url('${savedData.banner}'); background-size: cover; background-position: center;`;
-                        }
+            }
         
             const isLocked = savedData?.isLocked || false;
             const isOwner = myOwnedProfile === idStr;
             let actionBtn = '';
         
+            // เงื่อนไขการแสดงผลปุ่ม
             if (isLocked && !isOwner) {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
             } else if (isOwner) {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
             } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-                actionBtn = `<span class="view-link limit">หมดสิทธิ์ลงชื่อเข้าใช้</span>`;
+                actionBtn = `<span class="view-link limit">หมดสิทธิ์</span>`;
             } else {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
         
+            // โครงสร้าง HTML แบบพรีเมียม (สอดคล้องกับ CSS ใหม่)
             const itemHTML = `
                 <div class="profile-item">
                     <div class="card-banner" style="${bannerStyle}"></div>
                     <div class="banner-overlay"></div>
-                    <div class="user-content-wrapper">
+                    <div class="content-wrapper">
                         <div class="user-info-side">
                             <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
                             <div class="name-details">
-                                <span class="name">${savedData?.name || "ยังไม่มีลงชื่อเข้าใช้"}</span>
-                                <span class="tag">@${idStr.padStart(4, '0')}</span>
+                                <span class="name">${savedData?.name || "ยังไม่มีชื่อ"}</span>
+                                <span class="tag">@${tagId}</span>
                             </div>
                         </div>
                         <div class="button-side">
@@ -71,25 +78,43 @@ async function renderList() {
             listDiv.insertAdjacentHTML('beforeend', itemHTML);
         }
     } catch (e) {
-        listDiv.innerHTML = '<p style="text-align:center; color: white; padding: 20px;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+        listDiv.innerHTML = '<p style="text-align:center; color: white; padding: 20px;">เกิดข้อผิดพลาดในการเชื่อมต่อ</p>';
         console.error("Firebase Error:", e);
     }
 }
 
-// Admin functions
-window.openAuthModal = () => document.getElementById('adminAuthModal').style.display = 'flex';
-window.closeAuthModal = () => document.getElementById('adminAuthModal').style.display = 'none';
+// --- Admin System ---
+window.openAuthModal = () => {
+    const modal = document.getElementById('adminAuthModal');
+    if(modal) modal.style.display = 'flex';
+};
+
+window.closeAuthModal = () => {
+    const modal = document.getElementById('adminAuthModal');
+    if(modal) modal.style.display = 'none';
+};
+
 window.verifyAndReset = async () => {
     const u = document.getElementById('adminUser').value;
     const p = document.getElementById('adminPass').value;
     if (u === "admin" && p === "admin") {
-        if (confirm("ล้างข้อมูลทั้งหมด?")) {
-            await remove(ref(db, 'members'));
-            localStorage.clear();
-            location.reload();
+        if (confirm("⚠️ คำเตือน: คุณกำลังจะล้างข้อมูลทั้ง 15 โปรไฟล์ ยืนยันหรือไม่?")) {
+            try {
+                await remove(ref(db, 'members'));
+                localStorage.clear();
+                alert("รีเซ็ตระบบเรียบร้อย");
+                location.reload();
+            } catch (err) {
+                alert("ไม่สามารถลบข้อมูลได้: " + err.message);
+            }
         }
-    } else { alert("รหัสผิด"); }
+    } else { 
+        alert("ชื่อผู้ใช้หรือรหัสผ่าน Admin ไม่ถูกต้อง"); 
+    }
 };
 
+// เริ่มการทำงาน
 renderList();
+
+// เมื่อ User สลับ Tab กลับมา ให้รีเฟรชข้อมูลอัตโนมัติ
 window.addEventListener('focus', renderList);
