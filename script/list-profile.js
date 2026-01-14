@@ -23,54 +23,48 @@ async function renderList() {
         listDiv.innerHTML = '';
         const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
-        for (let i = 1; i <= 15; i++) {
-            const idStr = i.toString();
-            const savedData = allData[idStr];
-            
-            // --- จัดการ Banner (Clean Logic) ---
-            let bannerStyle = "background-color: #5865f2;"; 
-            if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
-                // ล้างค่า url() เก่าออกถ้ามี เพื่อป้องกันการซ้อนทับ
-                let cleanUrl = savedData.banner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
-                bannerStyle = `background-image: url("${cleanUrl}");`;
-            }
-
-            const isLocked = savedData?.isLocked || false;
-            const isOwner = myOwnedProfile === idStr;
-            let actionBtn = '';
-
-            // ใช้ Class ตาม CSS ใหม่ที่คุณส่งมา
-            if (isLocked && !isOwner) {
-                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
-            } else if (isOwner) {
-                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
-            } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-                actionBtn = `<span class="view-link limit">จำกัด 1 สิทธิ์</span>`;
-            } else {
-                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
-            }
-
-            const itemHTML = `
-                <div class="profile-item">
-                    <div class="card-banner" style="${bannerStyle}"></div>
-                    <div class="user-info">
-                        <img src="${savedData?.avatar || 'img/profile.jpg'}" onerror="this.src='img/profile.jpg'">
-                        <div class="name-details">
-                            <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
-                            <span class="tag">@${idStr.padStart(4, '0')}</span>
-                        </div>
-                    </div>
-                    <div style="padding: 0 15px 15px 15px; position: relative; z-index: 2;">
-                        ${actionBtn}
-                    </div>
-                </div>
-            `;
-            listDiv.insertAdjacentHTML('beforeend', itemHTML);
-        }
-    } catch (e) {
-        listDiv.innerHTML = '<p style="text-align:center; color: white;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
-        console.error(e);
+        // --- ส่วนหลักใน Loop ของ renderList ---
+for (let i = 1; i <= 15; i++) {
+    const idStr = i.toString();
+    const savedData = allData[idStr];
+    
+    // จัดการสไตล์ Banner: ตรวจสอบและครอบด้วย url() เพียงชั้นเดียว
+    let bannerStyle = "background-color: #5865f2;"; 
+    if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
+        bannerStyle = `background-image: url("${savedData.banner}"); background-size: cover; background-position: center;`;
     }
+
+    const isLocked = savedData?.isLocked || false;
+    const isOwner = myOwnedProfile === idStr;
+    let actionBtn = '';
+
+    // การกำหนด Class ปุ่มตามเงื่อนไข (Locked, Owned, Limit)
+    if (isLocked && !isOwner) {
+        actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
+    } else if (isOwner) {
+        actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
+    } else if (myOwnedProfile && myOwnedProfile !== idStr) {
+        actionBtn = `<span class="view-link limit">จำกัด 1 สิทธิ์</span>`;
+    } else {
+        actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
+    }
+
+    const itemHTML = `
+        <div class="profile-item">
+            <div class="card-banner" style="${bannerStyle}"></div>
+            <div class="user-info">
+                <img src="${savedData?.avatar || 'img/profile.jpg'}" onerror="this.src='img/profile.jpg'">
+                <div class="name-details">
+                    <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
+                    <span class="tag">@${idStr.padStart(4, '0')}</span>
+                </div>
+            </div>
+            <div style="padding: 0 15px 15px 15px; position: relative; z-index: 2;">
+                ${actionBtn}
+            </div>
+        </div>
+    `;
+    listDiv.insertAdjacentHTML('beforeend', itemHTML);
 }
 
 // ส่วนงาน Admin
