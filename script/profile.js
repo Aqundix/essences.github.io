@@ -54,29 +54,28 @@ window.removeImage = function(previewId, type) {
     }
 };
 
-// --- แก้ไขเฉพาะฟังก์ชัน saveProfile ใน profile.js ---
+// --- แก้ไขเฉพาะฟังก์ชัน saveProfile ใน profile.js ---// แก้ไขเฉพาะส่วน saveProfile ในไฟล์ profile.js
 window.saveProfile = async function() {
     const saveBtn = document.getElementById('mainSaveBtn');
     saveBtn.disabled = true;
     saveBtn.innerText = "กำลังบันทึก...";
 
     try {
-        const snapshot = await get(ref(db, 'members/' + userId));
-        const oldData = snapshot.val() || {};
-
-        // ดึงค่าจาก BackgroundImage
-        let bannerRaw = document.getElementById('previewBanner').style.backgroundImage;
+        const name = document.getElementById('inputName').value;
+        const about = document.getElementById('inputAbout').value;
+        const avatar = document.getElementById('previewAvatar').src;
         
-        // ล้างค่า url("...") ออก ให้เหลือแต่เนื้อข้อมูลข้างใน เพื่อป้องกันการซ้อนทับ
+        // ดึงค่า banner และล้าง url("...") ออกให้เหลือแต่ข้อมูลข้างใน
+        let bannerRaw = document.getElementById('previewBanner').style.backgroundImage;
         let bannerClean = bannerRaw.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
-        if (bannerClean === 'none' || bannerClean === '') bannerClean = "";
+        if (bannerClean === 'none') bannerClean = "";
 
         const newData = {
             id: userId,
-            name: document.getElementById('inputName').value || oldData.name || `Username ${userId}`,
-            about: document.getElementById('inputAbout').value || oldData.about || "ยังไม่ได้ตั้ง Bio",
-            avatar: document.getElementById('previewAvatar').src,
-            banner: bannerClean, // ส่งเฉพาะเนื้อข้อมูล (Base64 หรือ Link)
+            name: name || `Username ${userId}`,
+            about: about || "ยังไม่ได้ตั้ง Bio",
+            avatar: avatar,
+            banner: bannerClean, // บันทึกค่าที่ Clean แล้ว
             fb: document.getElementById('inputFB').value || "",
             ig: document.getElementById('inputIG').value || "",
             gh: document.getElementById('inputGH').value || "",
