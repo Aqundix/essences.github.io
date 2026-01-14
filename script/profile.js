@@ -54,38 +54,39 @@ window.removeImage = function(previewId, type) {
     }
 };
 
-// --- ฟังก์ชันจัดการข้อมูล (Save Profile) ---
-
+// --- แก้ไขเฉพาะฟังก์ชัน saveProfile ใน profile.js ---
 window.saveProfile = async function() {
     const saveBtn = document.getElementById('mainSaveBtn');
     saveBtn.disabled = true;
     saveBtn.innerText = "กำลังบันทึก...";
 
-    const name = document.getElementById('inputName').value;
-    const about = document.getElementById('inputAbout').value;
-    const avatar = document.getElementById('previewAvatar').src;
-    
-    // ดึงค่า Background Image (ตรวจสอบว่าเป็น url หรือเปล่า)
-    let banner = document.getElementById('previewBanner').style.backgroundImage;
-    if (banner === 'none' || banner === '') banner = "";
-
-    const newData = {
-        id: userId,
-        name: name || `Username ${userId}`,
-        about: about || "ยังไม่ได้ตั้ง Bio",
-        avatar: avatar,
-        banner: banner, // บันทึกค่าที่มี url("...") ครอบอยู่แล้ว
-        fb: document.getElementById('inputFB').value || "",
-        ig: document.getElementById('inputIG').value || "",
-        gh: document.getElementById('inputGH').value || "",
-        isLocked: true
-    };
-
     try {
+        const snapshot = await get(ref(db, 'members/' + userId));
+        const oldData = snapshot.val() || {};
+
+        // ดึงค่าจาก BackgroundImage
+        let bannerRaw = document.getElementById('previewBanner').style.backgroundImage;
+        
+        // ล้างค่า url("...") ออก ให้เหลือแต่เนื้อข้อมูลข้างใน เพื่อป้องกันการซ้อนทับ
+        let bannerClean = bannerRaw.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+        if (bannerClean === 'none' || bannerClean === '') bannerClean = "";
+
+        const newData = {
+            id: userId,
+            name: document.getElementById('inputName').value || oldData.name || `Username ${userId}`,
+            about: document.getElementById('inputAbout').value || oldData.about || "ยังไม่ได้ตั้ง Bio",
+            avatar: document.getElementById('previewAvatar').src,
+            banner: bannerClean, // ส่งเฉพาะเนื้อข้อมูล (Base64 หรือ Link)
+            fb: document.getElementById('inputFB').value || "",
+            ig: document.getElementById('inputIG').value || "",
+            gh: document.getElementById('inputGH').value || "",
+            isLocked: true
+        };
+
         await set(ref(db, 'members/' + userId), newData);
         localStorage.setItem('my_owned_profile', userId);
         alert("บันทึกข้อมูลเรียบร้อย!");
-        window.location.href = "../index.html"; // บันทึกเสร็จกลับหน้า List
+        window.location.href = "../index.html"; 
     } catch (e) {
         alert("เกิดข้อผิดพลาด: " + e.message);
         saveBtn.disabled = false;
