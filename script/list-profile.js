@@ -45,7 +45,7 @@ async function renderList() {
             } else if (isOwner) {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
             } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-                actionBtn = `<span class="view-link limit">ไม่มีสิทธิ์จอง</span>`;
+                actionBtn = `<span class="view-link limit">หมดสิทธิ์จอง</span>`;
             } else {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
