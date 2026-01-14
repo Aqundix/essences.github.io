@@ -52,19 +52,22 @@ async function renderList() {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
 
+            // --- ส่วนหลักใน Loop ของ renderList (หาบรรทัด itemHTML แล้วเปลี่ยนเป็นโค้ดนี้) ---
             const itemHTML = `
                 <div class="profile-item">
                     <div class="card-banner" style="${bannerStyle}"></div>
                     <div class="banner-overlay"></div>
-                    <div class="user-info">
-                        <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
-                        <div class="name-details">
-                            <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
-                            <span class="tag">@${idStr.padStart(4, '0')}</span>
+                    <div class="user-content-wrapper">
+                        <div class="user-info">
+                            <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
+                            <div class="name-details">
+                                <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
+                                <span class="tag">@${idStr.padStart(4, '0')}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div style="padding: 0 15px 15px 15px; position: relative; z-index: 2;">
-                        ${actionBtn}
+                        <div class="button-area">
+                            ${actionBtn}
+                        </div>
                     </div>
                 </div>
             `;
