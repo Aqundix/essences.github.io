@@ -30,8 +30,20 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%; /* ต้องเป็น 100% เพื่อให้รูปเต็ม Card */
+    height: 100%; /* สำคัญ: ต้อง 100% เพื่อให้รูปเต็มหลังโปรไฟล์ */
     z-index: 0;
+    background-color: #5865f2;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.profile-item::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4); /* แผ่นกรองดำจางๆ */
+    z-index: 1;
 }
 
 .banner-overlay {
