@@ -186,9 +186,10 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1; /* ทับ Banner */
-    background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 100%);
-    pointer-events: none; /* ยอมให้คลิกทะลุลงไปได้ */
+    z-index: 1;/* ทับ Banner */
+    background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.1) 100%);
+    backdrop-filter: blur(1px); /* ใส่เบลอนิดๆ ให้ดูหรู */
+    pointer-events: none;
 }
 
 /* ชั้นที่ 3: เนื้อหา (ชื่อและปุ่ม) */
