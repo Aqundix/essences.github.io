@@ -57,25 +57,32 @@ async function renderList() {
             }
 
             // --- สร้าง HTML ---
-            const itemHTML = `
-                <div class="profile-item" style="position: relative; overflow: hidden; background: #2f3136; border-radius: 8px; margin-bottom: 12px; min-height: 120px; border: 1px solid #444;">
-                    <div class="card-banner" style="position: absolute; top: 0; left: 0; width: 100%; height: 60px; z-index: 0; ${finalBannerStyle}"></div>
-                    
-                    <div class="user-info" style="position: relative; z-index: 1; padding: 45px 15px 10px 15px; display: flex; align-items: center; gap: 15px;">
-                        <img src="${savedData?.avatar || 'img/profile.jpg'}" 
-                             style="width: 65px; height: 65px; border-radius: 50%; border: 4px solid #2f3136; object-fit: cover; background:#2f3136;"
-                             onerror="this.src='img/profile.jpg'">
-                        <div style="margin-top: 15px;">
-                            <div style="color: white; font-weight: bold; font-size: 1.1em;">${savedData?.name || "Username"}</div>
-                            <div style="color: #b9bbbe; font-size: 0.85em;">@${idStr.padStart(4, '0')}</div>
+            // ใน loop ของ renderList()
+            listDiv.insertAdjacentHTML('beforeend', `
+                <div class="profile-item" style="position: relative; overflow: hidden; background: #2f3136; border-radius: 12px; margin-bottom: 16px; min-height: 140px; border: 1px solid #444; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+        
+                <div class="card-banner" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.4; ${finalBannerStyle}"></div>
+        
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 100%);"></div>
+
+                    <div class="user-info" style="position: relative; z-index: 2; padding: 25px; display: flex; align-items: center; justify-content: space-between; gap: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <img src="${savedData?.avatar || 'img/profile.jpg'}" 
+                                 style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #5865f2; object-fit: cover; background:#2f3136;"
+                                 onerror="this.src='img/profile.jpg'">
+                            <div class="name-details">
+                                <div style="color: white; font-weight: bold; font-size: 1.4em; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</div>
+                                <div style="color: #b9bbbe; font-size: 0.9em; letter-spacing: 1px;">@${idStr.padStart(4, '0')}</div>
+                            </div>
+                        </div>
+
+                        <div style="flex-shrink: 0;">
+                            ${actionBtn}
                         </div>
                     </div>
-
-                    <div style="position: relative; z-index: 1; padding: 5px 15px 15px 15px;">
-                        ${actionBtn}
-                    </div>
                 </div>
-            `;
+            `);
+            
             listDiv.insertAdjacentHTML('beforeend', itemHTML);
         }
     } catch (e) {
