@@ -15,29 +15,6 @@ body {
     margin-bottom: 30px; 
 }
 
-.profile-item {
-    position: relative;
-    overflow: hidden;
-    background: #2f3136;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    min-height: 120px;
-    border: 1px solid #444;
-}
-
-.card-banner {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%; /* สำคัญ: ต้อง 100% เพื่อให้รูปเต็มหลังโปรไฟล์ */
-    z-index: 0;
-    background-color: #5865f2;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-}
-
 .banner-overlay {
     position: absolute;
     top: 0;
@@ -46,6 +23,48 @@ body {
     height: 100%;
     z-index: 1;
     background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 100%);
+}
+
+.profile-item {
+    position: relative;
+    overflow: hidden;
+    background: #2f3136;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    min-height: 120px;
+    border: 1px solid #444;
+    transition: 0.2s;
+}
+
+/* ให้ Banner อยู่หลังสุดและเต็มใบ */
+.card-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+/* แผ่นกรองสีดำจางๆ เพื่อให้ชื่ออ่านง่ายขึ้น */
+.profile-item::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.45); 
+    z-index: 1;
+}
+
+.user-info, .view-link {
+    position: relative;
+    z-index: 2; /* ให้อยู่เหนือ Banner และ Overlay */
+}
+
+/* รูปร่างของชื่อและ Tag */
+.name-details .name { 
+    color: white;
+    font-weight: 500; 
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8); 
 }
 
 .user-content {
@@ -110,15 +129,6 @@ body {
     z-index: 0;
 }
 
-/* แผ่นกรองสีดำเพื่อให้ข้อความชัดเจน */
-.profile-item::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.5); 
-    z-index: 1;
-}
-
 .profile-item:hover { 
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -126,12 +136,6 @@ body {
 
 .profile-item:hover::before {
     background: rgba(0, 0, 0, 0.35);
-}
-
-/* ดันเนื้อหา (รูปโปรไฟล์/ชื่อ) ให้อยู่หน้าสุด */
-.user-info, .view-link {
-    position: relative;
-    z-index: 2;
 }
 
 .user-info img {
@@ -148,12 +152,6 @@ body {
     font-size: 1.1rem; 
     display: block; 
     text-shadow: 2px 2px 4px rgba(0,0,0,0.8); 
-}
-
-.name-details .tag { 
-    color: #dcddde; 
-    font-size: 0.85rem; 
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8); 
 }
 
 .view-link:hover { 
