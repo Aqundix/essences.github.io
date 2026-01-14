@@ -131,75 +131,58 @@ window.handleImageUpload = function(input, previewId) {
 // เพิ่มไว้ด้านบนของฟังก์ชัน loadProfile
 const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
-// --- ฟังก์ชันโหลดข้อมูล (แก้ไขเรื่องปุ่มหาย) ---
 async function loadProfile() {
-    const myOwnedProfile = localStorage.getItem('my_owned_profile');
-    const formattedTag = "@" + userId.padStart(4, '0');
-    
     try {
         const snapshot = await get(ref(db, 'members/' + userId));
-        const data = snapshot.val();
+        const data = snapshot.exists() ? snapshot.val() : null;
+        const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
-        // แสดงข้อมูลพื้นฐาน (ป้องกัน Loading ค้าง)
-        document.getElementById('displayName').innerText = data?.name || `Username ${userId}`;
-        document.getElementById('displayTag').innerText = formattedTag;
+        // --- ส่วนที่ 1: แสดงข้อมูลบนหน้า Card ---
+        document.getElementById('displayName').innerText = data?.name || "Username";
         document.getElementById('displayAbout').innerText = data?.about || "คลิกปุ่ม Edit เพื่อเริ่มแก้ไขโปรไฟล์ของคุณ...";
         document.getElementById('displayAvatar').src = data?.avatar || DEFAULT_AVATAR;
-        // ในฟังก์ชัน loadProfile()
+        
         const bannerArea = document.getElementById('displayBanner');
         if (data?.banner && data.banner !== "none" && data.banner !== "") {
-            // ต้องครอบด้วย url() เพราะในฐานข้อมูลเราเก็บแค่ตัว Link/Base64
             bannerArea.style.backgroundImage = `url('${data.banner}')`;
             bannerArea.style.backgroundColor = "transparent";
+        } else {
+            bannerArea.style.backgroundColor = "#5865f2";
+            bannerArea.style.backgroundImage = "none";
         }
 
-        // เช็คสิทธิ์เพื่อโชว์ปุ่ม
-        // ค้นหาส่วนที่เช็ค isLocked ในไฟล์ profile.js
+        // --- ส่วนที่ 2: การแสดงปุ่ม Edit (บังคับให้ขึ้นถ้าโปรไฟล์ยังว่าง หรือเราเป็นเจ้าของ) ---
         const isLocked = data?.isLocked || false;
         const isOwner = myOwnedProfile === userId;
-        
+
         const editBtn = document.getElementById('editBtn');
-        
-        // เงื่อนไข: ถ้ายังไม่ล็อค (คนแรกที่เข้ามา) หรือ ถ้าเราเป็นเจ้าของ ให้โชว์ปุ่ม Edit
+        const resetBtn = document.getElementById('resetOwnershipBtn');
+
         if (!isLocked || isOwner) {
-            editBtn.style.display = 'inline-block';
+            editBtn.style.display = 'flex'; // ใช้ flex เพื่อให้ Icon กับ Text สวยงาม
         } else {
-            editBtn.style.display = 'none'; // คนอื่นที่มาทีหลังจะไม่เห็นปุ่ม
+            editBtn.style.display = 'none';
         }
         
-        // ปุ่ม Reset (คืนสิทธิ์) จะขึ้นเฉพาะคนที่เป็นเจ้าของเท่านั้น
         if (isOwner) {
-            document.getElementById('resetOwnershipBtn').style.display = 'inline-block';
+            resetBtn.style.display = 'flex';
         }
 
-        // ใส่ข้อมูลลง Modal
-        // ค้นหาช่วงท้ายของฟังก์ชัน loadProfile และปรับตามนี้
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            
-            // --- แสดงผลหน้าหลัก ---
-            document.getElementById('displayAvatar').src = data.avatar || DEFAULT_AVATAR;
-            const bannerArea = document.getElementById('displayBanner');
-            if (data.banner) {
-                bannerArea.style.backgroundImage = `url('${data.banner}')`;
-                bannerArea.style.backgroundColor = "transparent";
-            }
-        
-            // --- ส่วนสำคัญ: ใส่ข้อมูลลงใน Modal (Preview) ---
+        // --- ส่วนที่ 3: ใส่ข้อมูลเดิมลงใน Modal (Preview) ---
+        if (data) {
             document.getElementById('inputName').value = data.name || "";
             document.getElementById('inputAbout').value = data.about || "";
+            document.getElementById('previewAvatar').src = data.avatar || DEFAULT_AVATAR;
             
-            // เซ็ต Preview รูปใน Modal
-            const previewAvatar = document.getElementById('previewAvatar');
             const previewBanner = document.getElementById('previewBanner');
-            
-            previewAvatar.src = data.avatar || DEFAULT_AVATAR;
             if (data.banner) {
                 previewBanner.style.backgroundImage = `url('${data.banner}')`;
                 previewBanner.style.backgroundColor = "transparent";
-                // ลบ dataset เพื่อรอรับการอัปโหลดใหม่
-                delete previewBanner.dataset.base64;
             }
+            
+            document.getElementById('inputFB').value = data.fb || "";
+            document.getElementById('inputIG').value = data.ig || "";
+            document.getElementById('inputGH').value = data.gh || "";
         }
     } catch (e) {
         console.error("Load error:", e);
