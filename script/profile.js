@@ -90,35 +90,76 @@ async function loadProfile() {
     } catch (e) { console.error(e); }
 }
 
-// --- ฟังก์ชันบันทึกข้อมูล ---
+// --- ฟังก์ชันบันทึกข้อมูล ---// ฟังก์ชันแสดง/ซ่อน Social Items
+function updateSocialDisplay(data) {
+    const socialCard = document.getElementById('socialCard');
+    const items = {
+        fb: { item: 'itemFB', link: 'linkFB' },
+        ig: { item: 'itemIG', link: 'linkIG' },
+        gh: { item: 'itemGH', link: 'linkGH' }
+    };
+
+    let hasSocial = false;
+    for (const [key, id] of Object.entries(items)) {
+        const val = data?.[key];
+        const itemEl = document.getElementById(id.item);
+        const linkEl = document.getElementById(id.link);
+        
+        if (val && val.trim() !== "") {
+            itemEl.style.display = 'flex';
+            linkEl.href = val.startsWith('http') ? val : `https://${val}`;
+            hasSocial = true;
+        } else {
+            itemEl.style.display = 'none';
+        }
+    }
+    socialCard.style.display = hasSocial ? 'block' : 'none';
+}
+
+// แก้ไขฟังก์ชัน saveProfile เพิ่ม Loading
 window.saveProfile = async function() {
+    const loading = document.getElementById('loadingOverlay');
+    loading.style.display = 'flex'; // แสดงฉากโหลด
+
     const previewAvatar = document.getElementById('previewAvatar');
     const previewBanner = document.getElementById('previewBanner');
 
-    const avatarBase64 = previewAvatar.dataset.base64 || previewAvatar.src;
-    let bannerBase64 = previewBanner.dataset.base64;
-    
-    if (!bannerBase64) {
+    const avatar = previewAvatar.dataset.base64 || previewAvatar.src;
+    let banner = previewBanner.dataset.base64;
+    if (!banner) {
         const bg = previewBanner.style.backgroundImage;
-        bannerBase64 = bg ? bg.slice(5, -2).replace(/"/g, "") : "";
+        banner = bg ? bg.slice(5, -2).replace(/"/g, "") : "";
     }
 
+    const profileData = {
+        name: document.getElementById('inputName').value,
+        about: document.getElementById('inputAbout').value,
+        avatar: avatar,
+        banner: banner,
+        fb: document.getElementById('inputFB').value,
+        ig: document.getElementById('inputIG').value,
+        gh: document.getElementById('inputGH').value,
+        isLocked: true
+    };
+
     try {
-        await set(ref(db, 'members/' + userId), {
-            name: document.getElementById('inputName').value,
-            about: document.getElementById('inputAbout').value,
-            avatar: avatarBase64,
-            banner: bannerBase64,
-            fb: document.getElementById('inputFB').value,
-            ig: document.getElementById('inputIG').value,
-            gh: document.getElementById('inputGH').value,
-            isLocked: true
-        });
+        await set(ref(db, 'members/' + userId), profileData);
         localStorage.setItem('my_owned_profile', userId);
-        alert("บันทึกเรียบร้อย!");
-        location.reload();
-    } catch (e) { alert(e.message); }
+        
+        // หน่วงเวลาเล็กน้อยเพื่อให้ User เห็นว่ากำลังโหลด
+        setTimeout(() => {
+            loading.style.display = 'none';
+            alert("บันทึกข้อมูลสำเร็จ!");
+            location.reload();
+        }, 1000);
+    } catch (e) {
+        loading.style.display = 'none';
+        alert("เกิดข้อผิดพลาด: " + e.message);
+    }
 };
+
+// เพิ่มฟังก์ชัน updateSocialDisplay เข้าไปใน loadProfile ด้วย
+// โดยเรียกใช้ updateSocialDisplay(data); หลังดึง snapshot สำเร็จ
 
 // --- ฟังก์ชันคืนสิทธิ์โปรไฟล์ ---
 window.releaseProfile = async function() {
