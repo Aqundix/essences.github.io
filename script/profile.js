@@ -35,17 +35,28 @@ window.updateCharCount = function() {
 };
 
 window.showPreview = function(input, previewId, isBanner = false) {
-    if (input.files && input.files[0]) {
+    const file = input.files[0];
+    if (file) {
+        // จำกัดขนาดไฟล์ไม่เกิน 1MB เพื่อไม่ให้ Firebase โหลดหนักเกินไป
+        if (file.size > 1024 * 1024) {
+            alert("ไฟล์ใหญ่เกินไป! กรุณาเลือกไฟล์ที่มีขนาดไม่เกิน 1MB");
+            input.value = "";
+            return;
+        }
+
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = function(e) {
+            const result = e.target.result;
             const preview = document.getElementById(previewId);
             if (isBanner) {
-                preview.style.backgroundImage = `url("${e.target.result}")`;
+                preview.style.backgroundImage = `url('${result}')`;
             } else {
-                preview.src = e.target.result;
+                preview.src = result;
             }
+            // เก็บข้อมูล base64 ไว้ที่ element เพื่อเอาไป save ลง database
+            preview.dataset.base64 = result;
         };
-        reader.readAsDataURL(input.files[0]);
+        reader.readAsDataURL(file);
     }
 };
 
