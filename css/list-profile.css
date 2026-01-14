@@ -6,49 +6,46 @@ body {
 }
 
 .container { 
-    max-width: 600px; 
+    max-width: 650px; /* ขยายกว้างขึ้นเล็กน้อยเพื่อความโปร่ง */
     margin: 0 auto; 
 }
 
 .header-section { 
     text-align: center; 
-    margin-bottom: 30px; 
+    margin-bottom: 40px; 
 }
 
 .header-section h2 {
-    font-size: 1.8rem;
+    font-size: 2rem;
     letter-spacing: 1px;
-    background: linear-gradient(90deg, #fff, #5865f2);
+    background: linear-gradient(to right, #fff, #5865f2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-/* การ์ดแต่ละใบ - ปรับให้ดูพรีเมียมขึ้น */
+/* --- การ์ดแต่ละใบ (Profile Item) --- */
 .profile-item {
     position: relative;
     overflow: hidden;
     background: #2f3136;
-    border-radius: 16px; /* มนขึ้น */
-    margin-bottom: 20px;
-    height: 120px; /* เพิ่มความสูงเล็กน้อยให้ดูไม่อึดอัด */
+    border-radius: 16px; /* มนขึ้นเพื่อความพรีเมียม */
+    margin-bottom: 18px;
+    height: 115px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-.profile-item:hover {
-    transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+.profile-item:hover { 
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.4);
     border-color: rgba(88, 101, 242, 0.4);
 }
 
-/* ชั้นที่ 1: Banner */
+/* ชั้นที่ 1: Banner (GIF/Image) */
 .card-banner {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     z-index: 0;
     background-repeat: no-repeat;
     background-size: cover;
@@ -57,19 +54,16 @@ body {
 }
 
 .profile-item:hover .card-banner {
-    transform: scale(1.1); /* ซูมแบนเนอร์เล็กน้อยตอน hover */
+    transform: scale(1.05); /* ซูม Banner เล็กน้อยตอน Hover */
 }
 
-/* ชั้นที่ 2: Overlay - ปรับลดความมืดลงเพื่อให้เห็นรูปชัดขึ้น */
+/* ชั้นที่ 2: Overlay (ลดความมืดลงเพื่อให้เห็น Banner ชัดขึ้น) */
 .banner-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     z-index: 1;
-    /* เปลี่ยนจากดำเข้ม เป็นจางลง และใช้การไล่เฉดเพื่อเน้นข้อความฝั่งซ้าย */
-    background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%);
+    /* เปลี่ยนเป็น Gradient จางๆ เน้นมืดแค่ฝั่งที่มีชื่อ */
+    background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.1) 100%);
     pointer-events: none;
 }
 
@@ -94,71 +88,72 @@ body {
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    /* เส้นขอบพรีเมียม */
-    border: 4px solid #2f3136;
+    border: 4px solid rgba(47, 49, 54, 0.8); /* ขอบโปร่งแสงนิดๆ */
     object-fit: cover;
-    box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.5); 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     background: #202225;
 }
 
 .name-details .name {
     font-size: 1.3rem;
     font-weight: 600;
-    color: white;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* ช่วยให้อ่านง่ายแม้ Banner สว่าง */
     display: block;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .name-details .tag {
-    color: #b5bac1;
-    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
     background: rgba(0,0,0,0.3);
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: 12px;
+    margin-top: 4px;
+    display: inline-block;
 }
 
-/* ปุ่มกด - Discord Style Premium */
+/* --- ปรับแต่งปุ่ม --- */
 .view-link {
     padding: 10px 22px;
     border-radius: 8px;
-    font-weight: 600;
+    font-weight: 500;
     text-decoration: none;
-    transition: 0.2s;
-    font-size: 0.95rem;
+    transition: all 0.2s;
+    font-size: 0.9rem;
     white-space: nowrap;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px); /* ปุ่มกึ่งโปร่งใสดูหรู */
 }
 
 .view-link:hover {
-    filter: brightness(1.2);
-    box-shadow: 0 0 15px rgba(88, 101, 242, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
-/* สถานะสีต่างๆ */
-.view-link { background: #5865f2; color: white; } /* ว่าง */
-.view-link.locked { background: #ed4245 !important; } /* ไม่ว่าง */
-.view-link.owned { background: #23a55a !important; } /* ของเรา */
+.view-link { background: #5865f2; color: white; }
+.view-link.locked { background: #ed4245 !important; }
+.view-link.owned { background: #23a55a !important; }
 .view-link.limit { background: #4f545c !important; opacity: 0.8; }
 
-/* ส่วนของ Admin Modal */
+/* --- ส่วนของ Modal & Reset --- */
 .auth-modal {
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px); /* เบลอหลังให้พรีเมียม */
 }
 
 .auth-modal-content {
-    background: #313338;
-    border: 1px solid #5865f2;
-    box-shadow: 0 0 30px rgba(88, 101, 242, 0.2);
+    background: #2f3136;
+    border: 1px solid rgba(88, 101, 242, 0.3);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
 }
 
-.reset-btn {
+.auth-modal-content input {
+    border: 1px solid #202225;
     transition: 0.3s;
-    font-weight: 500;
 }
 
-.reset-btn:hover {
-    background: #c03537;
-    transform: scale(1.05);
+.auth-modal-content input:focus {
+    border-color: #5865f2;
+    box-shadow: 0 0 10px rgba(88, 101, 242, 0.2);
 }
