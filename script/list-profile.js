@@ -27,11 +27,12 @@ async function renderList() {
             const idStr = i.toString();
             const savedData = allData[idStr];
             
-            // การจัดการสไตล์ Banner
-            let finalBannerStyle = "background-color: #5865f2;"; 
-            if (savedData?.banner && savedData.banner !== "none" && savedData.banner !== "") {
-                const bUrl = savedData.banner.includes('url(') ? savedData.banner : `url("${savedData.banner}")`;
-                finalBannerStyle = `background-image: ${bUrl}; background-size: cover; background-position: center;`;
+            // --- แก้ไข Logic Banner ให้แม่นยำ ---
+            let bannerStyle = "background-color: #5865f2;"; 
+            if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
+                // ล้างค่า url() ที่อาจติดมาใน Database ออกก่อนเพื่อป้องกันการใส่ซ้อน
+                let cleanUrl = savedData.banner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+                bannerStyle = `background-image: url("${cleanUrl}"); background-size: cover; background-position: center; height: 100%;`;
             }
 
             const isLocked = savedData?.isLocked || false;
@@ -39,29 +40,27 @@ async function renderList() {
             let actionBtn = '';
 
             if (isLocked && !isOwner) {
-                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #ed4245;">ดูโปรไฟล์</a>`;
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
             } else if (isOwner) {
-                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
-            } else if (myOwnedProfile) {
-                actionBtn = `<span class="view-link" style="background: #4f545c; opacity: 0.6; cursor: not-allowed;">จำกัด 1 สิทธิ์</span>`;
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
+            } else if (myOwnedProfile && myOwnedProfile !== idStr) {
+                actionBtn = `<span class="view-link limit">จำกัด 1 สิทธิ์</span>`;
             } else {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
 
-            // HTML Structure สำหรับ Card แบบใหม่
             const itemHTML = `
                 <div class="profile-item">
-                    <div class="card-banner" style="${finalBannerStyle}"></div>
-                    <div class="banner-overlay"></div>
-                    <div class="user-content">
-                        <div class="user-info-main">
-                            <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
-                            <div class="name-details">
-                                <div class="user-name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</div>
-                                <div class="user-tag">@${idStr.padStart(4, '0')}</div>
-                            </div>
+                    <div class="card-banner" style="${bannerStyle}"></div>
+                    <div class="user-info">
+                        <img src="${savedData?.avatar || 'img/profile.jpg'}" onerror="this.src='img/profile.jpg'">
+                        <div class="name-details">
+                            <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
+                            <span class="tag">@${idStr.padStart(4, '0')}</span>
                         </div>
-                        <div class="button-area">${actionBtn}</div>
+                    </div>
+                    <div style="padding: 0 15px 15px 15px; position: relative; z-index: 2;">
+                        ${actionBtn}
                     </div>
                 </div>
             `;
@@ -73,7 +72,6 @@ async function renderList() {
     }
 }
 
-// ส่วนงาน Admin
 window.openAuthModal = () => document.getElementById('adminAuthModal').style.display = 'flex';
 window.closeAuthModal = () => {
     document.getElementById('adminAuthModal').style.display = 'none';
