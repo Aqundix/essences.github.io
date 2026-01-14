@@ -101,26 +101,6 @@ body {
     font-size: 0.85em;
 }
 
-.view-link {
-    display: inline-block;
-    padding: 8px 16px;
-    border-radius: 5px;
-    color: white;
-    text-decoration: none;
-    font-size: 0.9em;
-    background: #5865f2;
-}
-
-/* บังคับให้ข้อมูลผู้ใช้อยู่เหนือ Banner */
-.user-info {
-    position: relative;
-    z-index: 1;
-    padding: 40px 15px 10px 15px; /* ดันรูปลงมาให้ทับขอบ Banner */
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
 /* ภาพแบนเนอร์พื้นหลัง */
 .banner-bg {
     position: absolute;
@@ -245,3 +225,51 @@ body {
 
 /* ปุ่มเจ้าของ */
 .view-link.owned { background: #43b581 !important; }
+
+/* คอนเทนเนอร์หลักที่หุ้มข้อมูลและปุ่ม */
+.user-content-wrapper {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between; /* ดันเนื้อหาแยกซ้าย-ขวา */
+    align-items: center;           /* จัดให้อยู่กลางแนวตั้ง */
+    padding: 15px;
+    height: 100%;
+    min-height: 120px;
+}
+
+/* ปรับส่วนข้อมูลผู้ใช้ไม่ให้มี padding เกิน */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* จัดการส่วนปุ่ม */
+.button-area {
+    display: flex;
+    align-items: center;
+}
+
+/* ปรับแต่งปุ่มให้ดูเล็กลงและกระชับขึ้นเมื่ออยู่ทางขวา */
+.view-link {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap; /* ป้องกันปุ่มตัดบรรทัด */
+    transition: 0.2s;
+}
+
+/* สำหรับมือถือ: ถ้าจอแคบให้ปุ่มเล็กลงอีก */
+@media (max-width: 480px) {
+    .user-content-wrapper {
+        padding: 10px;
+    }
+    .view-link {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
