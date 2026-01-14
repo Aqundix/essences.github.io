@@ -34,6 +34,17 @@ window.updateCharCount = function() {
     document.getElementById('charCounter').innerText = `${text.length} / 255`;
 };
 
+window.removeImage = function(previewId, type) {
+    const preview = document.getElementById(previewId);
+    if (type === 'avatar') {
+        preview.src = DEFAULT_AVATAR;
+    } else {
+        preview.style.backgroundImage = "none";
+        preview.style.backgroundColor = "#5865f2";
+    }
+};
+
+// 1. ฟังก์ชันแสดงตัวอย่างรูป (และเก็บค่าไว้รอ Save)
 window.showPreview = function(input, previewId, isBanner = false) {
     const file = input.files[0];
     if (file) {
@@ -43,27 +54,50 @@ window.showPreview = function(input, previewId, isBanner = false) {
             const preview = document.getElementById(previewId);
             
             if (isBanner) {
-                // สำหรับ Banner ใช้ backgroundImage
                 preview.style.backgroundImage = `url('${result}')`;
-                preview.style.backgroundColor = "transparent"; // ล้างสีพื้นหลังเดิม
+                preview.style.backgroundColor = "transparent";
             } else {
-                // สำหรับ Avatar ใช้ src
                 preview.src = result;
             }
-            // สำคัญ: เก็บค่า Base64 ไว้ใน dataset เพื่อใช้ตอนกด Save
+            // เก็บค่า Base64 ไว้ที่ Element เพื่อให้ฟังก์ชัน Save ดึงไปใช้ได้ง่าย
             preview.dataset.base64 = result;
         };
         reader.readAsDataURL(file);
     }
 };
 
-window.removeImage = function(previewId, type) {
-    const preview = document.getElementById(previewId);
-    if (type === 'avatar') {
-        preview.src = DEFAULT_AVATAR;
-    } else {
-        preview.style.backgroundImage = "none";
-        preview.style.backgroundColor = "#5865f2";
+// 2. ฟังก์ชันบันทึกข้อมูล (แก้ปัญหาข้อมูลหาย)
+window.saveProfile = async function() {
+    const name = document.getElementById('inputName').value;
+    const about = document.getElementById('inputAbout').value;
+    
+    // ดึงค่ารูป Avatar: ถ้ามีรูปใหม่ใน dataset ให้ใช้รูปใหม่ ถ้าไม่มีให้ใช้รูปเดิมจาก src
+    const avatar = document.getElementById('previewAvatar').dataset.base64 || document.getElementById('previewAvatar').src;
+    
+    // ดึงค่ารูป Banner: ถ้ามีรูปใหม่ใน dataset ให้ใช้รูปใหม่ ถ้าไม่มีให้แกะค่าจาก backgroundImage เดิม
+    let banner = document.getElementById('previewBanner').dataset.base64;
+    if (!banner) {
+        const bgImg = document.getElementById('previewBanner').style.backgroundImage;
+        // ล้างคำว่า url("...") ออกให้เหลือแค่ตัว Link หรือ Base64
+        banner = bgImg ? bgImg.slice(5, -2).replace(/"/g, "") : "";
+    }
+
+    try {
+        await set(ref(db, 'members/' + userId), {
+            name: name,
+            about: about,
+            avatar: avatar,
+            banner: banner,
+            fb: document.getElementById('inputFB').value,
+            ig: document.getElementById('inputIG').value,
+            gh: document.getElementById('inputGH').value,
+            isLocked: true
+        });
+        localStorage.setItem('my_owned_profile', userId);
+        alert("บันทึกข้อมูลเรียบร้อย!");
+        location.reload();
+    } catch (e) {
+        alert("Error: " + e.message);
     }
 };
 
@@ -95,40 +129,6 @@ window.handleImageUpload = function(input, previewId) {
     }
 };
 
-// ปรับปรุงฟังก์ชัน SaveProfile เดิม
-window.saveProfile = async function() {
-    const name = document.getElementById('inputName').value;
-    const about = document.getElementById('inputAbout').value;
-    
-    // ดึงค่าจาก dataset ถ้ามีการเปลี่ยนรูปใหม่ ถ้าไม่มีให้ใช้ค่าเดิมจาก src หรือ backgroundImage
-    const avatar = document.getElementById('previewAvatar').dataset.base64 || document.getElementById('previewAvatar').src;
-    
-    // สำหรับ Banner ต้องดึงค่า URL ออกจากรูปแบบ url("...")
-    let banner = document.getElementById('previewBanner').dataset.base64;
-    if (!banner) {
-        const bgImg = document.getElementById('previewBanner').style.backgroundImage;
-        banner = bgImg.slice(5, -2).replace(/"/g, ""); // ตัด url("...") ออกให้เหลือแต่ link
-    }
-
-    try {
-        await set(ref(db, 'members/' + userId), {
-            name: name,
-            about: about,
-            avatar: avatar,
-            banner: banner, // เก็บค่าเป็น String URL/Base64 ตรงๆ
-            fb: document.getElementById('inputFB').value,
-            ig: document.getElementById('inputIG').value,
-            gh: document.getElementById('inputGH').value,
-            isLocked: true
-        });
-        localStorage.setItem('my_owned_profile', userId);
-        alert("บันทึกข้อมูลเรียบร้อย!");
-        location.reload();
-    } catch (e) {
-        alert("Error: " + e.message);
-    }
-};
-
 // --- ฟังก์ชันโหลดข้อมูล (แก้ไขเรื่องปุ่มหาย) ---
 
 async function loadProfile() {
@@ -144,7 +144,13 @@ async function loadProfile() {
         document.getElementById('displayTag').innerText = formattedTag;
         document.getElementById('displayAbout').innerText = data?.about || "คลิกปุ่ม Edit เพื่อเริ่มแก้ไขโปรไฟล์ของคุณ...";
         document.getElementById('displayAvatar').src = data?.avatar || DEFAULT_AVATAR;
-        if (data?.banner) document.getElementById('displayBanner').style.backgroundImage = data.banner;
+        // ในฟังก์ชัน loadProfile()
+        const bannerArea = document.getElementById('displayBanner');
+        if (data?.banner && data.banner !== "none" && data.banner !== "") {
+            // ต้องครอบด้วย url() เพราะในฐานข้อมูลเราเก็บแค่ตัว Link/Base64
+            bannerArea.style.backgroundImage = `url('${data.banner}')`;
+            bannerArea.style.backgroundColor = "transparent";
+        }
 
         // เช็คสิทธิ์เพื่อโชว์ปุ่ม
         const isLocked = data?.isLocked || false;
