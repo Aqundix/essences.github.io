@@ -155,22 +155,22 @@ async function loadProfile() {
 
         // เช็คสิทธิ์เพื่อโชว์ปุ่ม
         // ค้นหาส่วนที่เช็ค isLocked ในไฟล์ profile.js
-const isLocked = data?.isLocked || false;
-const isOwner = myOwnedProfile === userId;
-
-const editBtn = document.getElementById('editBtn');
-
-// เงื่อนไข: ถ้ายังไม่ล็อค (คนแรกที่เข้ามา) หรือ ถ้าเราเป็นเจ้าของ ให้โชว์ปุ่ม Edit
-if (!isLocked || isOwner) {
-    editBtn.style.display = 'inline-block';
-} else {
-    editBtn.style.display = 'none'; // คนอื่นที่มาทีหลังจะไม่เห็นปุ่ม
-}
-
-// ปุ่ม Reset (คืนสิทธิ์) จะขึ้นเฉพาะคนที่เป็นเจ้าของเท่านั้น
-if (isOwner) {
-    document.getElementById('resetOwnershipBtn').style.display = 'inline-block';
-}
+        const isLocked = data?.isLocked || false;
+        const isOwner = myOwnedProfile === userId;
+        
+        const editBtn = document.getElementById('editBtn');
+        
+        // เงื่อนไข: ถ้ายังไม่ล็อค (คนแรกที่เข้ามา) หรือ ถ้าเราเป็นเจ้าของ ให้โชว์ปุ่ม Edit
+        if (!isLocked || isOwner) {
+            editBtn.style.display = 'inline-block';
+        } else {
+            editBtn.style.display = 'none'; // คนอื่นที่มาทีหลังจะไม่เห็นปุ่ม
+        }
+        
+        // ปุ่ม Reset (คืนสิทธิ์) จะขึ้นเฉพาะคนที่เป็นเจ้าของเท่านั้น
+        if (isOwner) {
+            document.getElementById('resetOwnershipBtn').style.display = 'inline-block';
+        }
 
         // ใส่ข้อมูลลง Modal
         // ค้นหาช่วงท้ายของฟังก์ชัน loadProfile และปรับตามนี้
