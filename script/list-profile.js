@@ -27,18 +27,18 @@ async function renderList() {
             const idStr = i.toString();
             const savedData = allData[idStr];
             
-            // --- แก้ไข Logic Banner ให้แม่นยำ ---
-            let bannerStyle = "background-color: #5865f2;"; 
-            if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
-                // ล้างค่า url() ที่อาจติดมาใน Database ออกก่อนเพื่อป้องกันการใส่ซ้อน
-                let cleanUrl = savedData.banner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
-                bannerStyle = `background-image: url("${cleanUrl}"); background-size: cover; background-position: center; height: 100%;`;
+            // การจัดการสไตล์ Banner ให้เข้ากับ CSS ใหม่
+            let finalBannerStyle = ""; 
+            if (savedData?.banner && savedData.banner !== "none" && savedData.banner !== "") {
+                const bUrl = savedData.banner.includes('url(') ? savedData.banner : `url("${savedData.banner}")`;
+                finalBannerStyle = `background-image: ${bUrl}; height: 100%;`; // ปรับให้สูง 100% ตาม CSS ใหม่
             }
 
             const isLocked = savedData?.isLocked || false;
             const isOwner = myOwnedProfile === idStr;
             let actionBtn = '';
 
+            // กำหนด Class ของปุ่มตาม CSS ใหม่ที่คุณส่งมา
             if (isLocked && !isOwner) {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
             } else if (isOwner) {
@@ -51,7 +51,8 @@ async function renderList() {
 
             const itemHTML = `
                 <div class="profile-item">
-                    <div class="card-banner" style="${bannerStyle}"></div>
+                    <div class="card-banner" style="${finalBannerStyle}"></div>
+                    
                     <div class="user-info">
                         <img src="${savedData?.avatar || 'img/profile.jpg'}" onerror="this.src='img/profile.jpg'">
                         <div class="name-details">
@@ -72,13 +73,13 @@ async function renderList() {
     }
 }
 
+// ฟังก์ชัน Admin
 window.openAuthModal = () => document.getElementById('adminAuthModal').style.display = 'flex';
 window.closeAuthModal = () => {
     document.getElementById('adminAuthModal').style.display = 'none';
     document.getElementById('adminUser').value = '';
     document.getElementById('adminPass').value = '';
 };
-
 window.verifyAndReset = async () => {
     if (document.getElementById('adminUser').value === "admin" && document.getElementById('adminPass').value === "admin") {
         if (confirm("ล้างข้อมูลทั้งหมด?")) {
