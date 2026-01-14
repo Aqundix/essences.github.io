@@ -95,25 +95,6 @@ window.handleImageUpload = function(input, previewId) {
     }
 };
 
-// ในส่วนของ loadProfile() หาบรรทัดที่จัดการ Banner
-const data = snapshot.val();
-if (data) {
-    // แสดงผลหน้าหลัก
-    const displayBanner = document.getElementById('displayBanner');
-    if (data.banner) {
-        displayBanner.style.backgroundImage = `url('${data.banner}')`;
-        displayBanner.style.backgroundColor = "transparent";
-    }
-
-    // เซ็ตค่าใน Modal (Preview) - จุดนี้สำคัญมาก!
-    const previewBanner = document.getElementById('previewBanner');
-    if (data.banner) {
-        previewBanner.style.backgroundImage = `url('${data.banner}')`;
-        // ลบ dataset เก่าออกเพื่อให้ฟังก์ชัน save ใช้ค่าจาก style ถ้าไม่มีการอัพโหลดใหม่
-        delete previewBanner.dataset.base64; 
-    }
-}
-
 // ปรับปรุงฟังก์ชัน SaveProfile เดิม
 window.saveProfile = async function() {
     const name = document.getElementById('inputName').value;
