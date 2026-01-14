@@ -32,12 +32,12 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 60px; /* ความสูงของ Banner */
+    height: 60px; /* ปรับความสูงตามต้องการ */
     z-index: 0;
-    background-color: #5865f2; /* สีสำรองถ้าไม่มีรูป */
+    background-color: #5865f2; /* สีพื้นฐานถ้าไม่มีรูป */
+    background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    border-bottom: 1px solid rgba(0,0,0,0.2);
 }
 
 /* บังคับให้ข้อมูลผู้ใช้อยู่เหนือ Banner */
