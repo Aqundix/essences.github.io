@@ -70,39 +70,6 @@ window.removeImage = function(previewId, type) {
     }
 };
 
-// --- ฟังก์ชันจัดการข้อมูล ---
-window.saveProfile = async function() {
-    const saveBtn = document.getElementById('mainSaveBtn');
-    saveBtn.disabled = true;
-    saveBtn.innerText = "กำลังบันทึก...";
-
-    try {
-        const snapshot = await get(ref(db, 'members/' + userId));
-        const oldData = snapshot.val() || {};
-
-        const newData = {
-            id: userId,
-            name: document.getElementById('inputName').value || oldData.name || `Username ${userId}`,
-            about: document.getElementById('inputAbout').value || oldData.about || "ยังไม่ได้ตั้ง Bio",
-            avatar: document.getElementById('previewAvatar').src,
-            banner: document.getElementById('previewBanner').style.backgroundImage || oldData.banner || "",
-            fb: document.getElementById('inputFB').value || "",
-            ig: document.getElementById('inputIG').value || "",
-            gh: document.getElementById('inputGH').value || "",
-            isLocked: true
-        };
-
-        await set(ref(db, 'members/' + userId), newData);
-        localStorage.setItem('my_owned_profile', userId);
-        alert("บันทึกข้อมูลเรียบร้อย!");
-        location.reload();
-    } catch (e) {
-        alert("เกิดข้อผิดพลาด: " + e.message);
-        saveBtn.disabled = false;
-        saveBtn.innerText = "Save Changes";
-    }
-};
-
 // ฟังก์ชันจัดการการเลือกรูปภาพ
 window.handleImageUpload = function(input, previewId) {
     const file = input.files[0];
