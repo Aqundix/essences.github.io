@@ -22,7 +22,7 @@ const DEFAULT_AVATAR = "../img/profile.jpg";
 window.openModal = () => document.getElementById('editModal').style.display = 'flex';
 window.closeModal = () => document.getElementById('editModal').style.display = 'none';
 
-// --- ฟังก์ชันอัพโหลดรูปจากเครื่อง ---
+// ฟังก์ชันอัพโหลดรูปจากเครื่อง
 window.showPreview = function(input, previewId, isBanner = false) {
     const file = input.files[0];
     if (file) {
@@ -35,62 +35,13 @@ window.showPreview = function(input, previewId, isBanner = false) {
             } else {
                 preview.src = result;
             }
-            preview.dataset.base64 = result; // เก็บค่าไว้รอ Save
+            preview.dataset.base64 = result; 
         };
         reader.readAsDataURL(file);
     }
 };
 
-// --- ฟังก์ชันโหลดข้อมูลและเช็คสิทธิ์ปุ่ม ---
-async function loadProfile() {
-    try {
-        const snapshot = await get(ref(db, 'members/' + userId));
-        const data = snapshot.exists() ? snapshot.val() : null;
-        const myOwnedProfile = localStorage.getItem('my_owned_profile');
-
-        // 1. แสดงหน้าโปรไฟล์หลัก
-        document.getElementById('displayName').innerText = data?.name || "Username";
-        document.getElementById('displayTag').innerText = "@" + userId.padStart(4, '0');
-        document.getElementById('displayAbout').innerText = data?.about || "คลิก Edit เพื่อเริ่มแก้ไขโปรไฟล์...";
-        document.getElementById('displayAvatar').src = data?.avatar || DEFAULT_AVATAR;
-        
-        const bannerArea = document.getElementById('displayBanner');
-        if (data?.banner) {
-            bannerArea.style.backgroundImage = `url('${data.banner}')`;
-        } else {
-            bannerArea.style.backgroundColor = "#5865f2";
-        }
-
-        // 2. แสดงปุ่ม Edit และ Restore (แก้ไขจุดนี้ให้ปุ่มขึ้นแน่นอน)
-        const isLocked = data?.isLocked || false;
-        const isOwner = myOwnedProfile === userId;
-
-        // ถ้าโปรไฟล์ยังว่างอยู่ (Locked = false) หรือ เราเป็นเจ้าของ ให้โชว์ปุ่ม Edit
-        if (!isLocked || isOwner) {
-            document.getElementById('editBtn').style.display = 'flex';
-        }
-
-        // ถ้าเราเป็นเจ้าของ ให้โชว์ปุ่ม Restore (คืนสิทธิ์)
-        if (isOwner) {
-            document.getElementById('resetOwnershipBtn').style.display = 'flex';
-        }
-
-        // 3. เตรียมข้อมูลใส่ใน Modal
-        if (data) {
-            document.getElementById('inputName').value = data.name || "";
-            document.getElementById('inputAbout').value = data.about || "";
-            document.getElementById('previewAvatar').src = data.avatar || DEFAULT_AVATAR;
-            if (data.banner) {
-                document.getElementById('previewBanner').style.backgroundImage = `url('${data.banner}')`;
-            }
-            document.getElementById('inputFB').value = data.fb || "";
-            document.getElementById('inputIG').value = data.ig || "";
-            document.getElementById('inputGH').value = data.gh || "";
-        }
-    } catch (e) { console.error(e); }
-}
-
-// --- ฟังก์ชันบันทึกข้อมูล ---// ฟังก์ชันแสดง/ซ่อน Social Items
+// --- ฟังก์ชันจัดการ Social Card ---
 function updateSocialDisplay(data) {
     const socialCard = document.getElementById('socialCard');
     const items = {
@@ -107,28 +58,85 @@ function updateSocialDisplay(data) {
         
         if (val && val.trim() !== "") {
             itemEl.style.display = 'flex';
+            // ตรวจสอบว่ามี http หรือไม่ ถ้าไม่มีให้เติม https://
             linkEl.href = val.startsWith('http') ? val : `https://${val}`;
             hasSocial = true;
         } else {
             itemEl.style.display = 'none';
         }
     }
+    // ถ้ามี social อย่างน้อย 1 อย่างให้แสดง card
     socialCard.style.display = hasSocial ? 'block' : 'none';
 }
 
-// แก้ไขฟังก์ชัน saveProfile เพิ่ม Loading
+// --- ฟังก์ชันโหลดข้อมูลและเช็คสิทธิ์ ---
+async function loadProfile() {
+    try {
+        const snapshot = await get(ref(db, 'members/' + userId));
+        const data = snapshot.exists() ? snapshot.val() : null;
+        const myOwnedProfile = localStorage.getItem('my_owned_profile');
+
+        // 1. แสดงหน้าโปรไฟล์หลัก
+        document.getElementById('displayName').innerText = data?.name || "Username";
+        document.getElementById('displayTag').innerText = "@" + userId.padStart(4, '0');
+        document.getElementById('displayAbout').innerText = data?.about || "คลิก Edit เพื่อเริ่มแก้ไขโปรไฟล์ของคุณ...";
+        document.getElementById('displayAvatar').src = data?.avatar || DEFAULT_AVATAR;
+        
+        const bannerArea = document.getElementById('displayBanner');
+        if (data?.banner) {
+            bannerArea.style.backgroundImage = `url('${data.banner}')`;
+            bannerArea.style.backgroundColor = "transparent";
+        } else {
+            bannerArea.style.backgroundColor = "#5865f2";
+            bannerArea.style.backgroundImage = "none";
+        }
+
+        // เรียกใช้ฟังก์ชันแสดง Social
+        updateSocialDisplay(data);
+
+        // 2. แสดงปุ่ม Edit และ Restore
+        const isLocked = data?.isLocked || false;
+        const isOwner = myOwnedProfile === userId;
+
+        if (!isLocked || isOwner) {
+            document.getElementById('editBtn').style.display = 'flex';
+        }
+        
+        if (isOwner) {
+            document.getElementById('resetOwnershipBtn').style.display = 'flex';
+        }
+
+        // 3. เตรียมข้อมูลใส่ใน Modal (Preview)
+        if (data) {
+            document.getElementById('inputName').value = data.name || "";
+            document.getElementById('inputAbout').value = data.about || "";
+            document.getElementById('previewAvatar').src = data.avatar || DEFAULT_AVATAR;
+            if (data.banner) {
+                document.getElementById('previewBanner').style.backgroundImage = `url('${data.banner}')`;
+            }
+            document.getElementById('inputFB').value = data.fb || "";
+            document.getElementById('inputIG').value = data.ig || "";
+            document.getElementById('inputGH').value = data.gh || "";
+        }
+    } catch (e) {
+        console.error("Load error:", e);
+    }
+}
+
+// --- ฟังก์ชันบันทึกข้อมูล พร้อม Loading ---
 window.saveProfile = async function() {
     const loading = document.getElementById('loadingOverlay');
-    loading.style.display = 'flex'; // แสดงฉากโหลด
+    if (loading) loading.style.display = 'flex'; 
 
     const previewAvatar = document.getElementById('previewAvatar');
     const previewBanner = document.getElementById('previewBanner');
 
     const avatar = previewAvatar.dataset.base64 || previewAvatar.src;
     let banner = previewBanner.dataset.base64;
+    
     if (!banner) {
         const bg = previewBanner.style.backgroundImage;
-        banner = bg ? bg.slice(5, -2).replace(/"/g, "") : "";
+        banner = bg && bg !== 'none' ? bg.slice(5, -2).replace(/"/g, "") : "";
     }
 
     const profileData = {
@@ -146,28 +154,28 @@ window.saveProfile = async function() {
         await set(ref(db, 'members/' + userId), profileData);
         localStorage.setItem('my_owned_profile', userId);
         
-        // หน่วงเวลาเล็กน้อยเพื่อให้ User เห็นว่ากำลังโหลด
         setTimeout(() => {
-            loading.style.display = 'none';
+            if (loading) loading.style.display = 'none';
             alert("บันทึกข้อมูลสำเร็จ!");
             location.reload();
-        }, 1000);
+        }, 1000); // หน่วงเวลา 1 วิให้เห็นหน้าจอโหลด
     } catch (e) {
-        loading.style.display = 'none';
+        if (loading) loading.style.display = 'none';
         alert("เกิดข้อผิดพลาด: " + e.message);
     }
 };
 
-// เพิ่มฟังก์ชัน updateSocialDisplay เข้าไปใน loadProfile ด้วย
-// โดยเรียกใช้ updateSocialDisplay(data); หลังดึง snapshot สำเร็จ
-
 // --- ฟังก์ชันคืนสิทธิ์โปรไฟล์ ---
 window.releaseProfile = async function() {
     if (confirm("ต้องการคืนสิทธิ์โปรไฟล์นี้เพื่อให้ผู้อื่นใช้งานหรือไม่?")) {
-        await remove(ref(db, 'members/' + userId));
-        localStorage.removeItem('my_owned_profile');
-        alert("คืนสิทธิ์เรียบร้อย");
-        location.href = "../index.html";
+        try {
+            await remove(ref(db, 'members/' + userId));
+            localStorage.removeItem('my_owned_profile');
+            alert("คืนสิทธิ์เรียบร้อย");
+            location.href = "../index.html";
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
     }
 };
 
