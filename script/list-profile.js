@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+// 1. Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
     authDomain: "aqundix-d3f38.firebaseapp.com",
@@ -15,6 +16,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const listDiv = document.getElementById('member-list');
 
+// 2. ฟังก์ชันแสดงผลรายชื่อ (Main Render)
 async function renderList() {
     if (!listDiv) return;
     try {
@@ -23,67 +25,94 @@ async function renderList() {
         listDiv.innerHTML = '';
         const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
-        // --- ส่วนหลักใน Loop ของ renderList ---
-for (let i = 1; i <= 15; i++) {
-    const idStr = i.toString();
-    const savedData = allData[idStr];
-    
-    // จัดการสไตล์ Banner: ตรวจสอบและครอบด้วย url() เพียงชั้นเดียว
-    let bannerStyle = "background-color: #5865f2;"; 
-    if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
-        bannerStyle = `background-image: url("${savedData.banner}"); background-size: cover; background-position: center;`;
-    }
+        for (let i = 1; i <= 15; i++) {
+            const idStr = i.toString();
+            const savedData = allData[idStr];
+            
+            // จัดการ Banner: ตรวจสอบและครอบด้วย url() เพียงชั้นเดียว
+            let bannerStyle = "background-color: #5865f2;"; 
+            if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
+                // ล้าง url() เก่าออกถ้ามีก่อนใส่ใหม่ เพื่อป้องกันบัคจอขาว/ดำ
+                const cleanUrl = savedData.banner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+                bannerStyle = `background-image: url("${cleanUrl}"); background-size: cover; background-position: center;`;
+            }
 
-    const isLocked = savedData?.isLocked || false;
-    const isOwner = myOwnedProfile === idStr;
-    let actionBtn = '';
+            const isLocked = savedData?.isLocked || false;
+            const isOwner = myOwnedProfile === idStr;
+            let actionBtn = '';
 
-    // การกำหนด Class ปุ่มตามเงื่อนไข (Locked, Owned, Limit)
-    if (isLocked && !isOwner) {
-        actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
-    } else if (isOwner) {
-        actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
-    } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-        actionBtn = `<span class="view-link limit">จำกัด 1 สิทธิ์</span>`;
-    } else {
-        actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
-    }
+            // กำหนดสถานะปุ่ม
+            if (isLocked && !isOwner) {
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
+            } else if (isOwner) {
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
+            } else if (myOwnedProfile && myOwnedProfile !== idStr) {
+                actionBtn = `<span class="view-link limit">จำกัด 1 สิทธิ์</span>`;
+            } else {
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
+            }
 
-    const itemHTML = `
-        <div class="profile-item">
-            <div class="card-banner" style="${bannerStyle}"></div>
-            <div class="user-info">
-                <img src="${savedData?.avatar || 'img/profile.jpg'}" onerror="this.src='img/profile.jpg'">
-                <div class="name-details">
-                    <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
-                    <span class="tag">@${idStr.padStart(4, '0')}</span>
+            const itemHTML = `
+                <div class="profile-item">
+                    <div class="card-banner" style="${bannerStyle}"></div>
+                    <div class="banner-overlay"></div>
+                    <div class="user-info">
+                        <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
+                        <div class="name-details">
+                            <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
+                            <span class="tag">@${idStr.padStart(4, '0')}</span>
+                        </div>
+                    </div>
+                    <div style="padding: 0 15px 15px 15px; position: relative; z-index: 2;">
+                        ${actionBtn}
+                    </div>
                 </div>
-            </div>
-            <div style="padding: 0 15px 15px 15px; position: relative; z-index: 2;">
-                ${actionBtn}
-            </div>
-        </div>
-    `;
-    listDiv.insertAdjacentHTML('beforeend', itemHTML);
+            `;
+            listDiv.insertAdjacentHTML('beforeend', itemHTML);
+        }
+    } catch (e) {
+        listDiv.innerHTML = '<p style="text-align:center; color: white;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+        console.error("Firebase Error:", e);
+    }
 }
 
-// ส่วนงาน Admin
-window.openAuthModal = () => document.getElementById('adminAuthModal').style.display = 'flex';
+// 3. ฟังก์ชัน Admin (Reset System)
+window.openAuthModal = () => {
+    const modal = document.getElementById('adminAuthModal');
+    if (modal) modal.style.display = 'flex';
+};
+
 window.closeAuthModal = () => {
-    document.getElementById('adminAuthModal').style.display = 'none';
-    document.getElementById('adminUser').value = '';
-    document.getElementById('adminPass').value = '';
+    const modal = document.getElementById('adminAuthModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.getElementById('adminUser').value = '';
+        document.getElementById('adminPass').value = '';
+    }
 };
 
 window.verifyAndReset = async () => {
-    if (document.getElementById('adminUser').value === "admin" && document.getElementById('adminPass').value === "admin") {
-        if (confirm("ล้างข้อมูลทั้งหมด?")) {
-            await remove(ref(db, 'members'));
-            localStorage.clear();
-            location.reload();
+    const user = document.getElementById('adminUser').value;
+    const pass = document.getElementById('adminPass').value;
+
+    if (user === "admin" && pass === "admin") {
+        if (confirm("⚠️ ยืนยันการล้างข้อมูลทั้งหมดในเซิร์ฟเวอร์?")) {
+            try {
+                await remove(ref(db, 'members'));
+                localStorage.clear();
+                alert("รีเซ็ตระบบสำเร็จ!");
+                location.reload();
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
         }
-    } else { alert("รหัสผ่านผิด"); }
+    } else { 
+        alert("รหัสผ่านไม่ถูกต้อง"); 
+    }
 };
 
+// 4. สั่งให้ทำงานเมื่อโหลดหน้าเว็บ
 renderList();
+
+// อัปเดตข้อมูลอัตโนมัติเมื่อผู้ใช้กลับมาที่หน้าเดิม
 window.addEventListener('focus', renderList);
