@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// ข้อมูล Config จากหน้าจอของคุณ (ภาพที่ 1)
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
     authDomain: "aqundix-d3f38.firebaseapp.com",
@@ -19,174 +18,116 @@ const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('id') || "1";
 const DEFAULT_AVATAR = "../img/profile.jpg";
 
-// --- ฟังก์ชันสำหรับ UI ---
+// --- ฟังก์ชัน UI ---
+window.openModal = () => document.getElementById('editModal').style.display = 'flex';
+window.closeModal = () => document.getElementById('editModal').style.display = 'none';
 
-window.openModal = function() {
-    document.getElementById('editModal').style.display = 'flex';
-};
-
-window.closeModal = function() {
-    document.getElementById('editModal').style.display = 'none';
-};
-
-window.updateCharCount = function() {
-    const text = document.getElementById('inputAbout').value;
-    document.getElementById('charCounter').innerText = `${text.length} / 255`;
-};
-
-window.removeImage = function(previewId, type) {
-    const preview = document.getElementById(previewId);
-    if (type === 'avatar') {
-        preview.src = DEFAULT_AVATAR;
-    } else {
-        preview.style.backgroundImage = "none";
-        preview.style.backgroundColor = "#5865f2";
-    }
-};
-
-// 1. ฟังก์ชันแสดงตัวอย่างรูป (และเก็บค่าไว้รอ Save)
+// --- ฟังก์ชันอัพโหลดรูปจากเครื่อง ---
 window.showPreview = function(input, previewId, isBanner = false) {
     const file = input.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const result = e.target.result; // นี่คือ Base64 ของรูป
+        reader.onload = (e) => {
+            const result = e.target.result;
             const preview = document.getElementById(previewId);
-            
             if (isBanner) {
                 preview.style.backgroundImage = `url('${result}')`;
-                preview.style.backgroundColor = "transparent";
             } else {
                 preview.src = result;
             }
-            // เก็บค่า Base64 ไว้ที่ตัวแปรสำรอง
-            preview.dataset.base64 = result;
+            preview.dataset.base64 = result; // เก็บค่าไว้รอ Save
         };
         reader.readAsDataURL(file);
     }
 };
 
-// 2. ฟังก์ชันบันทึกข้อมูล (แก้ปัญหาข้อมูลหาย)
-window.saveProfile = async function() {window.saveProfile = async function() {
-    const previewAvatar = document.getElementById('previewAvatar');
-    const previewBanner = document.getElementById('previewBanner');
-
-    // 1. ดึงค่า Avatar
-    const avatar = previewAvatar.dataset.base64 || previewAvatar.src;
-
-    // 2. ดึงค่า Banner (จัดการเรื่อง url("") ออก)
-    let banner = previewBanner.dataset.base64;
-    if (!banner) {
-        const bgImg = previewBanner.style.backgroundImage;
-        // ถ้าไม่มีการอัปโหลดใหม่ ให้แกะเอา URL เดิมออกมา
-        banner = bgImg ? bgImg.slice(5, -2).replace(/"/g, "") : "";
-    }
-
-    try {
-        await set(ref(db, 'members/' + userId), {
-            name: document.getElementById('inputName').value,
-            about: document.getElementById('inputAbout').value,
-            avatar: avatar,
-            banner: banner,
-            fb: document.getElementById('inputFB').value,
-            ig: document.getElementById('inputIG').value,
-            gh: document.getElementById('inputGH').value,
-            isLocked: true
-        });
-        alert("บันทึกข้อมูลเรียบร้อย!");
-        location.reload();
-    } catch (e) {
-        alert("Error: " + e.message);
-    }
-};
-
-// ฟังก์ชันจัดการการเลือกรูปภาพ
-window.handleImageUpload = function(input, previewId) {
-    const file = input.files[0];
-    if (file) {
-        // ตรวจสอบขนาดไฟล์ (แนะนำไม่เกิน 1MB เพื่อป้องกัน Database เต็มเร็ว)
-        if (file.size > 1024 * 1024) {
-            alert("ไฟล์มีขนาดใหญ่เกินไป! กรุณาใช้รูปไม่เกิน 1MB");
-            input.value = "";
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const base64Image = e.target.result;
-            const previewElement = document.getElementById(previewId);
-            
-            if (previewId === 'previewAvatar') {
-                previewElement.src = base64Image;
-            } else {
-                previewElement.style.backgroundImage = `url('${base64Image}')`;
-            }
-            // เก็บค่า Base64 ไว้ใน Attribute ของ Element เพื่อนำไป Save ต่อ
-            previewElement.dataset.base64 = base64Image;
-        };
-        reader.readAsDataURL(file);
-    }
-};
-
-// เพิ่มไว้ด้านบนของฟังก์ชัน loadProfile
-const myOwnedProfile = localStorage.getItem('my_owned_profile');
-
+// --- ฟังก์ชันโหลดข้อมูลและเช็คสิทธิ์ปุ่ม ---
 async function loadProfile() {
     try {
         const snapshot = await get(ref(db, 'members/' + userId));
         const data = snapshot.exists() ? snapshot.val() : null;
         const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
-        // --- ส่วนที่ 1: แสดงข้อมูลบนหน้า Card ---
+        // 1. แสดงหน้าโปรไฟล์หลัก
         document.getElementById('displayName').innerText = data?.name || "Username";
-        document.getElementById('displayAbout').innerText = data?.about || "คลิกปุ่ม Edit เพื่อเริ่มแก้ไขโปรไฟล์ของคุณ...";
+        document.getElementById('displayTag').innerText = "@" + userId.padStart(4, '0');
+        document.getElementById('displayAbout').innerText = data?.about || "คลิก Edit เพื่อเริ่มแก้ไขโปรไฟล์...";
         document.getElementById('displayAvatar').src = data?.avatar || DEFAULT_AVATAR;
         
         const bannerArea = document.getElementById('displayBanner');
-        if (data?.banner && data.banner !== "none" && data.banner !== "") {
+        if (data?.banner) {
             bannerArea.style.backgroundImage = `url('${data.banner}')`;
-            bannerArea.style.backgroundColor = "transparent";
         } else {
             bannerArea.style.backgroundColor = "#5865f2";
-            bannerArea.style.backgroundImage = "none";
         }
 
-        // --- ส่วนที่ 2: การแสดงปุ่ม Edit (บังคับให้ขึ้นถ้าโปรไฟล์ยังว่าง หรือเราเป็นเจ้าของ) ---
+        // 2. แสดงปุ่ม Edit และ Restore (แก้ไขจุดนี้ให้ปุ่มขึ้นแน่นอน)
         const isLocked = data?.isLocked || false;
         const isOwner = myOwnedProfile === userId;
 
-        const editBtn = document.getElementById('editBtn');
-        const resetBtn = document.getElementById('resetOwnershipBtn');
-
+        // ถ้าโปรไฟล์ยังว่างอยู่ (Locked = false) หรือ เราเป็นเจ้าของ ให้โชว์ปุ่ม Edit
         if (!isLocked || isOwner) {
-            editBtn.style.display = 'flex'; // ใช้ flex เพื่อให้ Icon กับ Text สวยงาม
-        } else {
-            editBtn.style.display = 'none';
-        }
-        
-        if (isOwner) {
-            resetBtn.style.display = 'flex';
+            document.getElementById('editBtn').style.display = 'flex';
         }
 
-        // --- ส่วนที่ 3: ใส่ข้อมูลเดิมลงใน Modal (Preview) ---
+        // ถ้าเราเป็นเจ้าของ ให้โชว์ปุ่ม Restore (คืนสิทธิ์)
+        if (isOwner) {
+            document.getElementById('resetOwnershipBtn').style.display = 'flex';
+        }
+
+        // 3. เตรียมข้อมูลใส่ใน Modal
         if (data) {
             document.getElementById('inputName').value = data.name || "";
             document.getElementById('inputAbout').value = data.about || "";
             document.getElementById('previewAvatar').src = data.avatar || DEFAULT_AVATAR;
-            
-            const previewBanner = document.getElementById('previewBanner');
             if (data.banner) {
-                previewBanner.style.backgroundImage = `url('${data.banner}')`;
-                previewBanner.style.backgroundColor = "transparent";
+                document.getElementById('previewBanner').style.backgroundImage = `url('${data.banner}')`;
             }
-            
             document.getElementById('inputFB').value = data.fb || "";
             document.getElementById('inputIG').value = data.ig || "";
             document.getElementById('inputGH').value = data.gh || "";
         }
-    } catch (e) {
-        console.error("Load error:", e);
-    }
+    } catch (e) { console.error(e); }
 }
+
+// --- ฟังก์ชันบันทึกข้อมูล ---
+window.saveProfile = async function() {
+    const previewAvatar = document.getElementById('previewAvatar');
+    const previewBanner = document.getElementById('previewBanner');
+
+    const avatarBase64 = previewAvatar.dataset.base64 || previewAvatar.src;
+    let bannerBase64 = previewBanner.dataset.base64;
+    
+    if (!bannerBase64) {
+        const bg = previewBanner.style.backgroundImage;
+        bannerBase64 = bg ? bg.slice(5, -2).replace(/"/g, "") : "";
+    }
+
+    try {
+        await set(ref(db, 'members/' + userId), {
+            name: document.getElementById('inputName').value,
+            about: document.getElementById('inputAbout').value,
+            avatar: avatarBase64,
+            banner: bannerBase64,
+            fb: document.getElementById('inputFB').value,
+            ig: document.getElementById('inputIG').value,
+            gh: document.getElementById('inputGH').value,
+            isLocked: true
+        });
+        localStorage.setItem('my_owned_profile', userId);
+        alert("บันทึกเรียบร้อย!");
+        location.reload();
+    } catch (e) { alert(e.message); }
+};
+
+// --- ฟังก์ชันคืนสิทธิ์โปรไฟล์ ---
+window.releaseProfile = async function() {
+    if (confirm("ต้องการคืนสิทธิ์โปรไฟล์นี้เพื่อให้ผู้อื่นใช้งานหรือไม่?")) {
+        await remove(ref(db, 'members/' + userId));
+        localStorage.removeItem('my_owned_profile');
+        alert("คืนสิทธิ์เรียบร้อย");
+        location.href = "../index.html";
+    }
+};
 
 window.onload = loadProfile;
