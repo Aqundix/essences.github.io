@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// 1. Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
     authDomain: "aqundix-d3f38.firebaseapp.com",
@@ -16,7 +15,6 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const listDiv = document.getElementById('member-list');
 
-// 2. ฟังก์ชันแสดงผลรายชื่อ
 async function renderList() {
     if (!listDiv) return;
     try {
@@ -29,7 +27,6 @@ async function renderList() {
             const idStr = i.toString();
             const savedData = allData[idStr];
             
-            // จัดการ Banner
             let bannerStyle = "background-color: #5865f2;"; 
             if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
                 const cleanUrl = savedData.banner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
@@ -50,7 +47,7 @@ async function renderList() {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
 
-            // โครงสร้าง HTML ใหม่: ใช้ user-content-wrapper เพื่อดันปุ่มไปทางขวา
+            // โครงสร้าง HTML ใหม่: หุ้มด้วย user-content-wrapper เพื่อดันปุ่มไปทางขวา
             const itemHTML = `
                 <div class="profile-item">
                     <div class="card-banner" style="${bannerStyle}"></div>
@@ -77,31 +74,19 @@ async function renderList() {
     }
 }
 
-// 3. ส่วนงาน Admin
-window.openAuthModal = () => {
-    const modal = document.getElementById('adminAuthModal');
-    if (modal) modal.style.display = 'flex';
-};
-
-window.closeAuthModal = () => {
-    const modal = document.getElementById('adminAuthModal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.getElementById('adminUser').value = '';
-        document.getElementById('adminPass').value = '';
-    }
-};
-
+// Admin functions
+window.openAuthModal = () => document.getElementById('adminAuthModal').style.display = 'flex';
+window.closeAuthModal = () => document.getElementById('adminAuthModal').style.display = 'none';
 window.verifyAndReset = async () => {
     const u = document.getElementById('adminUser').value;
     const p = document.getElementById('adminPass').value;
     if (u === "admin" && p === "admin") {
-        if (confirm("ล้างข้อมูลทั้งหมดในเซิร์ฟเวอร์?")) {
+        if (confirm("ล้างข้อมูลทั้งหมด?")) {
             await remove(ref(db, 'members'));
             localStorage.clear();
             location.reload();
         }
-    } else { alert("รหัสผ่านผิด"); }
+    } else { alert("รหัสผิด"); }
 };
 
 renderList();
