@@ -71,7 +71,6 @@ window.removeImage = function(previewId, type) {
 };
 
 // --- ฟังก์ชันจัดการข้อมูล ---
-
 window.saveProfile = async function() {
     const saveBtn = document.getElementById('mainSaveBtn');
     saveBtn.disabled = true;
@@ -103,6 +102,56 @@ window.saveProfile = async function() {
         saveBtn.innerText = "Save Changes";
     }
 };
+
+// ฟังก์ชันจัดการการเลือกรูปภาพ
+window.handleImageUpload = function(input, previewId) {
+    const file = input.files[0];
+    if (file) {
+        // ตรวจสอบขนาดไฟล์ (แนะนำไม่เกิน 1MB เพื่อป้องกัน Database เต็มเร็ว)
+        if (file.size > 1024 * 1024) {
+            alert("ไฟล์มีขนาดใหญ่เกินไป! กรุณาใช้รูปไม่เกิน 1MB");
+            input.value = "";
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Image = e.target.result;
+            const previewElement = document.getElementById(previewId);
+            
+            if (previewId === 'previewAvatar') {
+                previewElement.src = base64Image;
+            } else {
+                previewElement.style.backgroundImage = `url('${base64Image}')`;
+            }
+            // เก็บค่า Base64 ไว้ใน Attribute ของ Element เพื่อนำไป Save ต่อ
+            previewElement.dataset.base64 = base64Image;
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+// ปรับปรุงฟังก์ชัน SaveProfile เดิม
+window.saveProfile = async function() {
+    const name = document.getElementById('inputName').value;
+    const avatar = document.getElementById('previewAvatar').dataset.base64 || document.getElementById('previewAvatar').src;
+    const banner = document.getElementById('previewBanner').dataset.base64 || "";
+
+    try {
+        await set(ref(db, 'members/' + userId), {
+            name: name,
+            avatar: avatar,
+            banner: banner,
+            isLocked: true
+        });
+        localStorage.setItem('my_owned_profile', userId);
+        alert("บันทึกข้อมูลเรียบร้อย!");
+        location.reload();
+    } catch (e) {
+        alert("เกิดข้อผิดพลาด: " + e.message);
+    }
+};
+
 
 window.releaseProfile = async function() {
     if (!confirm("คุณต้องการลบข้อมูลและคืนสิทธิ์โปรไฟล์นี้ใช่หรือไม่?")) return;
