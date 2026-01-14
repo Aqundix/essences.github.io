@@ -30,9 +30,11 @@ async function renderList() {
             
             // ตั้งค่า Banner (ถ้าไม่มีให้ใช้สีพื้นฐาน)
             let bannerStyle = "background-color: #5865f2;";
-            if (savedData?.banner && savedData.banner !== "none") {
+            if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
+                // ใช้ backgroundImage และครอบด้วย url() ให้เรียบร้อย
+                // หาก savedData.banner เป็น base64 หรือ URL ของ GIF ระบบจะจัดการให้เอง
                 bannerStyle = `background-image: url('${savedData.banner}'); background-size: cover; background-position: center;`;
-            }
+                        }
         
             const isLocked = savedData?.isLocked || false;
             const isOwner = myOwnedProfile === idStr;
