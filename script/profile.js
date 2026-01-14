@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+// ข้อมูล Config จากหน้าจอของคุณ (ภาพที่ 1)
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
     authDomain: "aqundix-d3f38.firebaseapp.com",
@@ -20,8 +21,13 @@ const DEFAULT_AVATAR = "../img/profile.jpg";
 
 // --- ฟังก์ชันสำหรับ UI ---
 
-window.openModal = () => document.getElementById('editModal').style.display = 'flex';
-window.closeModal = () => document.getElementById('editModal').style.display = 'none';
+window.openModal = function() {
+    document.getElementById('editModal').style.display = 'flex';
+};
+
+window.closeModal = function() {
+    document.getElementById('editModal').style.display = 'none';
+};
 
 window.updateCharCount = function() {
     const text = document.getElementById('inputAbout').value;
@@ -34,7 +40,6 @@ window.showPreview = function(input, previewId, isBanner = false) {
         reader.onload = (e) => {
             const preview = document.getElementById(previewId);
             if (isBanner) {
-                // เก็บค่า Base64 ลงใน style
                 preview.style.backgroundImage = `url("${e.target.result}")`;
             } else {
                 preview.src = e.target.result;
@@ -54,32 +59,23 @@ window.removeImage = function(previewId, type) {
     }
 };
 
-// --- ฟังก์ชันจัดการข้อมูล (Save Profile) ---
+// --- ฟังก์ชันจัดการข้อมูล ---
 
-// --- แก้ไขเฉพาะฟังก์ชัน saveProfile ---
 window.saveProfile = async function() {
     const saveBtn = document.getElementById('mainSaveBtn');
     saveBtn.disabled = true;
     saveBtn.innerText = "กำลังบันทึก...";
 
     try {
-        const name = document.getElementById('inputName').value;
-        const about = document.getElementById('inputAbout').value;
-        const avatar = document.getElementById('previewAvatar').src;
-        
-        // ดึงค่า banner และล้าง url("...") ออก ให้เหลือแค่ตัวข้อมูล Base64 หรือ Link
-        let bannerRaw = document.getElementById('previewBanner').style.backgroundImage;
-        let bannerClean = bannerRaw.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
-        
-        // ถ้าไม่มีรูปให้เป็นค่าว่าง (เพื่อให้หน้า List แสดงสีพื้นฐานแทน)
-        if (bannerClean === 'none' || bannerClean === '') bannerClean = "";
+        const snapshot = await get(ref(db, 'members/' + userId));
+        const oldData = snapshot.val() || {};
 
         const newData = {
             id: userId,
-            name: name || `Username ${userId}`,
-            about: about || "ยังไม่ได้ตั้ง Bio",
-            avatar: avatar,
-            banner: bannerClean, 
+            name: document.getElementById('inputName').value || oldData.name || `Username ${userId}`,
+            about: document.getElementById('inputAbout').value || oldData.about || "ยังไม่ได้ตั้ง Bio",
+            avatar: document.getElementById('previewAvatar').src,
+            banner: document.getElementById('previewBanner').style.backgroundImage || oldData.banner || "",
             fb: document.getElementById('inputFB').value || "",
             ig: document.getElementById('inputIG').value || "",
             gh: document.getElementById('inputGH').value || "",
@@ -89,7 +85,7 @@ window.saveProfile = async function() {
         await set(ref(db, 'members/' + userId), newData);
         localStorage.setItem('my_owned_profile', userId);
         alert("บันทึกข้อมูลเรียบร้อย!");
-        window.location.href = "../index.html"; 
+        location.reload();
     } catch (e) {
         alert("เกิดข้อผิดพลาด: " + e.message);
         saveBtn.disabled = false;
@@ -109,7 +105,7 @@ window.releaseProfile = async function() {
     }
 };
 
-// --- ฟังก์ชันโหลดข้อมูล ---
+// --- ฟังก์ชันโหลดข้อมูล (แก้ไขเรื่องปุ่มหาย) ---
 
 async function loadProfile() {
     const myOwnedProfile = localStorage.getItem('my_owned_profile');
@@ -119,21 +115,14 @@ async function loadProfile() {
         const snapshot = await get(ref(db, 'members/' + userId));
         const data = snapshot.val();
 
-        // 1. แสดงผลหน้าจอโปรไฟล์
+        // แสดงข้อมูลพื้นฐาน (ป้องกัน Loading ค้าง)
         document.getElementById('displayName').innerText = data?.name || `Username ${userId}`;
         document.getElementById('displayTag').innerText = formattedTag;
         document.getElementById('displayAbout').innerText = data?.about || "คลิกปุ่ม Edit เพื่อเริ่มแก้ไขโปรไฟล์ของคุณ...";
         document.getElementById('displayAvatar').src = data?.avatar || DEFAULT_AVATAR;
-        
-        const bannerArea = document.getElementById('displayBanner');
-        if (data?.banner && data.banner !== "none") {
-            bannerArea.style.backgroundImage = data.banner;
-        } else {
-            bannerArea.style.backgroundColor = "#5865f2";
-            bannerArea.style.backgroundImage = "none";
-        }
+        if (data?.banner) document.getElementById('displayBanner').style.backgroundImage = data.banner;
 
-        // 2. เช็คสิทธิ์ปุ่ม Edit
+        // เช็คสิทธิ์เพื่อโชว์ปุ่ม
         const isLocked = data?.isLocked || false;
         const isOwner = myOwnedProfile === userId;
 
@@ -145,15 +134,19 @@ async function loadProfile() {
             document.getElementById('resetOwnershipBtn').style.display = 'inline-block';
         }
 
-        // 3. ใส่ข้อมูลลงใน Modal (เพื่อให้เวลาเปิด Modal มาแก้ไข ข้อมูลเก่าจะยังอยู่)
+        // ใส่ข้อมูลลง Modal
         if (data) {
             document.getElementById('inputName').value = data.name || "";
             document.getElementById('inputAbout').value = data.about || "";
             document.getElementById('previewAvatar').src = data.avatar || DEFAULT_AVATAR;
             document.getElementById('previewBanner').style.backgroundImage = data.banner || "";
-            document.getElementById('inputFB').value = data.fb || "";
-            document.getElementById('inputIG').value = data.ig || "";
-            document.getElementById('inputGH').value = data.gh || "";
+            
+            if (data.fb || data.ig || data.gh) {
+                document.getElementById('socialCard').style.display = 'block';
+                if (data.fb) { document.getElementById('itemFB').style.display = 'flex'; document.getElementById('linkFB').href = data.fb; }
+                if (data.ig) { document.getElementById('itemIG').style.display = 'flex'; document.getElementById('linkIG').href = data.ig; }
+                if (data.gh) { document.getElementById('itemGH').style.display = 'flex'; document.getElementById('linkGH').href = data.gh; }
+            }
         }
     } catch (e) {
         console.error("Load error:", e);
