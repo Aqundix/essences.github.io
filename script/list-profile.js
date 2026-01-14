@@ -45,7 +45,7 @@ async function renderList() {
             } else if (isOwner) {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
             } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-                actionBtn = `<span class="view-link limit">หมดสิทธิ์จอง</span>`;
+                actionBtn = `<span class="view-link limit">หมดสิทธิ์ลงชื่อเข้าใช้</span>`;
             } else {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
@@ -58,7 +58,7 @@ async function renderList() {
                         <div class="user-info-side">
                             <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
                             <div class="name-details">
-                                <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
+                                <span class="name">${savedData?.name || "ยังไม่มีลงชื่อเข้าใช้"}</span>
                                 <span class="tag">@${idStr.padStart(4, '0')}</span>
                             </div>
                         </div>
