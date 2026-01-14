@@ -179,4 +179,22 @@ window.releaseProfile = async function() {
     }
 };
 
+// --- ฟังก์ชันสำหรับลบรูปภาพ ---
+window.removeImage = function(previewId, type) {
+    const preview = document.getElementById(previewId);
+    
+    if (confirm(`คุณต้องการลบรูป${type === 'avatar' ? 'โปรไฟล์' : 'แบนเนอร์'}ใช่หรือไม่?`)) {
+        if (type === 'avatar') {
+            // คืนค่ากลับเป็นรูปเริ่มต้น
+            preview.src = DEFAULT_AVATAR;
+            delete preview.dataset.base64;
+        } else {
+            // ล้างรูปแบนเนอร์ออก (กลับเป็นสีพื้นหลัง)
+            preview.style.backgroundImage = 'none';
+            preview.style.backgroundColor = '#5865f2';
+            delete preview.dataset.base64;
+        }
+    }
+};
+
 window.onload = loadProfile;
