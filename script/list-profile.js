@@ -16,9 +16,10 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const listDiv = document.getElementById('member-list');
 
-// 2. ฟังก์ชันแสดงผลรายชื่อ (Main Render)
+// 2. Main Render Function
 async function renderList() {
     if (!listDiv) return;
+    
     try {
         const snapshot = await get(ref(db, 'members'));
         const allData = snapshot.exists() ? snapshot.val() : {};
@@ -29,57 +30,68 @@ async function renderList() {
             const idStr = i.toString();
             const savedData = allData[idStr];
             
-            // จัดการ Banner: ตรวจสอบและครอบด้วย url() เพียงชั้นเดียว
-            let bannerStyle = "background-color: #5865f2;"; 
-            if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
-                // ล้าง url() เก่าออกถ้ามีก่อนใส่ใหม่ เพื่อป้องกันบัคจอขาว/ดำ
-                const cleanUrl = savedData.banner.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
-                bannerStyle = `background-image: url("${cleanUrl}"); background-size: cover; background-position: center;`;
+            // --- จัดการส่วน Banner ---
+            let finalBannerStyle = "background-color: #5865f2;"; // สี Default ของ Discord
+            if (savedData?.banner && savedData.banner !== "none" && savedData.banner !== "") {
+                const bUrl = savedData.banner.includes('url(') ? savedData.banner : `url("${savedData.banner}")`;
+                finalBannerStyle = `background-image: ${bUrl}; background-size: cover; background-position: center;`;
             }
 
+            // --- จัดการระบบล็อคสิทธิ์ 1 คนต่อ 1 ID ---
             const isLocked = savedData?.isLocked || false;
             const isOwner = myOwnedProfile === idStr;
             let actionBtn = '';
 
-            // กำหนดสถานะปุ่ม
             if (isLocked && !isOwner) {
-                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
+                // โปรไฟล์ถูกจองโดยคนอื่น
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #ed4245;">ดูโปรไฟล์</a>`;
             } else if (isOwner) {
-                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link owned">แก้ไขของคุณ</a>`;
+                // โปรไฟล์เป็นของเรา
+                actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link" style="background: #43b581;">แก้ไขของคุณ</a>`;
             } else if (myOwnedProfile && myOwnedProfile !== idStr) {
-                actionBtn = `<span class="view-link limit">จำกัด 1 สิทธิ์</span>`;
+                // เราจอง ID อื่นไปแล้ว
+                actionBtn = `<span class="view-link" style="background: #4f545c; opacity: 0.6; cursor: not-allowed;">จำกัด 1 สิทธิ์</span>`;
             } else {
+                // โปรไฟล์ว่าง และเรายังไม่มีการจอง
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
 
-            // --- ส่วนหลักใน Loop ของ renderList (หาบรรทัด itemHTML แล้วเปลี่ยนเป็นโค้ดนี้) ---
-            const itemHTML = `
-                <div class="profile-item">
-                    <div class="card-banner" style="${bannerStyle}"></div>
-                    <div class="banner-overlay"></div>
-                    <div class="user-content-wrapper">
-                        <div class="user-info">
-                            <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
+            // --- สร้าง HTML ---
+            // ใน loop ของ renderList()
+            listDiv.insertAdjacentHTML('beforeend', `
+                <div class="profile-item" style="position: relative; overflow: hidden; background: #2f3136; border-radius: 12px; margin-bottom: 16px; min-height: 140px; border: 1px solid #444; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+        
+                <div class="card-banner" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.4; ${finalBannerStyle}"></div>
+        
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 100%);"></div>
+
+                    <div class="user-info" style="position: relative; z-index: 2; padding: 25px; display: flex; align-items: center; justify-content: space-between; gap: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <img src="${savedData?.avatar || 'img/profile.jpg'}" 
+                                 style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #5865f2; object-fit: cover; background:#2f3136;"
+                                 onerror="this.src='img/profile.jpg'">
                             <div class="name-details">
-                                <span class="name">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</span>
-                                <span class="tag">@${idStr.padStart(4, '0')}</span>
+                                <div style="color: white; font-weight: bold; font-size: 1.4em; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${savedData?.name || "ยังไม่ได้ตั้งชื่อ"}</div>
+                                <div style="color: #b9bbbe; font-size: 0.9em; letter-spacing: 1px;">@${idStr.padStart(4, '0')}</div>
                             </div>
                         </div>
-                        <div class="button-area">
+
+                        <div style="flex-shrink: 0;">
                             ${actionBtn}
                         </div>
                     </div>
                 </div>
-            `;
+            `);
+            
             listDiv.insertAdjacentHTML('beforeend', itemHTML);
         }
     } catch (e) {
-        listDiv.innerHTML = '<p style="text-align:center; color: white;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
-        console.error("Firebase Error:", e);
+        listDiv.innerHTML = '<p style="text-align:center; color: white; padding: 20px;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+        console.error("Render Error:", e);
     }
 }
 
-// 3. ฟังก์ชัน Admin (Reset System)
+// 3. Admin & Modal Functions
 window.openAuthModal = () => {
     const modal = document.getElementById('adminAuthModal');
     if (modal) modal.style.display = 'flex';
@@ -95,11 +107,11 @@ window.closeAuthModal = () => {
 };
 
 window.verifyAndReset = async () => {
-    const user = document.getElementById('adminUser').value;
-    const pass = document.getElementById('adminPass').value;
+    const u = document.getElementById('adminUser').value;
+    const p = document.getElementById('adminPass').value;
 
-    if (user === "admin" && pass === "admin") {
-        if (confirm("⚠️ ยืนยันการล้างข้อมูลทั้งหมดในเซิร์ฟเวอร์?")) {
+    if (u === "admin" && p === "admin") {
+        if (confirm("⚠️ ยืนยันการล้างข้อมูลทั้งหมดใน Server? ข้อมูลสมาชิกทุกคนจะถูกลบ!")) {
             try {
                 await remove(ref(db, 'members'));
                 localStorage.clear();
@@ -109,13 +121,11 @@ window.verifyAndReset = async () => {
                 alert("Error: " + err.message);
             }
         }
-    } else { 
-        alert("รหัสผ่านไม่ถูกต้อง"); 
+    } else {
+        alert("Username หรือ Password ไม่ถูกต้อง");
     }
 };
 
-// 4. สั่งให้ทำงานเมื่อโหลดหน้าเว็บ
+// 4. Initialization
 renderList();
-
-// อัปเดตข้อมูลอัตโนมัติเมื่อผู้ใช้กลับมาที่หน้าเดิม
 window.addEventListener('focus', renderList);
