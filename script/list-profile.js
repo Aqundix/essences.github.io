@@ -54,7 +54,7 @@ async function renderList() {
                 <div class="profile-item">
                     <div class="card-banner" style="${bannerStyle}"></div>
                     <div class="banner-overlay"></div>
-                    <div class="content-wrapper">
+                    <div class="user-content-wrapper">
                         <div class="user-info-side">
                             <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
                             <div class="name-details">
