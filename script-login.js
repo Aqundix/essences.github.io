@@ -23,7 +23,7 @@ if (googleBtn) {
         signInWithPopup(auth, provider)
             .then((result) => {
                 console.log("เข้าสู่ระบบสำเร็จ!", result.user.displayName);
-                window.location.href = "profile-list.html"; 
+                window.location.href = "list-profile.html"; 
             })
             .catch((error) => {
                 console.error("เกิดข้อผิดพลาด:", error.message);
