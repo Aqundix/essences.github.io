@@ -212,7 +212,11 @@ window.adminResetAllAction = async function() {
     }
 }
 
-// ฟังก์ชันบีบอัดรูปภาพก่อน Save
+// ใน saveProfile ให้เรียกใช้ก่อน set(ref(...))
+const compressedAvatar = await compressImage(avatar, 200, 0.6); // รูปโปรไฟล์เล็กหน่อย
+const compressedBanner = await compressImage(banner, 600, 0.7); // แบนเนอร์ใหญ่ขึ้นนิด
+
+// --- 1. วางฟังก์ชันบีบอัดไว้ด้านนอกสุด (บนสุดหรือล่างสุดของไฟล์ก็ได้) ---
 function compressImage(base64Str, maxWidth = 400, quality = 0.7) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -224,58 +228,52 @@ function compressImage(base64Str, maxWidth = 400, quality = 0.7) {
             canvas.height = img.height * scale;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', quality)); // บีบอัดเป็น JPEG 70%
+            resolve(canvas.toDataURL('image/jpeg', quality)); 
         };
     });
 }
 
-// ใน saveProfile ให้เรียกใช้ก่อน set(ref(...))
-const compressedAvatar = await compressImage(avatar, 200, 0.6); // รูปโปรไฟล์เล็กหน่อย
-const compressedBanner = await compressImage(banner, 600, 0.7); // แบนเนอร์ใหญ่ขึ้นนิด
-
-// --- ฟังก์ชันบันทึกข้อมูล พร้อม Loading ---
+// --- 2. แก้ไขในฟังก์ชัน saveProfile ---
 window.saveProfile = async function() {
-    const loading = document.getElementById('loadingOverlay');
-    if (loading) loading.style.display = 'flex'; 
-
-    const previewAvatar = document.getElementById('previewAvatar');
-    const previewBanner = document.getElementById('previewBanner');
-
-    const avatar = previewAvatar.dataset.base64 || previewAvatar.src;
-    let banner = previewBanner.dataset.base64;
-    
-    if (!banner) {
-        const bg = previewBanner.style.backgroundImage;
-        // ล้างเอา url("") ออกเพื่อให้เหลือแต่ string ของรูป
-        banner = bg && bg !== 'none' ? bg.slice(5, -2).replace(/"/g, "") : "none";
-    }
-
-    const profileData = {
-        name: document.getElementById('inputName').value,
-        about: document.getElementById('inputAbout').value,
-        avatar: avatar,
-        banner: banner,
-        fb: document.getElementById('inputFB').value,
-        ig: document.getElementById('inputIG').value,
-        gh: document.getElementById('inputGH').value,
-        isLocked: true
-    };
+    // แสดง loading overlay
+    document.getElementById('loadingOverlay').style.display = 'flex';
 
     try {
-        await set(ref(db, 'members/' + userId), profileData);
-        localStorage.setItem('my_owned_profile', userId);
+        // (โค้ดดึงค่าจาก Input ต่างๆ ของคุณ...)
+        let avatar = document.getElementById('previewAvatar').src;
+        let banner = document.getElementById('previewBanner').style.backgroundImage;
+        // จัดการล้างค่า URL ของพื้นหลังถ้าจำเป็น
+        banner = banner.replace('url("', '').replace('")', '');
+
+        // --- เพิ่มจุดนี้: บีบอัดรูปก่อนเซฟ ---
+        // บีบอัดรูปโปรไฟล์ให้เหลือความกว้าง 200px (ประหยัดพื้นที่มาก)
+        const compressedAvatar = await compressImage(avatar, 200, 0.6);
+        // บีบอัดแบนเนอร์ให้เหลือความกว้าง 600px
+        const compressedBanner = await compressImage(banner, 600, 0.7);
+
+        // ข้อมูลที่จะส่งขึ้น Firebase
+        const updateData = {
+            name: document.getElementById('inputName').value,
+            about: document.getElementById('inputAbout').value,
+            avatar: compressedAvatar, // ใช้ตัวที่บีบอัดแล้ว
+            banner: compressedBanner, // ใช้ตัวที่บีบอัดแล้ว
+            // ... ข้อมูลโซเชียลอื่นๆ
+        };
+
+        // --- ส่งข้อมูลขึ้น Firebase ---
+        await update(ref(db, 'members/' + userId), updateData);
         
-        setTimeout(() => {
-            if (loading) loading.style.display = 'none';
-            alert("บันทึกข้อมูลสำเร็จ!");
-            location.reload();
-        }, 1000); 
-    } catch (e) {
-        if (loading) loading.style.display = 'none';
-        alert("เกิดข้อผิดพลาด: " + e.message);
+        alert("บันทึกข้อมูลเรียบร้อย!");
+        closeModal();
+        location.reload(); // โหลดหน้าใหม่เพื่อแสดงผล
+
+    } catch (error) {
+        console.error("Save Error:", error);
+        alert("เกิดข้อผิดพลาดในการบันทึก");
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
     }
 };
-
 // --- ฟังก์ชันคืนสิทธิ์โปรไฟล์ ---
 window.releaseProfile = async function() {
     if (confirm("ต้องการคืนสิทธิ์โปรไฟล์นี้เพื่อให้ผู้อื่นใช้งานหรือไม่? (ข้อมูลจะถูกลบ)")) {
