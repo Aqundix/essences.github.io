@@ -63,7 +63,7 @@ async function renderList() {
                     <div class="banner-overlay"></div>
                     <div class="content-wrapper">
                         <div class="user-info-side">
-                            <img src="${savedData?.avatar || 'img/profile.jpg'}" class="avatar-img" onerror="this.src='img/profile.jpg'">
+                            <img class="avatar" data-src="${member.avatar}" src="img/placeholder.jpg">
                             <div class="name-details">
                                 <span class="name">${savedData?.name || "ยังไม่มีชื่อ"}</span>
                                 <span class="tag">@${tagId}</span>
