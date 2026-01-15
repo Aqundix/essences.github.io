@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
@@ -74,6 +75,38 @@ function updateSocialDisplay(data) {
     }
     // ถ้ามี social อย่างน้อย 1 อย่างให้แสดง card
     socialCard.style.display = hasSocial ? 'block' : 'none';
+}
+
+async function loadProfile() {
+    // ดึง userId จาก URL (เช่น ?id=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id');
+
+    if (!userId) return;
+
+    // --- ส่วนที่ 1: ดึงจาก Cache (ความเร็วสูง) ---
+    const cachedData = localStorage.getItem(`cache_${userId}`);
+    if (cachedData) {
+        console.log("Loading from cache...");
+        renderUI(JSON.parse(cachedData)); // ฟังก์ชันแสดงผลบนหน้าจอที่คุณมีอยู่
+    }
+
+    try {
+        // --- ส่วนที่ 2: ดึงจาก Firebase (ข้อมูลล่าสุด) ---
+        const snapshot = await get(ref(db, 'members/' + userId));
+        
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            
+            // เก็บลง Cache ไว้ใช้ครั้งหน้า
+            localStorage.setItem(`cache_${userId}`, JSON.stringify(data));
+            
+            console.log("Loading from Firebase (Updated Data)...");
+            renderUI(data); // อัปเดตหน้าจอด้วยข้อมูลใหม่
+        }
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+    }
 }
 
 // --- ฟังก์ชันโหลดข้อมูลและเช็คสิทธิ์ ---
