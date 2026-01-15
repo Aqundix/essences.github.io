@@ -179,6 +179,27 @@ window.adminResetAllAction = async function() {
     }
 }
 
+// ฟังก์ชันบีบอัดรูปภาพก่อน Save
+function compressImage(base64Str, maxWidth = 400, quality = 0.7) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const scale = maxWidth / img.width;
+            canvas.width = maxWidth;
+            canvas.height = img.height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', quality)); // บีบอัดเป็น JPEG 70%
+        };
+    });
+}
+
+// ใน saveProfile ให้เรียกใช้ก่อน set(ref(...))
+const compressedAvatar = await compressImage(avatar, 200, 0.6); // รูปโปรไฟล์เล็กหน่อย
+const compressedBanner = await compressImage(banner, 600, 0.7); // แบนเนอร์ใหญ่ขึ้นนิด
+
 // --- ฟังก์ชันบันทึกข้อมูล พร้อม Loading ---
 window.saveProfile = async function() {
     const loading = document.getElementById('loadingOverlay');
