@@ -31,3 +31,22 @@ if (googleBtn) {
             });
     });
 }
+
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const auth = getAuth();
+
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => {
+            // เมื่อออกจากระบบสำเร็จ ให้เด้งกลับไปหน้า login
+            alert("ออกจากระบบเรียบร้อยแล้ว");
+            window.location.href = "index.html"; 
+        }).catch((error) => {
+            console.error("Logout Error:", error);
+        });
+    });
+}
+
+
