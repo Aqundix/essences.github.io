@@ -1,5 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+// 1. เพิ่มตัวนำเข้า (Import) ที่ด้านบนของไฟล์
+import { getDatabase, ref, query, limitToFirst, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
@@ -20,6 +22,33 @@ function getPersistentTag(seed) {
     // ใช้สูตรคณิตศาสตร์สร้างเลขสุ่มจากค่า Index (Seed)
     const val = (parseInt(seed) * 48271) % 9000; 
     return (val + 1000).toString().padStart(4, '0'); // ผลลัพธ์ 1000 - 9999
+}
+
+async function loadMemberList() {
+    const memberContainer = document.getElementById('memberContainer'); // ตัวอย่าง ID container
+    
+    try {
+        // 2. สร้าง Query เพื่อจำกัดการดึงข้อมูล (ดึงแค่ 20 คนแรก)
+        const membersRef = ref(db, 'members');
+        const membersQuery = query(membersRef, limitToFirst(20)); 
+        
+        // 3. ดึงข้อมูลตาม Query ที่ตั้งไว้
+        const snapshot = await get(membersQuery);
+        
+        if (snapshot.exists()) {
+            memberContainer.innerHTML = ""; // ล้างข้อมูลเก่า
+            const data = snapshot.val();
+
+            // 4. วนลูปแสดงผลตามปกติ
+            for (const id in data) {
+                const member = data[id];
+                // โค้ดสร้าง Card โปรไฟล์ของคุณ...
+                renderMemberCard(id, member); 
+            }
+        }
+    } catch (error) {
+        console.error("Error loading members:", error);
+    }
 }
 
 async function renderList() {
