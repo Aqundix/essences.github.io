@@ -83,6 +83,47 @@ async function loadProfile() {
         const data = snapshot.exists() ? snapshot.val() : null;
         const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
+// ฟังก์ชันตรวจสอบรหัส Admin
+window.verifyAdminAccess = function() {
+    const u = document.getElementById('admUser').value;
+    const p = document.getElementById('admPass').value;
+
+    if (u === "admin" && p === "admin1234") { // ตั้งรหัสที่นี่
+        document.getElementById('adminLoginModal').style.display = 'none';
+        document.getElementById('adminMenuModal').style.display = 'flex';
+        
+        // ล้างค่าในช่องกรอก
+        document.getElementById('admUser').value = "";
+        document.getElementById('admPass').value = "";
+    } else {
+        alert("รหัสผ่าน Admin ไม่ถูกต้อง!");
+    }
+};
+
+// ฟังก์ชัน: แก้ไขโปรไฟล์ผู้อื่น (Bypass ล็อก)
+window.adminEditAction = function() {
+    document.getElementById('adminMenuModal').style.display = 'none';
+    // เปิด Modal แก้ไขที่มีอยู่แล้วขึ้นมาทันที
+    window.openModal();
+    alert("Admin Mode: คุณสามารถแก้ไขและบันทึกข้อมูลทับโปรไฟล์นี้ได้ทันที");
+};
+
+// ฟังก์ชัน: Reset Server (ล้างฐานข้อมูล 'members' ทั้งหมด)
+window.adminResetAllAction = async function() {
+    if (confirm("⚠️ คำเตือนร้ายแรง: คุณกำลังจะลบข้อมูลผู้ใช้งาน 'ทั้งหมด' ในระบบ ยืนยันหรือไม่?")) {
+        try {
+            const { getDatabase, ref, remove } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+            const database = getDatabase();
+            await remove(ref(database, 'members'));
+            localStorage.clear();
+            alert("รีเซ็ตระบบสำเร็จ ข้อมูลทั้งหมดถูกลบแล้ว");
+            location.href = "../index.html";
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+    }
+};
+
         // 1. แสดงหน้าโปรไฟล์หลัก
         document.getElementById('displayName').innerText = data?.name || "Username";
         
