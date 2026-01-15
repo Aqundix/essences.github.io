@@ -97,7 +97,7 @@ window.closeAuthModal = () => {
 window.verifyAndReset = async () => {
     const u = document.getElementById('adminUser').value;
     const p = document.getElementById('adminPass').value;
-    if (u === "admin" && p === "admin") {
+    if (u === "admin0751" && p === "admin0751") {
         if (confirm("⚠️ คำเตือน: คุณกำลังจะล้างข้อมูลทั้ง 15 โปรไฟล์ ยืนยันหรือไม่?")) {
             try {
                 await remove(ref(db, 'members'));
