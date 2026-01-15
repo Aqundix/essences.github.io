@@ -13,12 +13,17 @@
         <div class="login-card">
             <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google Logo">
             <h2>ยินดีต้อนรับ</h2>
-            <p>กรุณาเข้าสู่ระบบด้วยบัญชี Google ของคุณ</p>
+            <p id="statusText">กรุณาเข้าสู่ระบบด้วยบัญชี Google ของคุณ</p>
             
             <button id="googleLoginBtn" class="google-btn">
-                <span>Sign in with Google</span>
+                <span id="btnText">Sign in with Google</span>
             </button>
-            <button id="logoutBtn" style="background: #ff4757; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; float: right;">ออกจากระบบ</button>
+
+            <button id="logoutBtn" class="google-btn" style="display: none; background-color: #ff4757; color: white; border: none; margin-top: 10px;">
+                <span>ออกจากระบบ (Log Out)</span>
+            </button>
+            
+            <p id="errorMsg" style="color: red; font-size: 0.8rem; margin-top: 10px; display: none;"></p>
         </div>
     </div>
 
