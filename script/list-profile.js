@@ -1,7 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-// 1. เพิ่มตัวนำเข้า (Import) ที่ด้านบนของไฟล์
-import { getDatabase, ref, query, limitToFirst, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, get, remove, query, limitToFirst } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCbBI8NwvsZ1rgJWU",
@@ -17,56 +15,37 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const listDiv = document.getElementById('member-list');
 
-// ฟังก์ชันสุ่มตัวเลขแบบคงที่ (เพื่อให้โปรไฟล์เดิมได้เลข ID เดิมทุกครั้งที่โหลดหน้าเว็บ)
+// ฟังก์ชันสุ่มตัวเลขแบบคงที่
 function getPersistentTag(seed) {
-    // ใช้สูตรคณิตศาสตร์สร้างเลขสุ่มจากค่า Index (Seed)
     const val = (parseInt(seed) * 48271) % 9000; 
-    return (val + 1000).toString().padStart(4, '0'); // ผลลัพธ์ 1000 - 9999
+    return (val + 1000).toString().padStart(4, '0');
 }
 
-async function loadMemberList() {
-    const memberContainer = document.getElementById('memberContainer'); // ตัวอย่าง ID container
-    
-    try {
-        // 2. สร้าง Query เพื่อจำกัดการดึงข้อมูล (ดึงแค่ 20 คนแรก)
-        const membersRef = ref(db, 'members');
-        const membersQuery = query(membersRef, limitToFirst(20)); 
-        
-        // 3. ดึงข้อมูลตาม Query ที่ตั้งไว้
-        const snapshot = await get(membersQuery);
-        
-        if (snapshot.exists()) {
-            memberContainer.innerHTML = ""; // ล้างข้อมูลเก่า
-            const data = snapshot.val();
-
-            // 4. วนลูปแสดงผลตามปกติ
-            for (const id in data) {
-                const member = data[id];
-                // โค้ดสร้าง Card โปรไฟล์ของคุณ...
-                renderMemberCard(id, member); 
-            }
-        }
-    } catch (error) {
-        console.error("Error loading members:", error);
-    }
-}
-
+// --- ฟังก์ชันหลักในการแสดงผล (รวม Query Limit เพื่อความเร็ว) ---
 async function renderList() {
     if (!listDiv) return;
-    try {
-        const snapshot = await get(ref(db, 'members'));
-        const allData = snapshot.exists() ? snapshot.val() : {};
-        listDiv.innerHTML = '';
-        const myOwnedProfile = localStorage.getItem('my_owned_profile');
 
+    try {
+        // 1. ใช้ Query ดึงแค่ 15-20 คนแรก เพื่อความรวดเร็วสูงสุด
+        const membersRef = ref(db, 'members');
+        const membersQuery = query(membersRef, limitToFirst(15)); 
+        const snapshot = await get(membersQuery);
+        
+        const allData = snapshot.exists() ? snapshot.val() : {};
+        const myOwnedProfile = localStorage.getItem('my_owned_profile');
+        
+        // ล้างข้อมูลเก่าก่อนแสดงผลใหม่
+        listDiv.innerHTML = '';
+
+        // 2. วนลูปสร้างการ์ด (ใช้ข้อมูลจาก Snapshot)
         for (let i = 1; i <= 15; i++) {
             const idStr = i.toString();
             const savedData = allData[idStr];
-            const tagId = getPersistentTag(idStr); // เรียกใช้ฟังก์ชันสุ่ม ID
+            const tagId = getPersistentTag(idStr);
             
-            // การจัดการ Banner
+            // การจัดการ Banner (ใช้สีพื้นฐานถ้าไม่มีรูป เพื่อให้โหลดเร็ว)
             let bannerStyle = "background-color: #5865f2;";
-            if (savedData?.banner && savedData.banner !== "" && savedData.banner !== "none") {
+            if (savedData?.banner) {
                 bannerStyle = `background-image: url('${savedData.banner}'); background-size: cover; background-position: center;`;
             }
         
@@ -74,7 +53,7 @@ async function renderList() {
             const isOwner = myOwnedProfile === idStr;
             let actionBtn = '';
         
-            // เงื่อนไขการแสดงผลปุ่ม
+            // เงื่อนไขปุ่ม
             if (isLocked && !isOwner) {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link locked">ดูโปรไฟล์</a>`;
             } else if (isOwner) {
@@ -85,16 +64,18 @@ async function renderList() {
                 actionBtn = `<a href="page/profile.html?id=${idStr}" class="view-link">จัดการโปรไฟล์</a>`;
             }
         
-            // โครงสร้าง HTML แบบพรีเมียม (สอดคล้องกับ CSS ใหม่)
+            // รูป Avatar (เพิ่ม Loading='lazy' เพื่อความเร็ว)
+            const avatarSrc = savedData?.avatar || "img/placeholder.jpg";
+
             const itemHTML = `
                 <div class="profile-item">
                     <div class="card-banner" style="${bannerStyle}"></div>
                     <div class="banner-overlay"></div>
                     <div class="content-wrapper">
                         <div class="user-info-side">
-                            <img class="avatar" data-src="${member.avatar}" src="img/placeholder.jpg">
+                            <img class="avatar" src="${avatarSrc}" loading="lazy" alt="profile">
                             <div class="name-details">
-                                <span class="name">${savedData?.name || "ยังไม่มีชื่อ"}</span>
+                                <span class="name">${savedData?.name || "ว่างเปล่า"}</span>
                                 <span class="tag">@${tagId}</span>
                             </div>
                         </div>
@@ -107,7 +88,7 @@ async function renderList() {
             listDiv.insertAdjacentHTML('beforeend', itemHTML);
         }
     } catch (e) {
-        listDiv.innerHTML = '<p style="text-align:center; color: white; padding: 20px;">เกิดข้อผิดพลาดในการเชื่อมต่อ</p>';
+        listDiv.innerHTML = '<p style="text-align:center; color: white; padding: 20px;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
         console.error("Firebase Error:", e);
     }
 }
@@ -127,7 +108,7 @@ window.verifyAndReset = async () => {
     const u = document.getElementById('adminUser').value;
     const p = document.getElementById('adminPass').value;
     if (u === "admin0751" && p === "admin0751") {
-        if (confirm("⚠️ คำเตือน: คุณกำลังจะล้างข้อมูลทั้ง 15 โปรไฟล์ ยืนยันหรือไม่?")) {
+        if (confirm("⚠️ คำเตือน: คุณกำลังจะล้างข้อมูลโปรไฟล์ทั้งหมด ยืนยันหรือไม่?")) {
             try {
                 await remove(ref(db, 'members'));
                 localStorage.clear();
@@ -138,12 +119,12 @@ window.verifyAndReset = async () => {
             }
         }
     } else { 
-        alert("ชื่อผู้ใช้หรือรหัสผ่าน Admin ไม่ถูกต้อง"); 
+        alert("รหัสผ่านไม่ถูกต้อง"); 
     }
 };
 
 // เริ่มการทำงาน
 renderList();
 
-// เมื่อ User สลับ Tab กลับมา ให้รีเฟรชข้อมูลอัตโนมัติ
-window.addEventListener('focus', renderList);
+// ปรับปรุง: ไม่แนะนำให้ใช้ window focus รีเฟรชข้อมูล 'ทั้งหมด' เพราะจะเปลือง Bandwidth 
+// ให้รีเฟรชเฉพาะเวลาจำเป็นจริงๆ หรือใช้ปุ่มกดดีกว่า
