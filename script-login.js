@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// Firebase Config ของคุณ
 const firebaseConfig = {
     apiKey: "AIzaSyBXf1-WXXaPd_IModQCb0I8NwvsZ1rgJWU",
     authDomain: "aqundix-d3f38.firebaseapp.com",
@@ -15,20 +14,20 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
+// เลือกปุ่มด้วย ID ให้ตรงกับใน HTML
 const googleBtn = document.getElementById('googleLoginBtn');
 
-googleBtn.addEventListener('click', () => {
-    signInWithPopup(auth, provider)
-        .then((result) => {
-            // ดึงข้อมูลผู้ใช้ที่ Login สำเร็จ
-            const user = result.user;
-            console.log("Logged in as:", user.displayName);
-            
-            // ส่งผู้ใช้ไปที่หน้า Profile List
-            window.location.href = "profile-list.html";
-        })
-        .catch((error) => {
-            console.error("Login Error:", error.message);
-            alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
-        });
-});
+if (googleBtn) {
+    googleBtn.addEventListener('click', () => {
+        // ใช้ signInWithPopup เพื่อเรียกหน้าต่างเลือกบัญชี Gmail
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                console.log("เข้าสู่ระบบสำเร็จ!", result.user.displayName);
+                window.location.href = "profile-list.html"; 
+            })
+            .catch((error) => {
+                console.error("เกิดข้อผิดพลาด:", error.message);
+                alert("เกิดข้อผิดพลาด: " + error.message);
+            });
+    });
+}
