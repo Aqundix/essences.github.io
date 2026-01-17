@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Profile Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../images/Center.jpg">
+    <style>
+        /* จัดการรูปภาพ Preview ให้พอดีกรอบ */
+        #previewAvatar, #previewBanner {
+            width: 100%;
+            height: 100%;
+            object-fit: cover !important;
+            object-position: center !important;
+        }
+
+        /* ซ่อนไอคอนรูปเสีย (Broken Image) เมื่อไม่มี src */
+        #previewBanner:not([src]), #previewBanner[src=""], #previewBanner[src="#"] {
+            display: none;
+        }
+
+        .status-dot-green {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 24px;   
+            height: 24px;
+            background-color: #23a559;
+            border: 4px solid #111214;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid { display: flex; flex-direction: column-reverse; }
+        }
+    </style>
+</head>
+<body class="bg-[#313338] text-[#dbdee1]">
+    <div class="p-4">
+        <button onclick="window.history.back()" class="flex items-center text-[#b5bac1] hover:text-white transition group">
+            <i class="fas fa-chevron-left mr-2 group-hover:-translate-x-1 transition-transform"></i>
+            <span>Back</span>
+        </button>
+    </div>
+    
+    <div class="container mx-auto max-w-5xl pt-5 px-4 pb-10">
+        <h1 class="text-2xl font-bold mb-8 text-white">User Profile</h1>
+
+        <div class="main-grid grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <div class="lg:col-span-7 space-y-6">
+                <div class="bg-[#2b2d31] p-6 rounded-lg space-y-6">
+                    <section>
+                        <label class="block text-xs font-bold text-[#b5bac1] uppercase mb-2">Display Name</label>
+                        <input type="text" id="editName" class="w-full bg-[#1e1f22] border-none rounded p-3 focus:ring-1 focus:ring-[#5865f2] outline-none transition" placeholder="ใส่ชื่อของคุณ">
+                    </section>
+
+                    <section>
+                        <label class="block text-xs font-bold text-[#b5bac1] uppercase mb-2">About Me</label>
+                        <textarea id="editBio" rows="4" class="w-full bg-[#1e1f22] border-none rounded p-3 focus:ring-1 focus:ring-[#5865f2] outline-none transition resize-none" placeholder="แนะนำตัวเองสักหน่อย..."></textarea>
+                    </section>
+
+                    <div class="h-[1px] bg-[#3f4147] my-4"></div>
+
+                    <div class="flex gap-4 pt-2">
+                        <button id="saveBtn" class="bg-[#5865f2] hover:bg-[#4752c4] text-white px-8 py-2.5 rounded font-medium transition active:scale-95">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-[#2b2d31] p-6 rounded-lg border border-red-500/30">
+                    <h4 class="text-red-500 font-bold text-sm uppercase mb-2">Danger Zone</h4>
+                    <p class="text-xs text-[#b5bac1] mb-4">เมื่อลบโปรไฟล์แล้ว ข้อมูลจะหายไปจากหน้าแสดงรายชื่อและระบบจะทำการ Logout ทันที</p>
+                    <button id="deleteProfileBtn" class="border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded text-sm font-medium transition active:scale-95">
+                        Delete Profile
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 flex flex-col items-center lg:items-start">
+                <label class="w-full block text-xs font-bold text-[#b5bac1] uppercase mb-4">Preview</label>
+                
+                <div class="w-full max-w-[340px] bg-[#111214] rounded-2xl overflow-hidden shadow-2xl border border-black mb-10 lg:sticky lg:top-10">
+                    <div id="bannerTrigger" class="h-[105px] bg-[#5865f2] relative group cursor-pointer overflow-hidden">
+                        <img id="previewBanner" src=""> <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                            <span class="text-[10px] font-bold uppercase bg-black/60 px-2 py-1 rounded text-white">Edit Banner</span>
+                        </div>
+                        <button id="removeBannerBtn" class="absolute top-2 right-2 z-20 bg-red-500 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg">
+                            <i class="fas fa-times text-[10px]"></i>
+                        </button>
+                        <input type="file" id="bannerInput" class="hidden" accept="image/*">
+                    </div>
+
+                    <div class="px-4 pb-5 relative">
+                        <div id="avatarTrigger" class="relative -mt-12 mb-3 inline-block cursor-pointer group">
+                            <div class="w-24 h-24 rounded-full bg-[#111214] p-1.5 overflow-hidden">
+                                <img id="previewAvatar" src="" class="rounded-full bg-[#313338]">
+                            </div>
+                            <div class="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition p-1.5">
+                                <i class="fas fa-pencil-alt text-xs text-white"></i>
+                            </div>
+                            <button id="removeAvatarBtn" class="absolute -top-1 -right-1 z-20 bg-red-500 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg border-2 border-[#111214]">
+                                <i class="fas fa-times text-[10px]"></i>
+                            </button>
+                            <div class="status-dot-green"></div>
+                            <input type="file" id="avatarInput" class="hidden" accept="image/*">
+                        </div>
+
+                        <div class="bg-[#1e1f22] rounded-lg p-3 border border-[#2b2d31]">
+                            <h3 id="previewName" class="text-lg font-bold text-white tracking-tight">User Name</h3>
+                            <p id="previewEmail" class="text-[12px] text-[#dbdee1] font-medium mb-3">@loading...</p>
+                            <div class="h-[1px] bg-[#2b2d31] mb-3"></div>
+                            <div class="mb-4">
+                                <p class="text-[10px] font-bold text-white uppercase mb-1">About Me</p>
+                                <p id="previewBio" class="text-[13px] text-[#dbdee1] whitespace-pre-line leading-tight">Nothing here yet...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module" src="../js/edit-profile.js"></script>
+</body>
+</html>
