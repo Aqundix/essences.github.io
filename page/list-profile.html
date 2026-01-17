@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Profile - Dekcom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/list-profile.css">
+    <style>
+        #cardAvatarImg, #cardBanner {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen font-sans overflow-x-hidden">
+    
+    <div id="loadingScreen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black transition-opacity duration-500">
+        <div class="relative">
+            <div class="w-16 h-16 border-4 border-green-500/20 border-t-green-500 rounded-full animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-8 h-8 bg-green-500 rounded-full animate-pulse shadow-[0_0_20px_rgba(74,222,128,0.5)]"></div>
+            </div>
+        </div>
+        <p class="mt-6 text-xs uppercase tracking-[0.3em] text-gray-400 animate-pulse">Loading Member Data</p>
+    </div>
+    
+    <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-[#111] z-50 transform -translate-x-full sidebar-transition border-r border-gray-800">
+        <div class="p-5 flex flex-col h-full">
+            <button id="closeMenu" class="self-end text-gray-400 hover:text-white mb-8">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+
+            <nav class="flex flex-col h-full">
+                <div class="flex flex-col gap-4">
+                    <a href="#" class="flex items-center gap-4 text-lg hover:text-green-400 transition">
+                        <i class="fas fa-home w-6"></i> Home
+                    </a>
+                    <a href="edit-profile.html" class="flex items-center gap-4 text-lg hover:text-green-400 transition">
+                        <i class="fas fa-user-circle w-6"></i> Profile Settings
+                    </a>
+
+                    <div class="border-t border-gray-800 my-2"></div>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-[0.2em] mb-2 px-1">Quick Actions</p>
+                    
+                    <a href="edit-profile.html" class="flex items-center gap-4 text-lg text-blue-400 hover:text-blue-300 transition">
+                        <i class="fas fa-user-edit w-6"></i> Manage Profile
+                    </a>
+                    
+                    <button id="sidebarResetBtn" class="flex items-center gap-4 text-lg text-orange-400 hover:text-orange-300 transition w-full text-left font-medium">
+                        <i class="fas fa-sync-alt w-6"></i> Reset My Data
+                    </button>
+                </div>
+
+                <div class="mt-auto">
+                    <div class="border-t border-gray-800 my-4"></div>
+                    <button id="logoutBtn" class="flex items-center gap-4 text-lg text-red-500 hover:text-red-400 transition w-full text-left font-bold">
+                        <i class="fas fa-sign-out-alt w-6"></i> Log out
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <div id="overlay" class="fixed inset-0 bg-black opacity-50 z-40 hidden"></div>
+
+    <header class="flex items-center justify-between px-4 py-3 border-b border-gray-800 sticky top-0 bg-black z-30">
+        <button id="openMenu" class="text-2xl focus:outline-none hover:text-gray-400">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="text-center">
+            <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em]">list profile</p>
+            <h1 class="text-lg font-bold">List Member Dekcom</h1>
+        </div>
+        <div id="headerUserIcon" class="w-10 h-10 bg-cyan-400 rounded-full flex items-center justify-center border-2 border-gray-700 overflow-hidden">
+            <span id="userInitial" class="text-black font-bold text-xl">P</span> 
+        </div>
+    </header>
+
+    <main class="flex flex-col items-center mt-12 px-6 w-full max-w-4xl mx-auto">
+        <button id="createBtn" class="bg-[#4ade80] hover:bg-green-500 text-black font-bold py-2 px-6 rounded-sm shadow-lg transition duration-300 mb-10 hidden">
+            Create a Profile
+        </button>
+
+        <div id="userProfileCardContainer" class="w-full hidden">
+            </div>
+
+        <div id="noProfileText" class="mt-10 text-gray-600">
+            <p>ยินดีต้อนรับสู่ระบบจัดการสมาชิก</p>
+        </div>
+    </main>
+
+    <div id="logoutModal" class="fixed inset-0 z-[100] flex items-center justify-center hidden px-4">
+        <div class="absolute inset-0 bg-black/80"></div>
+        <div class="relative bg-[#111] border border-gray-800 p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl">
+            <div class="text-red-500 mb-4 text-5xl">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">ยืนยันการออกจากระบบ?</h3>
+            <p class="text-gray-400 mb-6 text-sm">ต้องการดำเนินการออกจากระบบใช่หรือไม่?</p>
+            <div class="flex gap-3">
+                <button id="cancelLogout" class="flex-1 py-3 bg-gray-800 hover:bg-gray-700 rounded-xl transition">ยกเลิก</button>
+                <button id="confirmLogout" class="flex-1 py-3 bg-red-600 hover:bg-red-500 rounded-xl transition font-bold">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="viewProfileModal" class="fixed inset-0 z-[150] flex items-center justify-center hidden px-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" id="closeProfileOverlay"></div>
+        <div class="relative w-full max-w-[350px] bg-[#111214] rounded-2xl overflow-hidden shadow-2xl border border-gray-800 animate-in fade-in zoom-in duration-200">
+            <div id="modalBanner" class="h-28 bg-[#5865f2] relative">
+                <img id="modalBannerImg" src="" class="w-full h-full object-cover hidden">
+            </div>
+            <div class="px-4 pb-6 relative">
+                <div class="relative -mt-12 mb-3 inline-block">
+                    <div class="w-24 h-24 rounded-full bg-[#111214] p-1.5 overflow-hidden border-4 border-[#111214]">
+                        <img id="modalAvatarImg" src="" class="w-full h-full rounded-full object-cover bg-[#313338]">
+                    </div>
+                    <div class="absolute bottom-2 right-2 w-6 h-6 bg-[#23a559] border-4 border-[#111214] rounded-full"></div>
+                </div>
+                <div class="bg-[#1e1f22] rounded-lg p-4 border border-[#2b2d31]">
+                    <h3 id="modalName" class="text-xl font-bold text-white tracking-tight"></h3>
+                    <p id="modalUsername" class="text-sm text-gray-400 font-medium mb-3"></p>
+                    <div class="h-[1px] bg-[#2b2d31] mb-4"></div>
+                    <div>
+                        <p class="text-[10px] font-bold text-white uppercase mb-1 tracking-wider">About Me</p>
+                        <p id="modalBio" class="text-sm text-gray-300 whitespace-pre-line leading-relaxed"></p>
+                    </div>
+                    <button id="closeProfileBtn" class="w-full mt-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition text-sm">ปิด</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/list-profile.js"></script>
+</body>
+</html>

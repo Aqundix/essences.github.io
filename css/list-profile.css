@@ -1,0 +1,96 @@
+/* --- Root Variables สำหรับคุมโทน --- */
+:root {
+    --glass: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --accent: #4ade80; /* สีเขียวหลัก */
+}
+
+/* ปรับ Container ของการ์ดให้เล็กลงและจัดกึ่งกลาง */
+#userProfileCardContainer {
+    width: 100%;
+    max-width: 450px; /* ลดขนาดความกว้างลงให้ดูพรีเมียม */
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* สไตล์การ์ดแบบ Premium Glassmorphism */
+.profile-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(0, 0, 0, 0.5));
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.profile-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(74, 222, 128, 0.3);
+}
+
+/* ส่วนหัวของการ์ด (Banner) */
+.card-banner {
+    height: 100px; /* ลดความสูงลง */
+    background: linear-gradient(to right, #1f2937, #111827);
+    opacity: 0.6;
+}
+
+/* รูปโปรไฟล์ในการ์ด */
+#cardAvatar {
+    width: 85px; /* ขนาดเล็กลงให้ดูแพง */
+    height: 85px;
+    border: 4px solid #000;
+    margin-top: -42.5px; /* ครึ่งหนึ่งของความสูง */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+/* ปุ่ม View Profile แบบ Apple Style */
+.view-profile-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 2.5rem;
+    border-radius: 9999px;
+    transition: all 0.3s ease;
+}
+
+.view-profile-btn:hover {
+    background: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+
+/* จัดการ Header ให้เล็กลง */
+header {
+    height: 60px;
+    z-index: 50 !important;
+}
+
+#headerUserIcon {
+    width: 35px;
+    height: 35px;
+}
+
+/* Animation สำหรับการ์ดตอนโหลดเสร็จ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-card {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* ปรับแต่ง Loading Spinner */
+#loadingScreen {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
