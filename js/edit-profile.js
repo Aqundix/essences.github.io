@@ -163,7 +163,7 @@ if (saveBtn) {
             await addDoc(collection(db, "pending_approvals"), requestData);
 
             alert("ส่งคำขอแก้ไขโปรไฟล์แล้ว! โปรไฟล์จะอัปเดตหลังจากแอดมินตรวจสอบผ่าน Gmail");
-            window.location.href = "list-profile.html"; 
+            window.location.href = "../page/list-profile.html"; 
         } catch (error) {
             alert("Error: " + error.message);
         } finally {
@@ -193,3 +193,4 @@ document.getElementById('deleteProfileBtn').onclick = async () => {
     }
 
 };
+
