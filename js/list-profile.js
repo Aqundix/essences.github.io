@@ -155,4 +155,44 @@ onAuthStateChanged(auth, (user) => {
 const logoutModal = document.getElementById('logoutModal');
 if(document.getElementById('logoutBtn')) document.getElementById('logoutBtn').onclick = () => logoutModal?.classList.remove('hidden');
 if(document.getElementById('cancelLogout')) document.getElementById('cancelLogout').onclick = () => logoutModal?.classList.add('hidden');
+
 if(document.getElementById('confirmLogout')) document.getElementById('confirmLogout').onclick = () => signOut(auth).then(() => window.location.href = "../index.html");
+
+import { getFirestore, collection, query, where, onSnapshot, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const db = getFirestore();
+const auth = getAuth();
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const q = query(collection(db, "notifications"), where("receiverId", "==", user.uid), orderBy("createdAt", "desc"), limit(5));
+        onSnapshot(q, (snap) => {
+            const list = document.getElementById('notiList');
+            const badge = document.getElementById('notiBadge');
+            let unread = 0;
+            list.innerHTML = "";
+            
+            if(snap.empty) {
+                list.innerHTML = `<div class="p-6 text-center text-gray-600">ไม่มีการแจ้งเตือน</div>`;
+                badge.classList.add('hidden'); return;
+            }
+
+            snap.forEach(doc => {
+                const d = doc.data();
+                if(d.status === 'unread') unread++;
+                const item = document.createElement('div');
+                item.className = `p-4 border-b border-gray-900 hover:bg-white/5 transition`;
+                item.innerHTML = `<div class="font-bold ${d.type === 'success' ? 'text-green-400' : 'text-red-400'}">${d.title}</div><div class="text-gray-400 mt-1">${d.message}</div>`;
+                list.appendChild(item);
+            });
+            unread > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
+        });
+    }
+});
+
+document.getElementById('notiBell').onclick = (e) => {
+    e.stopPropagation();
+    document.getElementById('notiBox').classList.toggle('hidden');
+};
+document.addEventListener('click', () => document.getElementById('notiBox').classList.add('hidden'));
