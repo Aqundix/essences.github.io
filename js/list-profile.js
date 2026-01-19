@@ -1,7 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getAuth, signOut, onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { 
     getFirestore, doc, getDocs, getDoc, collection, query, where, onSnapshot, orderBy, limit 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -19,146 +17,108 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- 1. ระบบ UI & Loading ---
+const ADMIN_EMAIL = "tyfrlegends@gmail.com";
+
+// --- ฟังก์ชันปิดหน้า Loading (บังคับปิดเสมอ) ---
 const hideLoading = () => {
     const loader = document.getElementById('loadingScreen');
     if (loader) {
-        loader.classList.add('opacity-0');
+        loader.style.opacity = '0';
         setTimeout(() => { 
-            loader.classList.add('hidden'); 
-            loader.style.display = 'none'; 
+            loader.classList.add('hidden');
         }, 500);
     }
 };
 
-const setupNavigation = () => {
-    const openBtn = document.getElementById('openMenu');
-    const closeBtn = document.getElementById('closeMenu');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-
-    const toggle = (show) => {
-        sidebar?.classList.toggle('-translate-x-full', !show);
-        overlay?.classList.toggle('hidden', !show);
-    };
-
-    if (openBtn) openBtn.onclick = () => toggle(true);
-    if (closeBtn) closeBtn.onclick = () => toggle(false);
-    if (overlay) overlay.onclick = () => toggle(false);
-};
-
-// --- 2. ระบบดึงข้อมูลโปรไฟล์ ---
+// --- ระบบแสดงโปรไฟล์ทั้งหมด ---
 async function displayAllProfiles() {
     const container = document.getElementById('userProfileCardContainer');
-    const noProfileText = document.getElementById('noProfileText');
+    const noText = document.getElementById('noProfileText');
     if (!container) return;
 
     try {
         const querySnapshot = await getDocs(collection(db, "profiles"));
-        const currentUser = auth.currentUser;
         
         if (querySnapshot.empty) {
-            if(noProfileText) noProfileText.classList.remove('hidden');
+            noText?.classList.remove('hidden');
             container.classList.add('hidden');
         } else {
-            if(noProfileText) noProfileText.classList.add('hidden');
+            noText?.classList.add('hidden');
             container.classList.remove('hidden');
             
             let html = `<h2 class="text-gray-500 text-[10px] mb-8 uppercase tracking-[0.3em] w-full text-center">Member Directory</h2>`;
-            
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
-                const isOwner = currentUser && data.uid === currentUser.uid;
-                let displayUsername = data.username ? `@${data.username}` : `@${data.email.split('@')[0]}`;
-
+                const isOwner = auth.currentUser && data.uid === auth.currentUser.uid;
                 html += `
-                    <div class="profile-card relative w-full overflow-hidden mb-10 rounded-[2rem] bg-gradient-to-br from-[#1e1f22] to-black border border-white/10 shadow-2xl">
-                        <div class="h-32 w-full overflow-hidden bg-gray-800">
-                            ${data.banner ? `<img src="${data.banner}" class="w-full h-full object-cover">` : ''}
+                    <div class="profile-card relative w-full mb-10 rounded-[2rem] bg-gradient-to-br from-[#1e1f22] to-black border border-white/10 p-6 overflow-hidden">
+                        ${data.banner ? `<img src="${data.banner}" class="absolute top-0 left-0 w-full h-24 object-cover opacity-30">` : ''}
+                        <div class="relative z-10 flex flex-col items-center sm:items-start pt-8">
+                            <img src="${data.photoURL || 'https://img.icons8.com/bubbles/200/user.png'}" class="w-20 h-20 rounded-full border-4 border-black mb-4">
+                            <h3 class="text-xl font-bold text-white">${data.displayName} ${isOwner ? '<span class="text-[9px] bg-green-500 text-black px-2 py-0.5 rounded-full ml-2">YOU</span>' : ''}</h3>
+                            <p class="text-gray-400 text-sm">@${data.username || data.email.split('@')[0]}</p>
+                            <button onclick="viewUserData('${docSnap.id}')" class="mt-4 bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-full text-sm transition">View Profile</button>
                         </div>
-                        <div class="px-8 pb-10 flex flex-col items-center sm:items-start relative z-10 -mt-12">
-                            <div class="w-24 h-24 rounded-full border-4 border-black bg-[#2b2d31] overflow-hidden shadow-xl mb-4">
-                                <img src="${data.photoURL || 'https://img.icons8.com/bubbles/200/user.png'}" class="w-full h-full object-cover">
-                            </div>
-                            <div class="text-center sm:text-left">
-                                <div class="flex items-center justify-center sm:justify-start gap-2">
-                                    <h3 class="text-2xl font-bold text-white">${data.displayName || 'User'}</h3>
-                                    ${isOwner ? '<span class="text-[9px] bg-[#4ade80] text-black font-extrabold px-2 py-0.5 rounded-full">YOU</span>' : ''}
-                                </div>
-                                <p class="text-gray-400 font-medium text-sm">${displayUsername}</p>
-                                <p class="text-gray-300 text-sm mt-3 opacity-80 leading-relaxed line-clamp-2">${data.bio || 'ไม่มีข้อมูลแนะนำตัว...'}</p>
-                            </div>
-                            <div class="mt-8 w-full flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
-                                ${isOwner ? 
-                                    `<a href="edit-profile.html" class="bg-[#5865f2] hover:bg-[#4752c4] text-white font-bold py-2.5 px-8 rounded-full transition duration-300 text-center shadow-lg">
-                                        <i class="fas fa-edit mr-2"></i> Edit Profile
-                                    </a>` : 
-                                    `<button onclick="viewUserData('${docSnap.id}')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 px-8 rounded-full transition duration-300 text-center shadow-lg">
-                                        <i class="fas fa-search mr-2"></i> View Profile
-                                    </button>`
-                                }
-                            </div>
-                        </div>
-                    </div>
-                `;
+                    </div>`;
             });
             container.innerHTML = html;
         }
     } catch (e) {
-        console.error("Error displayAllProfiles:", e);
+        console.error("Display Error:", e);
     } finally {
-        hideLoading(); // มั่นใจว่า Loading จะหายไปแน่นอน
+        hideLoading(); // ไม่ว่าจะ Error หรือ สำเร็จ ต้องปิด Loading
     }
 }
 
-// --- 3. ระบบแจ้งเตือน (Notifications) ---
+// --- ระบบแจ้งเตือน (Notifications) ---
 function setupNotifications(user) {
     const list = document.getElementById('notiList');
     const badge = document.getElementById('notiBadge');
     if (!list) return;
 
-    const q = query(
-        collection(db, "notifications"), 
-        where("receiverId", "==", user.uid), 
-        orderBy("createdAt", "desc"), 
-        limit(5)
-    );
-
+    // คำเตือน: ถ้าตรงนี้ Error ให้เช็ค Firebase Index
+    const q = query(collection(db, "notifications"), where("receiverId", "==", user.uid), orderBy("createdAt", "desc"), limit(5));
+    
     onSnapshot(q, (snap) => {
         let unread = 0;
         list.innerHTML = "";
-        
         if(snap.empty) {
-            list.innerHTML = `<div class="p-6 text-center text-gray-600">ไม่มีการแจ้งเตือน</div>`;
-            if(badge) badge.classList.add('hidden');
+            list.innerHTML = `<div class="p-6 text-center text-gray-600 italic">ไม่มีแจ้งเตือน</div>`;
+            badge?.classList.add('hidden');
             return;
         }
-
         snap.forEach(docSnap => {
             const d = docSnap.data();
             if(d.status === 'unread') unread++;
-            const item = document.createElement('div');
-            item.className = `p-4 border-b border-gray-900 hover:bg-white/5 transition cursor-default`;
-            item.innerHTML = `
-                <div class="font-bold ${d.type === 'success' ? 'text-green-400' : 'text-red-400'}">${d.title}</div>
-                <div class="text-gray-400 mt-1 text-[11px]">${d.message}</div>
-            `;
-            list.appendChild(item);
+            list.innerHTML += `
+                <div class="p-4 border-b border-gray-900">
+                    <div class="font-bold ${d.type === 'success' ? 'text-green-400' : 'text-red-400'}">${d.title}</div>
+                    <div class="text-[11px] text-gray-400">${d.message}</div>
+                </div>`;
         });
         if(badge) unread > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
-    }, (err) => console.error("Noti Error:", err));
+    }, (err) => {
+        console.warn("Notification error (Check Index):", err);
+        hideLoading(); // ป้องกันค้างถ้า Noti พัง
+    });
 }
 
-// --- 4. ตรวจสอบสถานะการเข้าสู่ระบบ ---
+// --- การทำงานหลักเมื่อ User ล็อกอิน ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
         setupNavigation();
         displayAllProfiles();
         setupNotifications(user);
         
+        // ตรวจสอบ Admin
+        if (user.email === ADMIN_EMAIL) {
+            document.getElementById('adminSidebarLink')?.classList.remove('hidden');
+        }
+
+        // อัปเดตรูป Header
         const headerIcon = document.getElementById('headerUserIcon');
         if (headerIcon && user.photoURL) {
-            headerIcon.innerHTML = `<img src="${user.photoURL}" class="w-full h-full rounded-full object-cover">`;
+            headerIcon.innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
         }
     } else {
         window.location.href = "../index.html";
@@ -171,42 +131,27 @@ window.viewUserData = async (uid) => {
         const docSnap = await getDoc(doc(db, "profiles", uid));
         if (docSnap.exists()) {
             const data = docSnap.data();
-            document.getElementById('modalName').textContent = data.displayName || 'User';
-            document.getElementById('modalUsername').textContent = `@${data.username || data.email.split('@')[0]}`;
-            document.getElementById('modalBio').textContent = data.bio || 'คนนี้ยังไม่มีคำแนะนำตัว...';
-            document.getElementById('modalAvatarImg').src = data.photoURL || 'https://img.icons8.com/bubbles/200/user.png';
-            
-            const bannerImg = document.getElementById('modalBannerImg');
-            if (data.banner) {
-                bannerImg.src = data.banner;
-                bannerImg.classList.remove('hidden');
-            } else {
-                bannerImg.classList.add('hidden');
-            }
+            document.getElementById('modalName').innerText = data.displayName;
+            document.getElementById('modalUsername').innerText = `@${data.username || 'user'}`;
+            document.getElementById('modalBio').innerText = data.bio || '-';
+            document.getElementById('modalAvatarImg').src = data.photoURL;
             document.getElementById('viewProfileModal').classList.remove('hidden');
         }
-    } catch (error) { console.error(error); }
+    } catch (e) { console.error(e); }
 };
 
-// ปุ่มปิดต่างๆ
-const closeP = document.getElementById('closeProfileBtn');
-const overlayP = document.getElementById('closeProfileOverlay');
-if(closeP) closeP.onclick = () => document.getElementById('viewProfileModal').classList.add('hidden');
-if(overlayP) overlayP.onclick = () => document.getElementById('viewProfileModal').classList.add('hidden');
-
-// ปุ่มแจ้งเตือน
-const notiBell = document.getElementById('notiBell');
-if(notiBell) {
-    notiBell.onclick = (e) => {
-        e.stopPropagation();
-        document.getElementById('notiBox')?.classList.toggle('hidden');
-    };
-}
+document.getElementById('closeProfileBtn').onclick = () => document.getElementById('viewProfileModal').classList.add('hidden');
+document.getElementById('notiBell').onclick = (e) => {
+    e.stopPropagation();
+    document.getElementById('notiBox').classList.toggle('hidden');
+};
+document.getElementById('logoutBtn').onclick = () => signOut(auth);
 document.addEventListener('click', () => document.getElementById('notiBox')?.classList.add('hidden'));
 
-// ระบบ Logout
-const logoutBtn = document.getElementById('logoutBtn');
-const logoutModal = document.getElementById('logoutModal');
-if(logoutBtn) logoutBtn.onclick = () => logoutModal?.classList.remove('hidden');
-if(document.getElementById('cancelLogout')) document.getElementById('cancelLogout').onclick = () => logoutModal?.classList.add('hidden');
-if(document.getElementById('confirmLogout')) document.getElementById('confirmLogout').onclick = () => signOut(auth);
+const setupNavigationUI = () => {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    document.getElementById('openMenu').onclick = () => { sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden'); };
+    document.getElementById('closeMenu').onclick = () => { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); };
+};
+setupNavigationUI();
