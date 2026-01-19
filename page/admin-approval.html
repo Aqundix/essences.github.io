@@ -3,37 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Approval - Discord Style</title>
+    <title>Admin Dashboard | Aqundix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        .profile-card { transition: all 0.3s ease; }
-        .profile-card:hover { transform: translateY(-5px); }
-        #previewAvatar { object-fit: cover; }
+        body { font-family: 'Kanit', sans-serif; background-color: #1e1f22; color: #dbdee1; }
+        .glass-card { background: rgba(43, 45, 49, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .profile-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .profile-card:hover { transform: translateY(-5px); border-color: #5865f2; }
+        .banner-preview { height: 100px; background: linear-gradient(90deg, #5865f2, #854eee); }
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #3f4147; border-radius: 10px; }
+        .hidden { display: none; }
     </style>
 </head>
-<body class="bg-[#313338] text-[#dbdee1] font-sans">
+<body>
 
-    <div class="container mx-auto max-w-4xl py-10 px-4">
-        <div class="flex justify-between items-center mb-8 border-b border-[#3f4147] pb-4">
-            <h1 class="text-2xl font-bold text-white flex items-center">
-                <i class="fas fa-user-shield mr-3 text-[#5865f2]"></i>
-                การอนุมัติโปรไฟล์ (Admin)
-            </h1>
-            <span id="requestCount" class="bg-[#2b2d31] px-4 py-1 rounded-full text-sm text-[#b5bac1]">0 รายการค้างอยู่</span>
+    <nav class="sticky top-0 z-50 bg-[#2b2d31] border-b border-[#1e1f22] px-6 py-4 shadow-lg">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-user-check text-[#5865f2] text-2xl"></i>
+                <span class="font-bold text-white text-xl tracking-tight">AQUNDIX <span class="text-[#5865f2]">ADMIN</span></span>
+            </div>
+            <button id="authBtn" class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-5 py-2 rounded-md font-semibold text-sm transition-all flex items-center gap-2">
+                <i class="fab fa-google"></i> กำลังตรวจสอบสิทธิ์...
+            </button>
         </div>
+    </nav>
 
-        <div id="approvalList" class="grid gap-6">
-            <div class="text-center py-20 text-[#b5bac1]">
-                <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
-                <p>กำลังดึงข้อมูลรายการที่รอการตรวจสอบ...</p>
+    <main class="container mx-auto max-w-5xl py-10 px-4">
+        
+        <div id="headerSection" class="mb-10 hidden">
+            <h2 id="greeting" class="text-3xl font-bold text-white mb-2">ยินดีต้อนรับ</h2>
+            <div class="flex items-center gap-3">
+                <p class="text-[#b5bac1]">รายการที่รอการอนุมัติ</p>
+                <span id="requestCount" class="bg-[#5865f2] text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
             </div>
         </div>
-    </div>
+
+        <div id="adminContent" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+            </div>
+
+        <div id="loginPrompt" class="text-center py-32 glass-card rounded-3xl border-2 border-dashed border-[#3f4147]">
+            <i class="fas fa-shield-alt text-6xl text-[#4e5058] mb-6"></i>
+            <h3 class="text-2xl font-bold text-white mb-2">Restricted Access</h3>
+            <p class="text-[#b5bac1] mb-8">เฉพาะบัญชีผู้ดูแลระบบที่ได้รับอนุญาตเท่านั้น</p>
+            <button onclick="document.getElementById('authBtn').click()" class="bg-[#5865f2] hover:bg-[#4752c4] text-white px-10 py-3 rounded-full font-bold transition-all shadow-lg">
+                เข้าสู่ระบบด้วย Google
+            </button>
+        </div>
+    </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXf1-WXXaPd_IModQCb0I8NwvsZ1rgJWU",
@@ -46,111 +71,111 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        const listDiv = document.getElementById('approvalList');
+        // ระบุอีเมล ADMIN ของคุณที่นี่
+        const ADMIN_EMAIL = "YOUR_EMAIL@gmail.com"; 
+
+        const authBtn = document.getElementById('authBtn');
+        const adminContent = document.getElementById('adminContent');
+        const loginPrompt = document.getElementById('loginPrompt');
+        const headerSection = document.getElementById('headerSection');
         const countSpan = document.getElementById('requestCount');
 
-        // ฟังก์ชันโหลดข้อมูล
-        async function loadPendingProfiles() {
-            try {
-                const q = query(collection(db, "pending_approvals"), orderBy("submittedAt", "desc"));
-                const querySnapshot = await getDocs(q);
-                
-                listDiv.innerHTML = "";
-                countSpan.innerText = `${querySnapshot.size} รายการค้างอยู่`;
+        // จัดการระบบ Auth
+        authBtn.onclick = () => auth.currentUser ? signOut(auth) : signInWithPopup(auth, provider);
 
-                if (querySnapshot.empty) {
-                    listDiv.innerHTML = `<div class="text-center py-20 bg-[#2b2d31] rounded-lg border-2 border-dashed border-[#3f4147]">
-                        <i class="fas fa-check-circle text-4xl text-[#23a559] mb-4"></i>
-                        <p class="text-white font-medium">ไม่มีคำขอที่ค้างอยู่</p>
-                    </div>`;
-                    return;
-                }
-
-                querySnapshot.forEach((document) => {
-                    const data = document.data();
-                    const docId = document.id;
-
-                    const card = `
-                        <div class="profile-card bg-[#2b2d31] rounded-xl overflow-hidden shadow-lg border border-[#3f4147] flex flex-col md:flex-row">
-                            <div class="md:w-1/3 bg-[#1e1f22] p-6 flex flex-col items-center justify-center border-r border-[#3f4147]">
-                                <div class="relative mb-3">
-                                    <img src="${data.photoURL || 'https://img.icons8.com/bubbles/200/user.png'}" class="w-24 h-24 rounded-full border-4 border-[#313338]">
-                                    <div class="absolute bottom-1 right-1 w-6 h-6 bg-[#23a559] border-4 border-[#1e1f22] rounded-full"></div>
-                                </div>
-                                <h2 class="text-white font-bold text-center">${data.displayName}</h2>
-                                <p class="text-xs text-[#b5bac1]">UID: ${data.uid.substring(0, 10)}...</p>
-                            </div>
-
-                            <div class="md:w-2/3 p-6 flex flex-col justify-between">
-                                <div>
-                                    <label class="text-[10px] font-bold text-[#b5bac1] uppercase">About Me</label>
-                                    <p class="text-sm text-[#dbdee1] bg-[#1e1f22] p-3 rounded mt-1 mb-4 border border-[#383a40]">
-                                        ${data.bio || 'ไม่มีคำแนะนำตัว'}
-                                    </p>
-                                    <p class="text-[11px] text-[#949ba4]">ส่งเมื่อ: ${new Date(data.submittedAt).toLocaleString('th-TH')}</p>
-                                </div>
-
-                                <div class="flex gap-3 mt-6">
-                                    <button onclick="approveProfile('${docId}', ${JSON.stringify(data).replace(/"/g, '&quot;')})" 
-                                        class="flex-1 bg-[#23a559] hover:bg-[#1a7a42] text-white py-2 rounded font-bold transition">
-                                        <i class="fas fa-check mr-2"></i> อนุมัติ
-                                    </button>
-                                    <button onclick="rejectProfile('${docId}')" 
-                                        class="bg-[#da373c] hover:bg-[#a92b2f] text-white px-4 py-2 rounded font-bold transition">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    listDiv.innerHTML += card;
-                });
-            } catch (err) {
-                listDiv.innerHTML = `<p class="text-red-400">Error: ${err.message}</p>`;
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email === ADMIN_EMAIL) {
+                adminContent.classList.remove('hidden');
+                headerSection.classList.remove('hidden');
+                loginPrompt.classList.add('hidden');
+                document.getElementById('greeting').innerText = `สวัสดี, ${user.displayName}`;
+                authBtn.innerHTML = `<i class="fas fa-sign-out-alt mr-2"></i> Logout`;
+                loadData();
+            } else {
+                if(user) { alert("คุณไม่มีสิทธิ์เข้าถึง"); signOut(auth); }
+                adminContent.classList.add('hidden');
+                headerSection.classList.add('hidden');
+                loginPrompt.classList.remove('hidden');
+                authBtn.innerHTML = `<i class="fab fa-google mr-2"></i> Admin Login`;
             }
+        });
+
+        // โหลดข้อมูล
+        async function loadData() {
+            adminContent.innerHTML = `<div class="col-span-full text-center py-20 text-[#b5bac1]"><i class="fas fa-spinner fa-spin mr-2"></i> กำลังโหลดข้อมูล...</div>`;
+            const q = query(collection(db, "pending_approvals"), orderBy("submittedAt", "desc"));
+            const snap = await getDocs(q);
+            adminContent.innerHTML = "";
+            countSpan.innerText = snap.size;
+
+            if (snap.empty) {
+                adminContent.innerHTML = `<div class="col-span-full text-center py-20 glass-card rounded-xl">ไม่มีคำขอที่ค้างอยู่ 🎉</div>`;
+                return;
+            }
+
+            snap.forEach(docSnap => {
+                const data = docSnap.data();
+                const card = document.createElement('div');
+                card.className = "profile-card glass-card rounded-xl overflow-hidden flex flex-col";
+                card.innerHTML = `
+                    <div class="banner-preview"></div>
+                    <div class="p-6 pt-0 -mt-8 flex-1">
+                        <img src="${data.photoURL}" class="w-20 h-20 rounded-full border-4 border-[#2b2d31] bg-[#2b2d31] mb-3">
+                        <h4 class="text-lg font-bold text-white">${data.displayName}</h4>
+                        <p class="text-xs text-[#b5bac1] mb-4">${data.email}</p>
+                        <div class="bg-[#1e1f22] p-3 rounded-md mb-6 border border-white/5 h-24 overflow-y-auto custom-scroll">
+                            <p class="text-sm italic">"${data.bio || 'ไม่มีคำแนะนำตัว'}"</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="handleAction('${docSnap.id}', 'approve')" class="flex-1 bg-[#23a559] hover:bg-[#1a7a42] text-white py-2 rounded-md font-bold text-sm transition-all"><i class="fas fa-check mr-2"></i>อนุมัติ</button>
+                            <button onclick="handleAction('${docSnap.id}', 'reject')" class="bg-[#da373c]/10 text-[#da373c] hover:bg-[#da373c] hover:text-white px-4 py-2 rounded-md transition-all"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                `;
+                adminContent.appendChild(card);
+            });
         }
 
-        // ฟังก์ชันอนุมัติ (ย้ายข้อมูล)
-        window.approveProfile = async (id, data) => {
-            if(!confirm("ยืนยันการอนุมัติและเผยแพร่โปรไฟล์นี้?")) return;
-            
-            try {
-                // 1. ย้ายข้อมูลลง profiles จริง
-                await setDoc(doc(db, "profiles", data.uid), {
-                    uid: data.uid,
-                    email: data.email,
-                    displayName: data.displayName,
-                    bio: data.bio,
-                    photoURL: data.photoURL,
-                    banner: data.banner,
-                    updatedAt: new Date().toISOString()
-                }, { merge: true });
+        // ระบบจัดการอนุมัติ + ส่งแจ้งเตือน
+        window.handleAction = async (id, type) => {
+            const isApprove = type === 'approve';
+            const snap = await getDocs(query(collection(db, "pending_approvals")));
+            const userData = snap.docs.find(d => d.id === id).data();
 
-                // 2. ลบออกจากคิวรออนุมัติ
-                await deleteDoc(doc(db, "pending_approvals", id));
+            if(!confirm(`ต้องการ ${isApprove ? 'อนุมัติ' : 'ปฏิเสธ'} โปรไฟล์ของ ${userData.displayName}?`)) return;
+
+            try {
+                if(isApprove) {
+                    // 1. บันทึกลง Profiles
+                    await setDoc(doc(db, "profiles", userData.uid), { ...userData, status: "verified", updatedAt: new Date().toISOString() }, { merge: true });
+                    // 2. ส่ง Notification
+                    await setDoc(doc(collection(db, "notifications")), {
+                        receiverId: userData.uid,
+                        title: "✅ อนุมัติสำเร็จ!",
+                        message: "โปรไฟล์ของคุณได้รับการเผยแพร่แล้ว",
+                        type: "success",
+                        status: "unread",
+                        createdAt: new Date().toISOString()
+                    });
+                } else {
+                    await setDoc(doc(collection(db, "notifications")), {
+                        receiverId: userData.uid,
+                        title: "❌ ไม่ผ่านการอนุมัติ",
+                        message: "โปรไฟล์ของคุณถูกปฏิเสธเนื่องจากข้อมูลไม่ครบถ้วน",
+                        type: "error",
+                        status: "unread",
+                        createdAt: new Date().toISOString()
+                    });
+                }
                 
-                alert("อนุมัติสำเร็จ!");
-                loadPendingProfiles();
-            } catch (err) {
-                alert("อนุมัติล้มเหลว: " + err.message);
-            }
-        };
-
-        // ฟังก์ชันปฏิเสธ
-        window.rejectProfile = async (id) => {
-            if(!confirm("คุณต้องการลบคำขอนี้ทิ้งใช่หรือไม่? (จะไม่เกิดการเปลี่ยนแปลงใดๆ ในโปรไฟล์ผู้ใช้)")) return;
-            
-            try {
                 await deleteDoc(doc(db, "pending_approvals", id));
-                alert("ลบคำขอแล้ว");
-                loadPendingProfiles();
-            } catch (err) {
-                alert("เกิดข้อผิดพลาด: " + err.message);
-            }
+                loadData();
+            } catch (err) { alert(err.message); }
         };
 
-        loadPendingProfiles();
     </script>
 </body>
 </html>
