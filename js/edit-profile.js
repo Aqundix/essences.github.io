@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { 
     getFirestore, doc, getDoc, setDoc, deleteDoc, 
-    addDoc, collection
+    collection, addDoc // <-- ต้องมี 2 ตัวนี้เพิ่มเข้ามา
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -147,7 +147,14 @@ if (saveBtn) {
         try {
             const usernameOnly = user.email.split('@')[0];
             
-            // เตรียมข้อมูลที่จะส่งไปให้แอดมินตรวจ
+            // เช็คขนาดรูปก่อนส่ง (ป้องกัน Error length ของสตริงที่ยาวเกินไป)
+            if (previewAvatar.src.length > 500000 || previewBanner.src.length > 500000) {
+                alert("ไฟล์ภาพใหญ่เกินไป (รวมแล้วไม่ควรเกิน 1MB) กรุณาลดขนาดภาพก่อนครับ");
+                saveBtn.disabled = false;
+                saveBtn.innerText = "Save Changes";
+                return;
+            }
+
             const requestData = {
                 uid: user.uid,
                 email: user.email, 
@@ -159,13 +166,15 @@ if (saveBtn) {
                 submittedAt: new Date().toISOString()
             };
 
-            // บันทึกลง "pending_approvals" แทน "profiles"
+            // บันทึกลง "pending_approvals"
+            // ใช้คอลเลกชันอ้างอิงจาก db
             await addDoc(collection(db, "pending_approvals"), requestData);
 
-            alert("ส่งคำขอแก้ไขโปรไฟล์แล้ว! โปรไฟล์จะอัปเดตหลังจากแอดมินตรวจสอบผ่าน Gmail");
-            window.location.href = "../page/list-profile.html"; 
+            alert("ส่งคำขอแล้ว! รอแอดมินอนุมัติในหน้าแอดมิน");
+            window.location.href = "list-profile.html"; 
         } catch (error) {
             alert("Error: " + error.message);
+            console.error(error);
         } finally {
             saveBtn.disabled = false;
             saveBtn.innerText = "Save Changes";
@@ -193,4 +202,5 @@ document.getElementById('deleteProfileBtn').onclick = async () => {
     }
 
 };
+
 
