@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { 
-    getFirestore, doc, getDoc, setDoc, deleteDoc 
+    getFirestore, doc, getDoc, setDoc, deleteDoc, 
+    addDoc, collection
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -38,6 +39,27 @@ const validateImage = (imgElement, fallback) => {
         imgElement.onerror = null;
     };
 };
+
+// โค้ดในหน้า edit-profile.js (ฝั่งผู้ใช้)
+async function handleSubmit() {
+    const profileData = {
+        name: document.getElementById('editName').value,
+        bio: document.getElementById('editBio').value,
+        avatar: document.getElementById('previewAvatar').src,
+        banner: document.getElementById('previewBanner').src,
+        status: "pending",
+        submittedAt: new Date(),
+        userId: "ID_ของผู้ใช้" // เช่น auth.currentUser.uid
+    };
+
+    try {
+        // บันทึกลงถัง "รออนุมัติ" แทนการลง profile จริง
+        await addDoc(collection(db, "pending_approvals"), profileData);
+        alert("ส่งคำขอแก้ไขโปรไฟล์แล้ว กรุณารอแอดมินอนุมัติผ่านอีเมล");
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
 
 // --- 3. ฟังก์ชันดึงข้อมูลผู้ใช้ ---
 const loadUserData = async (user) => {
@@ -120,27 +142,27 @@ if (saveBtn) {
         if (!user) return;
 
         saveBtn.disabled = true;
-        saveBtn.innerText = "Saving...";
+        saveBtn.innerText = "Sending Request...";
 
         try {
             const usernameOnly = user.email.split('@')[0];
             
-            // ตรวจสอบค่า src ก่อนบันทึก (ถ้าเป็นค่าว่างหรือ fallback ไม่ต้องบันทึกยาว)
-            const photoToSave = previewAvatar.src.startsWith('data:') ? previewAvatar.src : (previewAvatar.src === DEFAULT_AVATAR ? "" : previewAvatar.src);
-            const bannerToSave = previewBanner.src.startsWith('data:') ? previewBanner.src : (previewBanner.src === window.location.href || previewBanner.src === "" ? "" : previewBanner.src);
-
-            await setDoc(doc(db, "profiles", user.uid), {
+            // เตรียมข้อมูลที่จะส่งไปให้แอดมินตรวจ
+            const requestData = {
                 uid: user.uid,
                 email: user.email, 
                 displayName: editName.value || usernameOnly,
-                username: usernameOnly,
                 bio: editBio.value,
-                photoURL: photoToSave,
-                banner: bannerToSave,
-                updatedAt: new Date().toISOString()
-            }, { merge: true });
+                photoURL: previewAvatar.src,
+                banner: previewBanner.src,
+                status: "pending",
+                submittedAt: new Date().toISOString()
+            };
 
-            alert("Saved successfully!");
+            // บันทึกลง "pending_approvals" แทน "profiles"
+            await addDoc(collection(db, "pending_approvals"), requestData);
+
+            alert("ส่งคำขอแก้ไขโปรไฟล์แล้ว! โปรไฟล์จะอัปเดตหลังจากแอดมินตรวจสอบผ่าน Gmail");
             window.location.href = "list-profile.html"; 
         } catch (error) {
             alert("Error: " + error.message);
@@ -169,4 +191,5 @@ document.getElementById('deleteProfileBtn').onclick = async () => {
             window.location.href = "../index.html";
         } catch (error) { alert("Delete failed: " + error.message); }
     }
+
 };
