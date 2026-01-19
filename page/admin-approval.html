@@ -12,14 +12,13 @@
         .glass-card { background: rgba(43, 45, 49, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .profile-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .profile-card:hover { transform: translateY(-5px); border-color: #5865f2; }
-        .banner-preview { height: 100px; background: linear-gradient(90deg, #5865f2, #854eee); }
+        .banner-preview { height: 100px; background: linear-gradient(90deg, #5865f2, #854eee); overflow: hidden; }
         .custom-scroll::-webkit-scrollbar { width: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #3f4147; border-radius: 10px; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-
     <nav class="sticky top-0 z-50 bg-[#2b2d31] border-b border-[#1e1f22] px-6 py-4 shadow-lg">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -27,13 +26,12 @@
                 <span class="font-bold text-white text-xl tracking-tight">AQUNDIX <span class="text-[#5865f2]">ADMIN</span></span>
             </div>
             <button id="authBtn" class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-5 py-2 rounded-md font-semibold text-sm transition-all flex items-center gap-2">
-                <i class="fab fa-google"></i> กำลังตรวจสอบสิทธิ์...
+                <i class="fab fa-google"></i> Login
             </button>
         </div>
     </nav>
 
     <main class="container mx-auto max-w-5xl py-10 px-4">
-        
         <div id="headerSection" class="mb-10 hidden">
             <h2 id="greeting" class="text-3xl font-bold text-white mb-2">ยินดีต้อนรับ</h2>
             <div class="flex items-center gap-3">
@@ -42,15 +40,13 @@
             </div>
         </div>
 
-        <div id="adminContent" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
-            </div>
+        <div id="adminContent" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6"></div>
 
         <div id="loginPrompt" class="text-center py-32 glass-card rounded-3xl border-2 border-dashed border-[#3f4147]">
             <i class="fas fa-shield-alt text-6xl text-[#4e5058] mb-6"></i>
-            <h3 class="text-2xl font-bold text-white mb-2">Restricted Access</h3>
-            <p class="text-[#b5bac1] mb-8">เฉพาะบัญชีผู้ดูแลระบบที่ได้รับอนุญาตเท่านั้น</p>
-            <button onclick="document.getElementById('authBtn').click()" class="bg-[#5865f2] hover:bg-[#4752c4] text-white px-10 py-3 rounded-full font-bold transition-all shadow-lg">
-                เข้าสู่ระบบด้วย Google
+            <h3 class="text-2xl font-bold text-white mb-2">เข้าถึงเฉพาะ Admin</h3>
+            <button onclick="document.getElementById('authBtn').click()" class="bg-[#5865f2] hover:bg-[#4752c4] text-white px-10 py-3 rounded-full font-bold transition-all shadow-lg mt-4">
+                Login with Google
             </button>
         </div>
     </main>
@@ -74,16 +70,13 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // ระบุอีเมล ADMIN ของคุณที่นี่
-        const ADMIN_EMAIL = "YOUR_EMAIL@gmail.com"; 
+        const ADMIN_EMAIL = "tyfrlegends@gmail.com"; // **เปลี่ยนเป็นอีเมลของคุณ**
 
         const authBtn = document.getElementById('authBtn');
         const adminContent = document.getElementById('adminContent');
         const loginPrompt = document.getElementById('loginPrompt');
         const headerSection = document.getElementById('headerSection');
-        const countSpan = document.getElementById('requestCount');
 
-        // จัดการระบบ Auth
         authBtn.onclick = () => auth.currentUser ? signOut(auth) : signInWithPopup(auth, provider);
 
         onAuthStateChanged(auth, (user) => {
@@ -92,27 +85,26 @@
                 headerSection.classList.remove('hidden');
                 loginPrompt.classList.add('hidden');
                 document.getElementById('greeting').innerText = `สวัสดี, ${user.displayName}`;
-                authBtn.innerHTML = `<i class="fas fa-sign-out-alt mr-2"></i> Logout`;
+                authBtn.innerHTML = `Logout`;
                 loadData();
             } else {
-                if(user) { alert("คุณไม่มีสิทธิ์เข้าถึง"); signOut(auth); }
+                if(user) { alert("คุณไม่มีสิทธิ์ Admin"); signOut(auth); }
                 adminContent.classList.add('hidden');
                 headerSection.classList.add('hidden');
                 loginPrompt.classList.remove('hidden');
-                authBtn.innerHTML = `<i class="fab fa-google mr-2"></i> Admin Login`;
+                authBtn.innerHTML = `Admin Login`;
             }
         });
 
-        // โหลดข้อมูล
         async function loadData() {
-            adminContent.innerHTML = `<div class="col-span-full text-center py-20 text-[#b5bac1]"><i class="fas fa-spinner fa-spin mr-2"></i> กำลังโหลดข้อมูล...</div>`;
+            adminContent.innerHTML = `<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-2xl"></i></div>`;
             const q = query(collection(db, "pending_approvals"), orderBy("submittedAt", "desc"));
             const snap = await getDocs(q);
             adminContent.innerHTML = "";
-            countSpan.innerText = snap.size;
+            document.getElementById('requestCount').innerText = snap.size;
 
             if (snap.empty) {
-                adminContent.innerHTML = `<div class="col-span-full text-center py-20 glass-card rounded-xl">ไม่มีคำขอที่ค้างอยู่ 🎉</div>`;
+                adminContent.innerHTML = `<div class="col-span-full text-center py-20 glass-card rounded-xl">ไม่มีรายการค้างอยู่</div>`;
                 return;
             }
 
@@ -121,17 +113,14 @@
                 const card = document.createElement('div');
                 card.className = "profile-card glass-card rounded-xl overflow-hidden flex flex-col";
                 card.innerHTML = `
-                    <div class="banner-preview"></div>
+                    <div class="banner-preview">${data.banner ? `<img src="${data.banner}" class="w-full h-full object-cover">` : ''}</div>
                     <div class="p-6 pt-0 -mt-8 flex-1">
-                        <img src="${data.photoURL}" class="w-20 h-20 rounded-full border-4 border-[#2b2d31] bg-[#2b2d31] mb-3">
+                        <img src="${data.photoURL}" class="w-20 h-20 rounded-full border-4 border-[#2b2d31] bg-[#2b2d31] mb-3 object-cover">
                         <h4 class="text-lg font-bold text-white">${data.displayName}</h4>
-                        <p class="text-xs text-[#b5bac1] mb-4">${data.email}</p>
-                        <div class="bg-[#1e1f22] p-3 rounded-md mb-6 border border-white/5 h-24 overflow-y-auto custom-scroll">
-                            <p class="text-sm italic">"${data.bio || 'ไม่มีคำแนะนำตัว'}"</p>
-                        </div>
+                        <div class="bg-[#1e1f22] p-3 rounded-md mb-6 h-24 overflow-y-auto text-sm italic">"${data.bio || 'ไม่มีคำแนะนำตัว'}"</div>
                         <div class="flex gap-2">
-                            <button onclick="handleAction('${docSnap.id}', 'approve')" class="flex-1 bg-[#23a559] hover:bg-[#1a7a42] text-white py-2 rounded-md font-bold text-sm transition-all"><i class="fas fa-check mr-2"></i>อนุมัติ</button>
-                            <button onclick="handleAction('${docSnap.id}', 'reject')" class="bg-[#da373c]/10 text-[#da373c] hover:bg-[#da373c] hover:text-white px-4 py-2 rounded-md transition-all"><i class="fas fa-trash-alt"></i></button>
+                            <button onclick="handleAction('${docSnap.id}', 'approve')" class="flex-1 bg-[#23a559] hover:bg-[#1a7a42] text-white py-2 rounded-md font-bold transition-all">อนุมัติ</button>
+                            <button onclick="handleAction('${docSnap.id}', 'reject')" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-md transition-all"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `;
@@ -139,43 +128,34 @@
             });
         }
 
-        // ระบบจัดการอนุมัติ + ส่งแจ้งเตือน
         window.handleAction = async (id, type) => {
             const isApprove = type === 'approve';
             const snap = await getDocs(query(collection(db, "pending_approvals")));
             const userData = snap.docs.find(d => d.id === id).data();
 
-            if(!confirm(`ต้องการ ${isApprove ? 'อนุมัติ' : 'ปฏิเสธ'} โปรไฟล์ของ ${userData.displayName}?`)) return;
+            if(!confirm(`ยืนยันการ${isApprove ? 'อนุมัติ' : 'ปฏิเสธ'}?`)) return;
 
             try {
                 if(isApprove) {
-                    // 1. บันทึกลง Profiles
                     await setDoc(doc(db, "profiles", userData.uid), { ...userData, status: "verified", updatedAt: new Date().toISOString() }, { merge: true });
-                    // 2. ส่ง Notification
                     await setDoc(doc(collection(db, "notifications")), {
                         receiverId: userData.uid,
-                        title: "✅ อนุมัติสำเร็จ!",
-                        message: "โปรไฟล์ของคุณได้รับการเผยแพร่แล้ว",
-                        type: "success",
-                        status: "unread",
-                        createdAt: new Date().toISOString()
+                        title: "✅ โปรไฟล์ได้รับการอนุมัติแล้ว!",
+                        message: "ขณะนี้โปรไฟล์ของคุณถูกเผยแพร่ในหน้า List Member เรียบร้อย",
+                        type: "success", status: "unread", createdAt: new Date().toISOString()
                     });
                 } else {
                     await setDoc(doc(collection(db, "notifications")), {
                         receiverId: userData.uid,
-                        title: "❌ ไม่ผ่านการอนุมัติ",
-                        message: "โปรไฟล์ของคุณถูกปฏิเสธเนื่องจากข้อมูลไม่ครบถ้วน",
-                        type: "error",
-                        status: "unread",
-                        createdAt: new Date().toISOString()
+                        title: "❌ โปรไฟล์ไม่ผ่านการอนุมัติ",
+                        message: "กรุณาแก้ไขข้อมูลหรือรูปภาพ และส่งใหม่อีกครั้ง",
+                        type: "error", status: "unread", createdAt: new Date().toISOString()
                     });
                 }
-                
                 await deleteDoc(doc(db, "pending_approvals", id));
                 loadData();
             } catch (err) { alert(err.message); }
         };
-
     </script>
 </body>
 </html>
