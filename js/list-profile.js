@@ -108,7 +108,7 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         setupNavigation();
         displayAllProfiles();
-        setupNotifications(user);
+        //setupNotifications(user);
         
         // ตรวจสอบ Admin
         if (user.email === ADMIN_EMAIL) {
@@ -155,3 +155,4 @@ const setupNavigationUI = () => {
     document.getElementById('closeMenu').onclick = () => { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); };
 };
 setupNavigationUI();
+
