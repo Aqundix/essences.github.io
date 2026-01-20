@@ -104,6 +104,33 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// ตัวอย่างโครงสร้าง HTML ที่คุณควรใส่ไว้ในไฟล์ list-profile.js
+function createMemberCard(userData) {
+    // ตรวจสอบว่ามี Banner ไหม ถ้าไม่มีให้ใช้สีพื้นหลังแทน
+    const bannerUrl = userData.bannerURL || 'https://via.placeholder.com/800x200?text=No+Banner';
+
+    return `
+    <div class="member-card bg-[#111] border border-gray-800 rounded-2xl w-full mb-4 hover:border-green-500/50">
+        <div class="member-banner" style="background-image: url('${bannerUrl}')"></div>
+        
+        <div class="member-content p-6 flex items-center gap-5">
+            <div class="relative">
+                <img src="${userData.profilePic || '../images/default.jpg'}" 
+                     class="w-20 h-20 rounded-full border-4 border-[#111] relative z-20">
+            </div>
+            
+            <div class="flex-1">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-xl font-bold">${userData.displayName}</h2>
+                    ${userData.isMe ? '<span class="bg-green-500 text-[10px] px-2 py-0.5 rounded-full text-black font-black uppercase">YOU</span>' : ''}
+                </div>
+                <p class="text-gray-400 text-sm">@user</p>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
 // --- UI Event Listeners ---
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('overlay');
@@ -119,3 +146,4 @@ document.getElementById('notiBell').onclick = (e) => {
 document.addEventListener('click', () => document.getElementById('notiBox').classList.add('hidden'));
 
 document.getElementById('logoutBtn').onclick = () => signOut(auth);
+
