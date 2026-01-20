@@ -147,3 +147,48 @@ document.addEventListener('click', () => document.getElementById('notiBox').clas
 
 document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
+// เพิ่มตัวแปรอ้างอิง
+const modal = document.getElementById('profileModal');
+const modalContent = document.getElementById('modalContent');
+const modalOverlay = document.getElementById('modalOverlay');
+
+// ฟังก์ชันเปิด Modal พร้อมข้อมูล
+function openProfile(data) {
+    document.getElementById('modalName').textContent = data.displayName || "Unknown User";
+    document.getElementById('modalUsername').textContent = `@${data.username || 'user'}`;
+    document.getElementById('modalBio').textContent = data.bio || "คนนี้ยังไม่มีคำแนะนำตัว...";
+    document.getElementById('modalAvatar').src = data.photoURL || 'https://img.icons8.com/bubbles/200/user.png';
+    document.getElementById('modalBanner').style.backgroundColor = data.banner ? 'transparent' : '#5865f2';
+    document.getElementById('modalBanner').style.backgroundImage = data.banner ? `url(${data.banner})` : 'none';
+    document.getElementById('modalBanner').style.backgroundSize = 'cover';
+    document.getElementById('modalBanner').style.backgroundPosition = 'center';
+    
+    const date = data.updatedAt ? new Date(data.updatedAt).toLocaleDateString('th-TH') : 'ไม่ทราบวันที่';
+    document.getElementById('modalDate').textContent = date;
+
+    // แสดง Modal พร้อม Animation
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-90', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+// ฟังก์ชันปิด Modal
+function closeProfile() {
+    modalContent.classList.add('scale-90', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 200);
+}
+
+// Event Listeners
+document.getElementById('closeModal').onclick = closeProfile;
+modalOverlay.onclick = closeProfile;
+
+// --- ตอนที่คุณสร้าง List รายชื่อสมาชิก (ในฟังก์ชันดึงข้อมูลจาก Firebase) ---
+// ให้เพิ่ม event onclick เข้าไปที่ Card หรือแถวรายชื่อ เช่น:
+/* const profileCard = document.createElement('div');
+   profileCard.className = "cursor-pointer hover:bg-white/5 ...";
+   profileCard.onclick = () => openProfile(data); 
+*/
