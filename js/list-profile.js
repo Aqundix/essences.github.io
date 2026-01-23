@@ -192,3 +192,68 @@ modalOverlay.onclick = closeProfile;
    profileCard.className = "cursor-pointer hover:bg-white/5 ...";
    profileCard.onclick = () => openProfile(data); 
 */
+// อ้างอิง Element ต่างๆ จาก HTML
+const modal = document.getElementById('profileModal');
+const modalContent = document.getElementById('modalContent');
+const closeModalBtn = document.getElementById('closeModal');
+const modalOverlay = document.getElementById('modalOverlay');
+
+// ฟังก์ชันสำหรับเปิด Modal และใส่ข้อมูล
+function openProfileModal(userData) {
+    // ใส่ข้อมูลลงใน Modal
+    document.getElementById('modalName').textContent = userData.displayName || userData.username;
+    document.getElementById('modalUsername').textContent = `@${userData.username}`;
+    document.getElementById('modalBio').textContent = userData.bio || "No bio yet...";
+    document.getElementById('modalAvatar').src = userData.profileImage || '../images/default-avatar.jpg';
+    document.getElementById('modalBanner').style.backgroundColor = userData.bannerColor || '#5865f2';
+    document.getElementById('modalDate').textContent = userData.createdAt || 'Unknown';
+
+    // แสดง Modal พร้อม Animation
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-90', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+// ฟังก์ชันสำหรับปิด Modal
+function closeModal() {
+    modalContent.classList.add('scale-90', 'opacity-0');
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+// Event Listeners
+closeModalBtn.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', closeModal);
+
+// ส่งออกฟังก์ชันไปใช้ตอนสร้าง Card สมาชิก
+export { openProfileModal };
+
+// สมมติว่านี่คือตอนที่คุณสร้าง Card ใน Loop
+const card = document.createElement('div');
+card.className = "cursor-pointer p-4 bg-gray-900 rounded-xl hover:bg-gray-800 transition";
+card.innerHTML = `
+    <div class="flex items-center gap-4">
+        <img src="${user.profileImage}" class="w-12 h-12 rounded-full">
+        <div>
+            <h2 class="font-bold">${user.displayName}</h2>
+            <p class="text-xs text-gray-400">คลิกเพื่อดูโปรไฟล์</p>
+        </div>
+    </div>
+`;
+
+// เมื่อคลิกที่ Card ให้เปิด Modal
+card.addEventListener('click', () => {
+    openProfileModal(user); // user คือ Object ข้อมูลสมาชิกที่ได้จาก Firebase หรือ API
+});
+
+document.getElementById('userProfileCardContainer').appendChild(card);
+
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeModal();
+    }
+});
